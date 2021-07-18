@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+
+  helloworld:
+    build:
+      context: helloworld
+      dockerfile: Dockerfile.dev
+    container_name: docker-helloworld
+    volumes:
+      - /app/node_modules
+      - ./helloworld:/app
+    ports:
+      - 8081:8080
