@@ -1,0 +1,21 @@
+FROM node:14.17.3
+
+# define working directory
+WORKDIR /app
+
+# add the binaries from node_modules to $PATH
+ENV PATH /app/node_modules/.bin:$PATH
+
+# install application dependencies
+COPY package.json ./
+COPY yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+# add app
+COPY . ./
+
+# listen to port 8080, React's port 
+EXPOSE 8080
+
+# start the app
+CMD ["yarn", "start"]
