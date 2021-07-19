@@ -54,10 +54,10 @@ Will build, connect and launch the internal Docker containers altogether. Same a
 
 The most important components for dev/deploy are listed below.
 
-| Component       |  Version  | What                   |
-|----------------:|:---------:|:-----------------------|
-| NodeJS          |  14.17.3  |                        |
-| Yarn            |   1.22.5  | NodeJS package manager |
-| React           |   17.0.2  |                        |
-| Docker          |  20.10.2  | Deployment manager     |
-| Docker composer |   1.25.0  |                        |
+| Component       |  Version  | What                    |
+|----------------:|:---------:|:------------------------|
+| NodeJS          |  14.17.3  |                         |
+| Yarn            |   1.22.5  | NodeJS package manager  |
+| React           |   17.0.2  |                         |
+| Docker          |  20.10.2  | Deployment manager      |
+| Docker composer |   1.25.0  | Development environment |
