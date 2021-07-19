@@ -37,10 +37,10 @@ COPY --from=build-stage /app/build .
 # ENTRYPOINT ["nginx", "-g", "daemon off;"]
 
 # get the 'nginx.conf' in the root folder of the project
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# local
-CMD nginx -g 'daemon off;'
+# for local runs
+# CMD nginx -g 'daemon off;'
 
-### for Heroku
-### CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+# for Heroku runs
+# CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
