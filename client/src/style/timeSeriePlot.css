@@ -1,0 +1,7 @@
+.grafica {
+  z-index: 2002;
+  display: block;
+  position: absolute;
+  margin: auto;
+  padding: 1rem 0rem;
+}

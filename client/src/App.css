@@ -1,0 +1,22 @@
+.leaflet-container {
+  width: 100%;
+  height: 100vh;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #eee;
+  color: #333;
+  border: 5px hidden #1C6EA4;
+  border-radius: 22px;
+  opacity: 0.9;
+  font-size: 1.2rem;
+}
+
+.popuptitle{
+  font-weight: bold;
+}
+
+body{
+  font-family: 'Open Sans', sans-serif;
+}
