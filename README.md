@@ -93,3 +93,4 @@ The most important components for dev/deploy are listed below.
 | React           |   17.0.2  | JavaScript library for User Interfaces    |
 | Docker          |  20.10.2  | Deployment manager                        |
 | Docker composer |   1.25.0  | Development environment                   |
+| Webpack         |   5.45.1  | Module blunder - packs a single .js file  |
