@@ -1,3 +1,3 @@
 build:
   docker:
-    web: helloworld/Dockerfile
+    web: client/Dockerfile
