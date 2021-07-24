@@ -5,22 +5,20 @@ import L from "leaflet";
 import { Alert, Spinner } from "react-bootstrap";
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Popup,
   LayersControl,
   LayerGroup,
-  FeatureGroup,
   Polygon,
 } from "react-leaflet";
 import useSWR from "swr";
 import "./App.css";
-import Panel from "./components/panel";
+import Panel from "./components/Panel";
 import DropDownTimeSeries from "./components/DropDownTimeSeries";
 // import timeSeriesPlot from "./components/timeSeriesPlot";
-import 'leaflet/dist/leaflet.css';
-
-const { BaseLayer } = LayersControl;
+import "leaflet/dist/leaflet.css";
+import { baseLayersData } from "./assets/MapBaseLayers";
+import BaseLayers from "./components/BaseLayers";
 
 const icon = new Icon({
   iconUrl: "img/browndot.png",
@@ -29,7 +27,6 @@ const icon = new Icon({
 });
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
-
 
 const App = () => {
   //Estado - enpoint para series de tiempo
@@ -110,27 +107,7 @@ const App = () => {
     <React.Fragment>
       <MapContainer center={position} zoom={zoom}>
         <LayersControl>
-          <BaseLayer checked name="OpenStreetMap">
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </BaseLayer>
-
-          <BaseLayer name="Terrain">
-            <TileLayer
-              attribution='&copy; <a href="https://stamen.com/open-source/">Stamen</a> contributors'
-              url="http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg"
-            />
-          </BaseLayer>
-
-          <BaseLayer name="NASA Gibs Blue Marble">
-            <TileLayer
-              url="https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default//EPSG3857_500m/{z}/{y}/{x}.jpeg"
-              attribution="&copy; NASA Blue Marble, image service by OpenGeo"
-              maxNativeZoom={12}
-            />
-          </BaseLayer>
+          <BaseLayers baseLayerData={baseLayersData} />
 
           <LayersControl.Overlay checked name="Stations">
             <LayerGroup name="Locations">
@@ -208,6 +185,14 @@ const App = () => {
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
+          position={"Right"}
+        />
+
+        <Panel
+          isHidden={isHidden}
+          setIsHidden={setIsHidden}
+          timeSerieUrl={timeSerieUrl}
+          position={"Left"}
         />
       </MapContainer>
     </React.Fragment>

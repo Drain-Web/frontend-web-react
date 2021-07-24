@@ -7,7 +7,6 @@ body {
   box-sizing: border-box;
   background-color: #ddd;
   position: absolute;
-  right: 1%;
   top: 20%;
   z-index: 1000;
   min-height: 40vh;
@@ -59,4 +58,13 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #000000;
   border-radius: 10px;
+}
+
+
+.Left {
+  left: 2%;
+}
+
+.Right {
+  right: 2%;
 }
