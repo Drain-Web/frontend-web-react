@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Icon } from "leaflet";
-import L from "leaflet";
-import { Alert, Spinner } from "react-bootstrap";
+import React, { useState } from 'react'
+import axios from 'axios'
+import { Icon } from 'leaflet'
+
+import { Alert, Spinner } from 'react-bootstrap'
 import {
   MapContainer,
   TileLayer,
@@ -10,173 +10,171 @@ import {
   Popup,
   LayersControl,
   LayerGroup,
-  FeatureGroup,
-  Polygon,
-} from "react-leaflet";
-import useSWR from "swr";
-import "./App.css";
-import Panel from "./components/panel";
-import DropDownTimeSeries from "./components/DropDownTimeSeries";
+  Polygon
+} from 'react-leaflet'
+import useSWR from 'swr'
+import './App.css'
+import Panel from './components/panel'
+import DropDownTimeSeries from './components/DropDownTimeSeries'
 // import timeSeriesPlot from "./components/timeSeriesPlot";
-import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css'
 
-const { BaseLayer } = LayersControl;
+const { BaseLayer } = LayersControl
 
 const icon = new Icon({
-  iconUrl: "img/browndot.png",
+  iconUrl: 'img/browndot.png',
   iconSize: [25, 25],
-  popupAnchor: [0, -15],
-});
+  popupAnchor: [0, -15]
+})
 
 // function 'fetcher' will do HTTP requests
-const fetcher = (url) => axios.get(url).then((res) => res.data);
+const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 const App = () => {
+  // Estado - enpoint para series de tiempo
+  const [timeSerieUrl, setTimeSerieUrl] = useState(null)
 
-  //Estado - enpoint para series de tiempo
-  const [timeSerieUrl, setTimeSerieUrl] = useState(null);
-  
-  //Panel state - show or hide
-  const [isHidden, setIsHidden] = useState(false);
+  // Panel state - show or hide
+  const [isHidden, setIsHidden] = useState(false)
 
   // request location data -> store in const 'point_feature'
-  const [activePointFeature, setActivePointFeature] = useState(null);
+  const [activePointFeature, setActivePointFeature] = useState(null)
   const { data: data2, error: error2 } = useSWR(
-    "https://hydro-web.herokuapp.com/v1/locations",
+    'https://hydro-web.herokuapp.com/v1/locations',
     fetcher
-  );
-  const point_feature = data2 && !error2 ? data2 : {};
+  )
+  const pointFeature = data2 && !error2 ? data2 : {}
 
   // request boundaries data -> store in const 'boundariesData'
-  const [activeBoundaries, setActiveBoundaries] = useState(null);
+  const [activeBoundaries, setActiveBoundaries] = useState(null)
   const { data: data1, error: error1 } = useSWR(
-    "https://hydro-web.herokuapp.com/v1dw/boundaries",
+    'https://hydro-web.herokuapp.com/v1dw/boundaries',
     fetcher
-  );
-  const boundariesData = data1 && !error1 ? data1 : {};
+  )
+  const boundariesData = data1 && !error1 ? data1 : {}
 
   // request region data -> store in const 'regionData'
-  const [activeRegion, setActiveRegion] = useState(null);
+  const [activeRegion, setActiveRegion] = useState(null)
   const { data: data3, error: error3 } = useSWR(
-    "https://hydro-web.herokuapp.com/v1/region",
+    'https://hydro-web.herokuapp.com/v1/region',
     fetcher
-  );
-  const regionData = data3 && !error3 ? data3 : {};
+  )
+  const regionData = data3 && !error3 ? data3 : {}
 
   // request filters data -> store in 'ids'
   const { data: dataids, error: errorids } = useSWR(
-    "https://hydro-web.herokuapp.com/v1/filters",
+    'https://hydro-web.herokuapp.com/v1/filters',
     fetcher
-  );
-  if (errorids) return <div>failed to load</div>;
-  if (!dataids) return <div>loading...</div>;
-  let ids = dataids && !errorids ? dataids : {};
-  ids = ids.map((filter) => filter.id);
+  )
+  if (errorids) return <div>failed to load</div>
+  if (!dataids) return <div>loading...</div>
+  let ids = dataids && !errorids ? dataids : {}
+  ids = ids.map((filter) => filter.id)
 
   // basic check - boundaries must load
   if (error1) {
-    return <Alert variant="danger">There is a problem</Alert>;
+    return <Alert variant='danger'>There is a problem</Alert>
   }
 
   // if failed to load boundaries does this
   if (!data1) {
     return (
       <Spinner
-        animation="border"
-        variant="danger"
-        role="status"
+        animation='border'
+        variant='danger'
+        role='status'
         style={{
-          width: "400px",
-          height: "400px",
-          margin: "auto",
-          display: "block",
+          width: '400px',
+          height: '400px',
+          margin: 'auto',
+          display: 'block'
         }}
       />
-    );
+    )
   }
 
-  let reversedPolygon;
+  let reversedPolygon
 
   // gets the central coordinates of the map into const 'position'
   const x =
-    (regionData["map"].defaultExtent.right +
-      regionData["map"].defaultExtent.left) /
-    2;
+    (regionData.map.defaultExtent.right +
+      regionData.map.defaultExtent.left) /
+    2
   const y =
-    (regionData["map"].defaultExtent.top +
-      regionData["map"].defaultExtent.bottom) /
-    2;
-  const position = [y, x];
+    (regionData.map.defaultExtent.top +
+      regionData.map.defaultExtent.bottom) /
+    2
+  const position = [y, x]
 
   // defines zoom level - TODO: make it a function of the map extents
-  const zoom = 9;
+  const zoom = 9
 
   // build page if everithing worked fine
   return (
-    <React.Fragment>
+    <>
       <MapContainer center={position} zoom={zoom}>
         <LayersControl>
-          <BaseLayer checked name="OpenStreetMap">
+          <BaseLayer checked name='OpenStreetMap'>
             <TileLayer
               attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             />
           </BaseLayer>
 
-          <BaseLayer name="Terrain">
+          <BaseLayer name='Terrain'>
             <TileLayer
               attribution='&copy; <a href="https://stamen.com/open-source/">Stamen</a> contributors'
-              url="http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg"
+              url='http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg'
             />
           </BaseLayer>
 
-          <BaseLayer name="NASA Gibs Blue Marble">
+          <BaseLayer name='NASA Gibs Blue Marble'>
             <TileLayer
-              url="https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default//EPSG3857_500m/{z}/{y}/{x}.jpeg"
-              attribution="&copy; NASA Blue Marble, image service by OpenGeo"
+              url='https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default//EPSG3857_500m/{z}/{y}/{x}.jpeg'
+              attribution='&copy; NASA Blue Marble, image service by OpenGeo'
               maxNativeZoom={12}
             />
           </BaseLayer>
 
-          <LayersControl.Overlay checked name="Stations">
-            <LayerGroup name="Locations">
-              {point_feature.locations.map((point_feature) => (
+          <LayersControl.Overlay checked name='Stations'>
+            <LayerGroup name='Locations'>
+              {pointFeature.locations.map((pointFeature) => (
                 <Marker
-                  key={point_feature.locationId}
-                  position={[point_feature.y, point_feature.x]}
+                  key={pointFeature.locationId}
+                  position={[pointFeature.y, pointFeature.x]}
                   onClick={() => {
-                    setActivePointFeature(point_feature);
+                    setActivePointFeature(pointFeature)
                   }}
                   icon={icon}
                 >
                   <Popup
-                    position={[point_feature.y, point_feature.x]}
+                    position={[pointFeature.y, pointFeature.x]}
                     onClose={() => {
-                      setActivePointFeature(point_feature);
+                      setActivePointFeature(pointFeature)
                     }}
                   >
                     <div>
                       <h5>
-                        <span className="popuptitle">
-                          {point_feature.shortName}
+                        <span className='popuptitle'>
+                          {pointFeature.shortName}
                         </span>
                       </h5>
                       <p>
-                        <span className="popuptitle">Id:</span>{" "}
-                        {point_feature.locationId}
+                        <span className='popuptitle'>Id:</span>{' '}
+                        {pointFeature.locationId}
                       </p>
                       <p>
-                        <span className="popuptitle">Longitude:</span>{" "}
-                        {point_feature.x}
+                        <span className='popuptitle'>Longitude:</span>{' '}
+                        {pointFeature.x}
                       </p>
                       <p>
-                        <span className="popuptitle">Latitude:</span>{" "}
-                        {point_feature.y}
+                        <span className='popuptitle'>Latitude:</span>{' '}
+                        {pointFeature.y}
                       </p>
                     </div>
                     <DropDownTimeSeries
                       ids={ids}
-                      locationid={point_feature.locationId}
+                      locationid={pointFeature.locationId}
                       timeSerieUrl={timeSerieUrl}
                       setTimeSerieUrl={setTimeSerieUrl}
                       setIsHidden={setIsHidden}
@@ -188,23 +186,23 @@ const App = () => {
             </LayerGroup>
           </LayersControl.Overlay>
 
-          <LayersControl.Overlay checked name="Basins">
-            <LayerGroup name="Basins">
+          <LayersControl.Overlay checked name='Basins'>
+            <LayerGroup name='Basins'>
               {boundariesData.map((poly) => {
                 reversedPolygon = Array.from(poly.polygon.values()).map(
                   (pol) => [pol[1], pol[0]]
-                );
+                )
 
                 return (
                   <Polygon
                     pathOptions={{
-                      color: "#069292",
-                      fillColor: null,
+                      color: '#069292',
+                      fillColor: null
                     }}
                     positions={reversedPolygon}
                     key={poly.id}
                   />
-                );
+                )
               })}
             </LayerGroup>
           </LayersControl.Overlay>
@@ -216,8 +214,8 @@ const App = () => {
           timeSerieUrl={timeSerieUrl}
         />
       </MapContainer>
-    </React.Fragment>
-  );
-};
+    </>
+  )
+}
 
-export default App;
+export default App
