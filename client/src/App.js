@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Icon } from "leaflet";
-import L from "leaflet";
+
 import { Alert, Spinner } from "react-bootstrap";
 import {
   MapContainer,
@@ -26,21 +26,25 @@ const icon = new Icon({
   popupAnchor: [0, -15],
 });
 
+// function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 const App = () => {
-  //Estado - enpoint para series de tiempo
+  // Estado - enpoint para series de tiempo
   const [timeSerieUrl, setTimeSerieUrl] = useState(null);
-  //Panel state - show or hide
+
+  // Panel state - show or hide
   const [isHidden, setIsHidden] = useState(false);
 
+  // request location data -> store in const 'point_feature'
   const [activePointFeature, setActivePointFeature] = useState(null);
   const { data: data2, error: error2 } = useSWR(
     "https://hydro-web.herokuapp.com/v1/locations",
     fetcher
   );
-  const point_feature = data2 && !error2 ? data2 : {};
+  const pointFeature = data2 && !error2 ? data2 : {};
 
+  // request boundaries data -> store in const 'boundariesData'
   const [activeBoundaries, setActiveBoundaries] = useState(null);
   const { data: data1, error: error1 } = useSWR(
     "https://hydro-web.herokuapp.com/v1dw/boundaries",
@@ -48,30 +52,30 @@ const App = () => {
   );
   const boundariesData = data1 && !error1 ? data1 : {};
 
+  // request region data -> store in const 'regionData'
   const [activeRegion, setActiveRegion] = useState(null);
   const { data: data3, error: error3 } = useSWR(
     "https://hydro-web.herokuapp.com/v1/region",
     fetcher
   );
-
   const regionData = data3 && !error3 ? data3 : {};
 
+  // request filters data -> store in 'ids'
   const { data: dataids, error: errorids } = useSWR(
     "https://hydro-web.herokuapp.com/v1/filters",
     fetcher
   );
-
   if (errorids) return <div>failed to load</div>;
   if (!dataids) return <div>loading...</div>;
-
   let ids = dataids && !errorids ? dataids : {};
-
   ids = ids.map((filter) => filter.id);
 
+  // basic check - boundaries must load
   if (error1) {
     return <Alert variant="danger">There is a problem</Alert>;
   }
 
+  // if failed to load boundaries does this
   if (!data1) {
     return (
       <Spinner
@@ -90,64 +94,66 @@ const App = () => {
 
   let reversedPolygon;
 
+  // gets the central coordinates of the map into const 'position'
   const x =
-    (regionData["map"].defaultExtent.right +
-      regionData["map"].defaultExtent.left) /
+    (regionData.map.defaultExtent.right + regionData.map.defaultExtent.left) /
     2;
   const y =
-    (regionData["map"].defaultExtent.top +
-      regionData["map"].defaultExtent.bottom) /
+    (regionData.map.defaultExtent.top + regionData.map.defaultExtent.bottom) /
     2;
-
   const position = [y, x];
 
+  // defines zoom level
+  // TODO: make it a function of the map extents
   const zoom = 9;
 
+  // build page if everithing worked fine
   return (
-    <React.Fragment>
+    <>
       <MapContainer center={position} zoom={zoom}>
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
+          {/* adds layer control for stations (shouldnt be 'locations'?) */}
           <LayersControl.Overlay checked name="Stations">
             <LayerGroup name="Locations">
-              {point_feature.locations.map((point_feature) => (
+              {pointFeature.locations.map((pointFeature) => (
                 <Marker
-                  key={point_feature.locationId}
-                  position={[point_feature.y, point_feature.x]}
+                  key={pointFeature.locationId}
+                  position={[pointFeature.y, pointFeature.x]}
                   onClick={() => {
-                    setActivePointFeature(point_feature);
+                    setActivePointFeature(pointFeature);
                   }}
                   icon={icon}
                 >
                   <Popup
-                    position={[point_feature.y, point_feature.x]}
+                    position={[pointFeature.y, pointFeature.x]}
                     onClose={() => {
-                      setActivePointFeature(point_feature);
+                      setActivePointFeature(pointFeature);
                     }}
                   >
                     <div>
                       <h5>
                         <span className="popuptitle">
-                          {point_feature.shortName}
+                          {pointFeature.shortName}
                         </span>
                       </h5>
                       <p>
                         <span className="popuptitle">Id:</span>{" "}
-                        {point_feature.locationId}
+                        {pointFeature.locationId}
                       </p>
                       <p>
                         <span className="popuptitle">Longitude:</span>{" "}
-                        {point_feature.x}
+                        {pointFeature.x}
                       </p>
                       <p>
                         <span className="popuptitle">Latitude:</span>{" "}
-                        {point_feature.y}
+                        {pointFeature.y}
                       </p>
                     </div>
                     <DropDownTimeSeries
                       ids={ids}
-                      locationid={point_feature.locationId}
+                      locationid={pointFeature.locationId}
                       timeSerieUrl={timeSerieUrl}
                       setTimeSerieUrl={setTimeSerieUrl}
                       setIsHidden={setIsHidden}
@@ -159,28 +165,33 @@ const App = () => {
             </LayerGroup>
           </LayersControl.Overlay>
 
+          {/* adds layer control for basins (shouldnt be 'boundaries'?) */}
           <LayersControl.Overlay checked name="Basins">
             <LayerGroup name="Basins">
-              {boundariesData.map((poly) => {
-                reversedPolygon = Array.from(poly.polygon.values()).map(
-                  (pol) => [pol[1], pol[0]]
-                );
+              {
+                /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+                boundariesData.map((poly) => {
+                  reversedPolygon = Array.from(poly.polygon.values()).map(
+                    (pol) => [pol[1], pol[0]]
+                  );
 
-                return (
-                  <Polygon
-                    pathOptions={{
-                      color: "#069292",
-                      fillColor: null,
-                    }}
-                    positions={reversedPolygon}
-                    key={poly.id}
-                  />
-                );
-              })}
+                  return (
+                    <Polygon
+                      pathOptions={{
+                        color: "#069292",
+                        fillColor: null,
+                      }}
+                      positions={reversedPolygon}
+                      key={poly.id}
+                    />
+                  );
+                })
+              }
             </LayerGroup>
           </LayersControl.Overlay>
         </LayersControl>
 
+        {/* add */}
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
@@ -195,7 +206,7 @@ const App = () => {
           position={"Left"}
         />
       </MapContainer>
-    </React.Fragment>
+    </>
   );
 };
 

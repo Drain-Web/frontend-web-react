@@ -6,6 +6,18 @@ The effective content of the project is in the folder ```client```. The folder `
 
 ## How to...
 
+### ...follow the project's coding standars:
+
+The project follows the [JavaScript Standard Style](https://standardjs.com/), which has a verification/fixing tool and a [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=standard.vscode-standard).
+
+Before *git commiting*, please validate the codes in ```src``` with a command such as:
+
+    $ npx standard client/src/*.js
+
+If there are many issues, they can be fixed with:
+
+    $ npx standard client/src/*.js --fix
+
 ### ...build and run locally for development:
 
 Please see instructions in ```client/README.md```.
