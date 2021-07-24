@@ -1,8 +1,8 @@
 import React from "react";
-import TimeSeriesPlot from "./timeSeriesPlot"; 
+import TimeSeriesPlot from "./TimeSeriesPlot";
 import "../style/Panel.css";
 
-const Panel = ({ isHidden, setIsHidden, timeSerieUrl }) => {
+const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
   const buttonHandler = () => {
     setIsHidden(!isHidden);
   };
@@ -13,10 +13,11 @@ const Panel = ({ isHidden, setIsHidden, timeSerieUrl }) => {
         {isHidden ? "Show" : "Hide"}
       </button>
 
-      <div className={`${isHidden ? "Panel hide" : "Panel"}`}>
+      <div className={`${isHidden ? "Panel hide" : "Panel"} ${position}`}>
         <p>{timeSerieUrl}</p>
 
         {timeSerieUrl && <TimeSeriesPlot />}
+
       </div>
     </div>
   );
