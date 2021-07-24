@@ -14,7 +14,7 @@ import {
 } from 'react-leaflet'
 import useSWR from 'swr'
 import './App.css'
-import Panel from './components/panel'
+import Panel from './components/Panel'
 import DropDownTimeSeries from './components/DropDownTimeSeries'
 // import timeSeriesPlot from "./components/timeSeriesPlot";
 import 'leaflet/dist/leaflet.css'
@@ -106,7 +106,8 @@ const App = () => {
     2
   const position = [y, x]
 
-  // defines zoom level - TODO: make it a function of the map extents
+  // defines zoom level
+  // TODO: make it a function of the map extents
   const zoom = 9
 
   // build page if everithing worked fine
@@ -114,20 +115,20 @@ const App = () => {
     <>
       <MapContainer center={position} zoom={zoom}>
         <LayersControl>
+
+          {/* adds base layers */}
           <BaseLayer checked name='OpenStreetMap'>
             <TileLayer
               attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             />
           </BaseLayer>
-
           <BaseLayer name='Terrain'>
             <TileLayer
               attribution='&copy; <a href="https://stamen.com/open-source/">Stamen</a> contributors'
               url='http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg'
             />
           </BaseLayer>
-
           <BaseLayer name='NASA Gibs Blue Marble'>
             <TileLayer
               url='https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default//EPSG3857_500m/{z}/{y}/{x}.jpeg'
@@ -136,6 +137,7 @@ const App = () => {
             />
           </BaseLayer>
 
+          {/* adds layer control for stations (shouldnt be 'locations'?) */}
           <LayersControl.Overlay checked name='Stations'>
             <LayerGroup name='Locations'>
               {pointFeature.locations.map((pointFeature) => (
@@ -186,28 +188,33 @@ const App = () => {
             </LayerGroup>
           </LayersControl.Overlay>
 
+          {/* adds layer control for basins (shouldnt be 'boundaries'?) */}
           <LayersControl.Overlay checked name='Basins'>
             <LayerGroup name='Basins'>
-              {boundariesData.map((poly) => {
-                reversedPolygon = Array.from(poly.polygon.values()).map(
-                  (pol) => [pol[1], pol[0]]
-                )
+              {
+                /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+                boundariesData.map((poly) => {
+                  reversedPolygon = Array.from(poly.polygon.values()).map(
+                    (pol) => [pol[1], pol[0]]
+                  )
 
-                return (
-                  <Polygon
-                    pathOptions={{
-                      color: '#069292',
-                      fillColor: null
-                    }}
-                    positions={reversedPolygon}
-                    key={poly.id}
-                  />
-                )
-              })}
+                  return (
+                    <Polygon
+                      pathOptions={{
+                        color: '#069292',
+                        fillColor: null
+                      }}
+                      positions={reversedPolygon}
+                      key={poly.id}
+                    />
+                  )
+                })
+              }
             </LayerGroup>
           </LayersControl.Overlay>
         </LayersControl>
 
+        {/* add */}
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
