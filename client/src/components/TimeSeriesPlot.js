@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import "../style/timeSeriePlot.css";
+import '../style/TimeSeriePlot.css'
 
 const data = [
   {

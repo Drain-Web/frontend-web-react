@@ -14,8 +14,10 @@ import {
 } from 'react-leaflet'
 import useSWR from 'swr'
 import './App.css'
+
 import Panel from './components/Panel'
 import DropDownTimeSeries from './components/DropDownTimeSeries'
+import MainMenuControl from './components/MainMenuControl'
 // import timeSeriesPlot from "./components/timeSeriesPlot";
 import 'leaflet/dist/leaflet.css'
 
@@ -40,36 +42,33 @@ const App = () => {
   // request location data -> store in const 'point_feature'
   const [activePointFeature, setActivePointFeature] = useState(null)
   const { data: data2, error: error2 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/locations',
-    fetcher
+    'https://hydro-web.herokuapp.com/v1/locations', fetcher
   )
   const pointFeature = data2 && !error2 ? data2 : {}
 
   // request boundaries data -> store in const 'boundariesData'
   const [activeBoundaries, setActiveBoundaries] = useState(null)
   const { data: data1, error: error1 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1dw/boundaries',
-    fetcher
+    'https://hydro-web.herokuapp.com/v1dw/boundaries', fetcher
   )
   const boundariesData = data1 && !error1 ? data1 : {}
 
   // request region data -> store in const 'regionData'
   const [activeRegion, setActiveRegion] = useState(null)
   const { data: data3, error: error3 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/region',
-    fetcher
+    'https://hydro-web.herokuapp.com/v1/region', fetcher
   )
   const regionData = data3 && !error3 ? data3 : {}
 
   // request filters data -> store in 'ids'
+  // only proceeds when the request is received or fails
   const { data: dataids, error: errorids } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/filters',
-    fetcher
+    'https://hydro-web.herokuapp.com/v1/filters', fetcher
   )
   if (errorids) return <div>failed to load</div>
   if (!dataids) return <div>loading...</div>
-  let ids = dataids && !errorids ? dataids : {}
-  ids = ids.map((filter) => filter.id)
+  const filtersData = dataids && !errorids ? dataids : {}
+  const ids = filtersData.map((filter) => filter.id)
 
   // basic check - boundaries must load
   if (error1) {
@@ -214,11 +213,18 @@ const App = () => {
           </LayersControl.Overlay>
         </LayersControl>
 
-        {/* add */}
+        {/* add (how to describe this?) */}
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
+        />
+
+        {/* add the main floating menu */}
+        <MainMenuControl
+          position='bottom_left'
+          regionName={regionData.systemInformation.name}
+          filtersData={filtersData}
         />
       </MapContainer>
     </>
