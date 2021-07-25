@@ -5,7 +5,6 @@ import { Icon } from 'leaflet'
 import { Alert, Spinner } from 'react-bootstrap'
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Popup,
   LayersControl,
@@ -20,8 +19,8 @@ import DropDownTimeSeries from './components/DropDownTimeSeries'
 import MainMenuControl from './components/MainMenuControl'
 // import timeSeriesPlot from "./components/timeSeriesPlot";
 import 'leaflet/dist/leaflet.css'
-
-const { BaseLayer } = LayersControl
+import { baseLayersData } from './assets/MapBaseLayers'
+import BaseLayers from './components/BaseLayers'
 
 const icon = new Icon({
   iconUrl: 'img/browndot.png',
@@ -96,12 +95,10 @@ const App = () => {
 
   // gets the central coordinates of the map into const 'position'
   const x =
-    (regionData.map.defaultExtent.right +
-      regionData.map.defaultExtent.left) /
+    (regionData.map.defaultExtent.right + regionData.map.defaultExtent.left) /
     2
   const y =
-    (regionData.map.defaultExtent.top +
-      regionData.map.defaultExtent.bottom) /
+    (regionData.map.defaultExtent.top + regionData.map.defaultExtent.bottom) /
     2
   const position = [y, x]
 
@@ -114,27 +111,7 @@ const App = () => {
     <>
       <MapContainer center={position} zoom={zoom}>
         <LayersControl>
-
-          {/* adds base layers */}
-          <BaseLayer checked name='OpenStreetMap'>
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            />
-          </BaseLayer>
-          <BaseLayer name='Terrain'>
-            <TileLayer
-              attribution='&copy; <a href="https://stamen.com/open-source/">Stamen</a> contributors'
-              url='http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg'
-            />
-          </BaseLayer>
-          <BaseLayer name='NASA Gibs Blue Marble'>
-            <TileLayer
-              url='https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default//EPSG3857_500m/{z}/{y}/{x}.jpeg'
-              attribution='&copy; NASA Blue Marble, image service by OpenGeo'
-              maxNativeZoom={12}
-            />
-          </BaseLayer>
+          <BaseLayers baseLayerData={baseLayersData} />
 
           {/* adds layer control for stations (shouldnt be 'locations'?) */}
           <LayersControl.Overlay checked name='Stations'>
@@ -218,6 +195,14 @@ const App = () => {
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
+          position='Right'
+        />
+
+        <Panel
+          isHidden={isHidden}
+          setIsHidden={setIsHidden}
+          timeSerieUrl={timeSerieUrl}
+          position='Left'
         />
 
         {/* add the main floating menu */}
