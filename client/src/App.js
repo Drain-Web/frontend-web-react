@@ -1,30 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Icon } from "leaflet";
 
 import { Alert, Spinner } from "react-bootstrap";
-import {
-  MapContainer,
-  Marker,
-  Popup,
-  LayersControl,
-  LayerGroup,
-  Polygon,
-} from "react-leaflet";
+import { MapContainer, LayersControl, LayerGroup } from "react-leaflet";
 import useSWR from "swr";
 import "./App.css";
 import Panel from "./components/Panel";
-import DropDownTimeSeries from "./components/DropDownTimeSeries";
+// import DropDownTimeSeries from "./components/DropDownTimeSeries";
 // import timeSeriesPlot from "./components/timeSeriesPlot";
 import "leaflet/dist/leaflet.css";
 import { baseLayersData } from "./assets/MapBaseLayers";
 import BaseLayers from "./components/BaseLayers";
-
-const icon = new Icon({
-  iconUrl: "img/browndot.png",
-  iconSize: [25, 25],
-  popupAnchor: [0, -15],
-});
+import PolygonLayer from "./components/PolygonLayer";
+import PointsLayer from "./components/PointsLayer";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
@@ -37,12 +25,12 @@ const App = () => {
   const [isHidden, setIsHidden] = useState(false);
 
   // request location data -> store in const 'point_feature'
-  const [activePointFeature, setActivePointFeature] = useState(null);
+
   const { data: data2, error: error2 } = useSWR(
     "https://hydro-web.herokuapp.com/v1/locations",
     fetcher
   );
-  const pointFeature = data2 && !error2 ? data2 : {};
+  const locationsData = data2 && !error2 ? data2 : {};
 
   // request boundaries data -> store in const 'boundariesData'
   const [activeBoundaries, setActiveBoundaries] = useState(null);
@@ -65,14 +53,20 @@ const App = () => {
     "https://hydro-web.herokuapp.com/v1/filters",
     fetcher
   );
+
   if (errorids) return <div>failed to load</div>;
   if (!dataids) return <div>loading...</div>;
   let ids = dataids && !errorids ? dataids : {};
   ids = ids.map((filter) => filter.id);
 
-  // basic check - boundaries must load
+  // basic check - boundaries must load, if no data is returned by the API an error message is displayed
   if (error1) {
-    return <Alert variant="danger">There is a problem</Alert>;
+    return (
+      <Alert variant="danger">
+        There is a problem, data cannot be fecthed from the API or it is taking
+        much longer than usual.
+      </Alert>
+    );
   }
 
   // if failed to load boundaries does this
@@ -91,8 +85,6 @@ const App = () => {
       />
     );
   }
-
-  let reversedPolygon;
 
   // gets the central coordinates of the map into const 'position'
   const x =
@@ -114,81 +106,23 @@ const App = () => {
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
-          {/* adds layer control for stations (shouldnt be 'locations'?) */}
-          <LayersControl.Overlay checked name="Stations">
-            <LayerGroup name="Locations">
-              {pointFeature.locations.map((pointFeature) => (
-                <Marker
-                  key={pointFeature.locationId}
-                  position={[pointFeature.y, pointFeature.x]}
-                  onClick={() => {
-                    setActivePointFeature(pointFeature);
-                  }}
-                  icon={icon}
-                >
-                  <Popup
-                    position={[pointFeature.y, pointFeature.x]}
-                    onClose={() => {
-                      setActivePointFeature(pointFeature);
-                    }}
-                  >
-                    <div>
-                      <h5>
-                        <span className="popuptitle">
-                          {pointFeature.shortName}
-                        </span>
-                      </h5>
-                      <p>
-                        <span className="popuptitle">Id:</span>{" "}
-                        {pointFeature.locationId}
-                      </p>
-                      <p>
-                        <span className="popuptitle">Longitude:</span>{" "}
-                        {pointFeature.x}
-                      </p>
-                      <p>
-                        <span className="popuptitle">Latitude:</span>{" "}
-                        {pointFeature.y}
-                      </p>
-                    </div>
-                    <DropDownTimeSeries
-                      ids={ids}
-                      locationid={pointFeature.locationId}
-                      timeSerieUrl={timeSerieUrl}
-                      setTimeSerieUrl={setTimeSerieUrl}
-                      setIsHidden={setIsHidden}
-                    />
-                    {/* <timeSeriesPlot data={data} /> */}
-                  </Popup>
-                </Marker>
-              ))}
-            </LayerGroup>
-          </LayersControl.Overlay>
+          {/* adds layer of points as a react component */}
+          <PointsLayer
+            layerData={locationsData}
+            layerName="Locations"
+            iconUrl="./img/browndot.png"
+            ids={ids}
+            timeSerieUrl={timeSerieUrl}
+            setTimeSerieUrl={setTimeSerieUrl}
+            setIsHidden={setIsHidden}
+          />
 
-          {/* adds layer control for basins (shouldnt be 'boundaries'?) */}
-          <LayersControl.Overlay checked name="Basins">
-            <LayerGroup name="Basins">
-              {
-                /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-                boundariesData.map((poly) => {
-                  reversedPolygon = Array.from(poly.polygon.values()).map(
-                    (pol) => [pol[1], pol[0]]
-                  );
-
-                  return (
-                    <Polygon
-                      pathOptions={{
-                        color: "#069292",
-                        fillColor: null,
-                      }}
-                      positions={reversedPolygon}
-                      key={poly.id}
-                    />
-                  );
-                })
-              }
-            </LayerGroup>
-          </LayersControl.Overlay>
+          {/* adds a polygon layer to the control and the map as a component  */}
+          <PolygonLayer
+            layerData={boundariesData}
+            layerName="Boundaries"
+            reversePolygon={true}
+          />
         </LayersControl>
 
         {/* add */}

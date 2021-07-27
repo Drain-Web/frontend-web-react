@@ -7,11 +7,11 @@ body {
   box-sizing: border-box;
   background-color: #ddd;
   position: absolute;
-  top: 20%;
+  top: 10%;
   z-index: 1000;
   min-height: 40vh;
   max-height: 70vh;
-  width: 25%;
+  width: 21%;
   border-radius: 24px;
   opacity: 0.9;
   overflow-y: auto;
@@ -60,11 +60,10 @@ body {
   border-radius: 10px;
 }
 
-
 .Left {
-  left: 2%;
+  left: 5%;
 }
 
 .Right {
-  right: 2%;
+  right: 5%;
 }

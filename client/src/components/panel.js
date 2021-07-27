@@ -5,7 +5,7 @@ import '../style/Panel.css'
 /* Panel open with the list of timeseries of a Location to be plot
  */
 
-const Panel = ({ isHidden, setIsHidden, timeSerieUrl }) => {
+const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
   const buttonHandler = () => {
     setIsHidden(!isHidden)
   }
