@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import axios from 'axios'
 import { Icon } from 'leaflet'
+import axios from 'axios'
+import useSWR from 'swr'
 
+// import react-compatible components
 import { Alert, Spinner } from 'react-bootstrap'
 import {
   MapContainer,
@@ -11,16 +13,20 @@ import {
   LayerGroup,
   Polygon
 } from 'react-leaflet'
-import useSWR from 'swr'
-import './App.css'
 
+// import assets
+import { baseLayersData } from './assets/MapBaseLayers'
+
+// import custom components
 import Panel from './components/Panel'
 import DropDownTimeSeries from './components/DropDownTimeSeries'
 import MainMenuControl from './components/MainMenuControl'
-// import timeSeriesPlot from "./components/timeSeriesPlot";
-import 'leaflet/dist/leaflet.css'
-import { baseLayersData } from './assets/MapBaseLayers'
 import BaseLayers from './components/BaseLayers'
+
+// import CSS styles
+import 'style/bootstrap.min.css'
+import 'leaflet/dist/leaflet.css'
+import './App.css'
 
 const icon = new Icon({
   iconUrl: 'img/browndot.png',
@@ -210,6 +216,7 @@ const App = () => {
           position='bottom_left'
           regionName={regionData.systemInformation.name}
           filtersData={filtersData}
+          className='mainContainer'
         />
       </MapContainer>
     </>

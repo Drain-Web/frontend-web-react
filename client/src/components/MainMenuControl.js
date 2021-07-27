@@ -1,5 +1,9 @@
 import React from 'react'
-import { Dropdown, DropdownButton } from 'react-bootstrap'
+import { Dropdown, DropdownButton, ButtonToolbar } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
+import Container from 'react-bootstrap/Container'
+import Row from 'react-bootstrap/Row'
+import Col from "react-bootstrap/Col"
 import '../style/MainMenuControl.css'
 
 /* Map menu that allows selection of filters and more.
@@ -45,23 +49,35 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-const getDropDown = (id, title, idTitleList) => {
-  // Function that builds a Dropdown item
+const functionOnChangeSubregionSubFilter = (event) => {
+  // Triggered when the subregion selectbox is changed
+  console.log('Changed SubRegion to \'' + event.target.value + '\'.')
+}
+
+const functionOnChangeEventSubFilter = (event) => {
+  // Triggered when the event selectbox is changed
+  console.log('Changed Event to \'' + event.target.value + '\'.')
+}
+
+const getSubFilterSelectBox = (id, label, idTitleList, onChangeFunction) => {
+  //
+  // idTitleList: Array of [option_id, option_title] pairs
+  // onChangeFunction: function to be triggered when select box is changed
 
   return (
-    <Dropdown>
-      <DropdownButton id={id} title={title}>
+    <Form>
+      <Form.Control as='select' onChange={onChangeFunction} className='rounded-0 shadow'>
         {
           idTitleList.map(
             ([geoId, geoTitle]) => (
-              <Dropdown.Item eventKey={geoId} key={geoId}>
+              <option value={geoId} key={geoId}>
                 {geoTitle}
-              </Dropdown.Item>
+              </option>
             )
           )
         }
-      </DropdownButton>
-    </Dropdown>
+      </Form.Control>
+    </Form>
   )
 }
 
@@ -73,16 +89,30 @@ const MainMenuControl = ({ position, regionName, filtersData }) => {
 
   // build content of the menu
   const menuContent = (
-    <div className='mainContainer'>
-      <div>Region: {regionName}</div>
-      <hr />
-      <div>
-        <span>Geo:</span>{getDropDown('dropdown-geofilter', 'Sel. Geo.', retGeo)}
-      </div>
-      <div>
-        <span>Event:</span>{getDropDown('dropdown-evtfilter', 'Sel. Evt.', retEvt)}
-      </div>
-    </div>
+    <Container className='mainContainer'>
+      <Row>
+        <Col>
+          <h1>{regionName}</h1>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <hr />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          {getSubFilterSelectBox('dropdown-geofilter', 'Sub Region',
+            retGeo, functionOnChangeSubregionSubFilter)}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          {getSubFilterSelectBox('selectbox-evtfilter', 'Event',
+            retEvt, functionOnChangeEventSubFilter)}
+        </Col>
+      </Row>
+    </Container>
   )
 
   // containing div th
