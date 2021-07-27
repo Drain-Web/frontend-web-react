@@ -62,10 +62,11 @@ Once you are confortable with your published changes, don't forget to commit the
 
 The most important components for dev/deploy are listed below.
 
-| Component       |  Version  | Description                                      |
-|----------------:|:---------:|:------------------------------------------|
-| NodeJS          |  14.17.3  | Server-side JavaScrip runtime environment |
-| Yarn            |   1.22.5  | NodeJS package manager                    |
-| React           |   17.0.2  | JavaScript library for User Interfaces    |
-| Docker          |  20.10.2  | Deployment manager                        |
+| Component       |  Version  | Description                                 |
+|----------------:|:---------:|:--------------------------------------------|
+| NodeJS          |  14.17.3  | Server-side JavaScrip runtime environment   |
+| Yarn            |   1.22.5  | NodeJS package manager                      |
+| React           |   17.0.2  | JavaScript library for User Interfaces      |
+| Docker          |  20.10.2  | Deployment manager                          |
 | Webpack         |   5.45.1  | Module blunder and local development server |
+| Bootstrap       |    5.0.2  | CSS framework for responsive interfaces     |
