@@ -11,7 +11,8 @@ import {
   Popup,
   LayersControl,
   LayerGroup,
-  Polygon
+  Polygon,
+  ZoomControl
 } from 'react-leaflet'
 
 // import assets
@@ -19,8 +20,9 @@ import { baseLayersData } from './assets/MapBaseLayers'
 
 // import custom components
 import Panel from './components/Panel'
+import FilterContext from './components/FilterContext'
 import DropDownTimeSeries from './components/DropDownTimeSeries'
-import MainMenuControl from './components/MainMenuControl'
+import { MainMenuControl } from './components/MainMenuControl'
 import BaseLayers from './components/BaseLayers'
 
 // import CSS styles
@@ -36,6 +38,32 @@ const icon = new Icon({
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
+
+// context - information of the active filter
+/*
+const rootContextData = {
+  number: 12345,
+  filterId: 'null'
+}
+*/
+
+const buildFilterContextData = (filterId) => {
+  if (!filterId) return {}
+
+  const curFilterIdSplit = filterId.split('.')
+
+  // TODO - make it more general
+  if (curFilterIdSplit.length !== 2) {
+    console.log('Unable to parse filter ID: ', filterId)
+    return null
+  }
+
+  return ({
+    evtFilterId: curFilterIdSplit[0],
+    geoFilterId: curFilterIdSplit[1],
+    filterId: filterId
+  })
+}
 
 const App = () => {
   // Estado - enpoint para series de tiempo
@@ -71,9 +99,12 @@ const App = () => {
     'https://hydro-web.herokuapp.com/v1/filters', fetcher
   )
   if (errorids) return <div>failed to load</div>
-  if (!dataids) return <div>loading...</div>
+  if ((!dataids) || (!data2) || (!data1) || (!data3)) return <div>loading...</div>
   const filtersData = dataids && !errorids ? dataids : {}
   const ids = filtersData.map((filter) => filter.id)
+
+  // currently active filter
+  const rootContextData = buildFilterContextData(regionData.defaultFilter)
 
   // basic check - boundaries must load
   if (error1) {
@@ -115,7 +146,7 @@ const App = () => {
   // build page if everithing worked fine
   return (
     <>
-      <MapContainer center={position} zoom={zoom}>
+      <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -197,27 +228,39 @@ const App = () => {
         </LayersControl>
 
         {/* add (how to describe this?) */}
+        {/*
+          // TODO - I removed - desremove
+        */}
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
-          position='Right'
+          position='leaflet-right'
         />
 
+        {/*
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
           position='Left'
         />
+        */}
 
         {/* add the main floating menu */}
-        <MainMenuControl
-          position='bottom_left'
-          regionName={regionData.systemInformation.name}
-          filtersData={filtersData}
-          className='mainContainer'
-        />
+        <FilterContext.Provider value={rootContextData}>
+          <MainMenuControl
+            position='topleft'
+            regionName={regionData.systemInformation.name}
+            filtersData={filtersData}
+          />
+        </FilterContext.Provider>
+
+        {/* add zoom control in the end to avoid overlap */}
+        {/*
+          // TODO - I removed - desremove
+        */}
+        <ZoomControl position='bottomright' />
       </MapContainer>
     </>
   )

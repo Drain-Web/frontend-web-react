@@ -20,3 +20,9 @@
 body{
   font-family: 'Open Sans', sans-serif;
 }
+
+h1{
+  font-size: 1.3rem;
+  margin-top: 0;
+  margin-bottom: 0;
+}

@@ -1,0 +1,15 @@
+.mainContainer {
+  background-color: #F6F6F6;
+  height: 100%;
+  margin: 0;
+}
+
+.mainContainer h1 {
+  font-size: 1.3rem;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.mainContainer hr {
+  margin: 0.5rem 0
+}
