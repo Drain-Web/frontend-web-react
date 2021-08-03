@@ -1,23 +1,22 @@
-import React from "react";
-import TimeSeriesPlot from "./TimeSeriesPlot";
-import "../style/Panel.css";
-import { Suspense } from "react";
+import React, { Suspense } from 'react'
+import TimeSeriesPlot from './TimeSeriesPlot'
+import '../style/Panel.css'
 
 /* Panel open with the list of timeseries of a Location to be plot
  */
 
 const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
   const buttonHandler = () => {
-    setIsHidden(!isHidden);
-  };
+    setIsHidden(!isHidden)
+  }
 
   return (
     <div>
-      <button className="boton-prueba" onClick={() => buttonHandler()}>
-        {isHidden ? "Show" : "Hide"}
+      <button className='boton-prueba' onClick={() => buttonHandler()}>
+        {isHidden ? 'Show' : 'Hide'}
       </button>
 
-      <div className={`${isHidden ? "Panel hide" : "Panel"} ${position}`}>
+      <div className={`${isHidden ? 'Panel hide' : 'Panel'} ${position}`}>
         {timeSerieUrl && (
           <Suspense fallback={<div>loading...</div>}>
             <p>{timeSerieUrl}</p>
@@ -26,7 +25,7 @@ const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Panel;
+export default Panel

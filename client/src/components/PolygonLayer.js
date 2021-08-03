@@ -1,16 +1,16 @@
-import React from "react";
-import { LayersControl, LayerGroup, Polygon } from "react-leaflet";
+import React from 'react'
+import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
 
-let polygon;
+let polygon
 
 const PolygonLayer = ({
   layerData,
   layerName,
   reversePolygon = false,
-  color = "#069292",
+  color = '#069292'
 }) => {
   return (
-    <React.Fragment>
+    <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {
@@ -20,39 +20,39 @@ const PolygonLayer = ({
               if (reversePolygon) {
                 polygon = Array.from(poly.polygon.values()).map((pol) => [
                   pol[1],
-                  pol[0],
-                ]);
+                  pol[0]
+                ])
 
                 return (
                   <Polygon
                     pathOptions={{
                       color: color,
-                      fillColor: null,
+                      fillColor: null
                     }}
                     positions={polygon}
                     key={poly.id}
                   />
-                );
+                )
               } else {
-                polygon = Array.from(poly.polygon.values());
+                polygon = Array.from(poly.polygon.values())
 
                 return (
                   <Polygon
                     pathOptions={{
                       color: color,
-                      fillColor: null,
+                      fillColor: null
                     }}
                     positions={polygon}
                     key={poly.id}
                   />
-                );
+                )
               }
             })
           }
         </LayerGroup>
       </LayersControl.Overlay>
-    </React.Fragment>
-  );
-};
+    </>
+  )
+}
 
-export default PolygonLayer;
+export default PolygonLayer

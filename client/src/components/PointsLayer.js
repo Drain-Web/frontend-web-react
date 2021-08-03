@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Icon } from "leaflet";
-import DropDownTimeSeries from "./DropDownTimeSeries";
-import { Marker, Popup, LayersControl, LayerGroup } from "react-leaflet";
+import React, { useState } from 'react'
+import { Icon } from 'leaflet'
+import DropDownTimeSeries from './DropDownTimeSeries'
+import { Marker, Popup, LayersControl, LayerGroup } from 'react-leaflet'
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
@@ -13,18 +13,18 @@ const PointsLayer = ({
   ids,
   timeSerieUrl,
   setTimeSerieUrl,
-  setIsHidden,
+  setIsHidden
 }) => {
   const icon = new Icon({
     iconUrl: iconUrl,
     iconSize: [iconSize, iconSize],
-    popupAnchor: [0, -15],
-  });
+    popupAnchor: [0, -15]
+  })
 
-  const [activePointFeature, setActivePointFeature] = useState(null);
+  const [activePointFeature, setActivePointFeature] = useState(null)
 
   return (
-    <React.Fragment>
+    <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {layerData.locations.map((layerData) => (
@@ -32,29 +32,29 @@ const PointsLayer = ({
               key={layerData.locationId}
               position={[layerData.y, layerData.x]}
               onClick={() => {
-                setActivePointFeature(layerData);
+                setActivePointFeature(layerData)
               }}
               icon={icon}
             >
               <Popup
                 position={[layerData.y, layerData.x]}
                 onClose={() => {
-                  setActivePointFeature(layerData);
+                  setActivePointFeature(layerData)
                 }}
               >
                 <div>
                   <h5>
-                    <span className="popuptitle">{layerData.shortName}</span>
+                    <span className='popuptitle'>{layerData.shortName}</span>
                   </h5>
                   <p>
-                    <span className="popuptitle">Id:</span>{" "}
+                    <span className='popuptitle'>Id:</span>{' '}
                     {layerData.locationId}
                   </p>
                   <p>
-                    <span className="popuptitle">Longitude:</span> {layerData.x}
+                    <span className='popuptitle'>Longitude:</span> {layerData.x}
                   </p>
                   <p>
-                    <span className="popuptitle">Latitude:</span> {layerData.y}
+                    <span className='popuptitle'>Latitude:</span> {layerData.y}
                   </p>
                 </div>
                 <DropDownTimeSeries
@@ -70,8 +70,8 @@ const PointsLayer = ({
           ))}
         </LayerGroup>
       </LayersControl.Overlay>
-    </React.Fragment>
-  );
-};
+    </>
+  )
+}
 
-export default PointsLayer;
+export default PointsLayer
