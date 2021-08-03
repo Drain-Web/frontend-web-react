@@ -74,7 +74,7 @@ const DropDownTimeSeries = ({
                 Key={id}
                 onClick={() => dateSelectHandler(endpoint)}
               >
-                {id.slice(1, 8)}
+                {id.slice(1, 80)}
               </Dropdown.Item>
             );
           })}

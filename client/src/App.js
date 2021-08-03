@@ -13,6 +13,8 @@ import { baseLayersData } from "./assets/MapBaseLayers";
 import BaseLayers from "./components/BaseLayers";
 import PolygonLayer from "./components/PolygonLayer";
 import PointsLayer from "./components/PointsLayer";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
@@ -126,18 +128,18 @@ const App = () => {
         </LayersControl>
 
         {/* add */}
-        <Panel
+        {/* <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
           position={"Right"}
-        />
+        /> */}
 
         <Panel
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
-          position={"Left"}
+          position={"Right"}
         />
       </MapContainer>
     </>
