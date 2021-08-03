@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Icon } from 'leaflet'
 import axios from 'axios'
 import useSWR from 'swr'
@@ -6,13 +6,8 @@ import useSWR from 'swr'
 // import react-compatible components
 import { Alert, Spinner } from 'react-bootstrap'
 import {
-  MapContainer,
-  Marker,
-  Popup,
-  LayersControl,
-  LayerGroup,
-  Polygon,
-  ZoomControl
+  MapContainer, Marker, Popup, LayersControl,
+  LayerGroup, Polygon, ZoomControl, useMap
 } from 'react-leaflet'
 
 // import assets
@@ -20,6 +15,7 @@ import { baseLayersData } from './assets/MapBaseLayers'
 
 // import custom components
 import Panel from './components/Panel'
+import MapContext from './components/MapContext'
 import FilterContext from './components/FilterContext'
 import DropDownTimeSeries from './components/DropDownTimeSeries'
 import { MainMenuControl } from './components/MainMenuControl'
@@ -39,15 +35,11 @@ const icon = new Icon({
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-// context - information of the active filter
-/*
-const rootContextData = {
-  number: 12345,
-  filterId: 'null'
-}
-*/
+// function used to fill the filterContext dictionary
+const fillFilterContextData = (filterId, filterContextData) => {
+  // filterId: full string of the filter Id
+  // filterContextData: dictionary to be filled
 
-const buildFilterContextData = (filterId) => {
   if (!filterId) return {}
 
   const curFilterIdSplit = filterId.split('.')
@@ -58,14 +50,163 @@ const buildFilterContextData = (filterId) => {
     return null
   }
 
-  return ({
-    evtFilterId: curFilterIdSplit[0],
-    geoFilterId: curFilterIdSplit[1],
-    filterId: filterId
-  })
+  // set attributes
+  filterContextData.evtFilterId = curFilterIdSplit[0]
+  filterContextData.geoFilterId = curFilterIdSplit[1]
+  filterContextData.filterId = filterId
+
+  return null
+}
+
+//
+const getMapCenter = (mapExtent) => {
+  return {
+    x: (mapExtent.right + mapExtent.left) / 2,
+    y: (mapExtent.top + mapExtent.bottom) / 2
+  }
+}
+
+const MapControler = () => {
+  // this specific component is needed to allow useMap()
+
+  const {
+    pointFeatures, setActivePointFeature,
+    isHidden, setIsHidden,
+    timeSerieUrl, setTimeSerieUrl,
+    filterContextData, setFilterContextData,
+    boundariesData, regionData,
+    filtersData, ids
+  } = useContext(MapContext)
+  const map = useMap()
+
+  let reversedPolygon
+
+  // when filterContextData is changed, load new filter data and refresh map
+  useEffect(() => {
+    if (!('filterId' in filterContextData)) return null
+
+    const urlRequest = 'https://hydro-web.herokuapp.com/v1/filter/'.concat(
+      filterContextData.filterId)
+
+    // move map view to fit the map extent
+    fetcher(urlRequest).then((jsonData) => {
+      const newMapExtent = jsonData.map.defaultExtent
+      map.flyToBounds([
+        [newMapExtent.bottom, newMapExtent.left],
+        [newMapExtent.top, newMapExtent.right]
+      ])
+    })
+  }, [filterContextData])
+
+  return (
+    <>
+      <LayersControl>
+
+        <BaseLayers baseLayerData={baseLayersData} />
+
+        {/* adds layer control for stations (shouldnt be 'locations'?) */}
+        <LayersControl.Overlay checked name='Stations'>
+          <LayerGroup name='Locations'>
+            {pointFeatures.locations.map((pointFeatures) => (
+              <Marker
+                key={pointFeatures.locationId}
+                position={[pointFeatures.y, pointFeatures.x]}
+                onClick={() => {
+                  setActivePointFeature(pointFeatures)
+                }}
+                icon={icon}
+              >
+                <Popup
+                  position={[pointFeatures.y, pointFeatures.x]}
+                  onClose={() => {
+                    setActivePointFeature(pointFeatures)
+                  }}
+                >
+                  <div>
+                    <h5>
+                      <span className='popuptitle'>
+                        {pointFeatures.shortName}
+                      </span>
+                    </h5>
+                    <p>
+                      <span className='popuptitle'>Id:</span>{' '}
+                      {pointFeatures.locationId}
+                    </p>
+                    <p>
+                      <span className='popuptitle'>Longitude:</span>{' '}
+                      {pointFeatures.x}
+                    </p>
+                    <p>
+                      <span className='popuptitle'>Latitude:</span>{' '}
+                      {pointFeatures.y}
+                    </p>
+                  </div>
+                  <DropDownTimeSeries
+                    ids={ids}
+                    locationid={pointFeatures.locationId}
+                    timeSerieUrl={timeSerieUrl}
+                    setTimeSerieUrl={setTimeSerieUrl}
+                    setIsHidden={setIsHidden}
+                  />
+                  {/* <timeSeriesPlot data={data} /> */}
+                </Popup>
+              </Marker>
+            ))}
+          </LayerGroup>
+        </LayersControl.Overlay>
+
+        {/* adds layer control for basins (shouldnt be 'boundaries'?) */}
+        <LayersControl.Overlay checked name='Basins'>
+          <LayerGroup name='Basins'>
+            {
+              /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+              boundariesData.map((poly) => {
+                reversedPolygon = Array.from(poly.polygon.values()).map(
+                  (pol) => [pol[1], pol[0]]
+                )
+
+                return (
+                  <Polygon
+                    pathOptions={{
+                      color: '#069292',
+                      fillColor: null
+                    }}
+                    positions={reversedPolygon}
+                    key={poly.id}
+                  />
+                )
+              })
+            }
+          </LayerGroup>
+        </LayersControl.Overlay>
+      </LayersControl>
+
+      {/* add (how to describe this?) */}
+      <Panel
+        isHidden={isHidden}
+        setIsHidden={setIsHidden}
+        timeSerieUrl={timeSerieUrl}
+        position='leaflet-right'
+      />
+
+      {/* add the main floating menu */}
+      <FilterContext.Provider value={{ filterContextData, setFilterContextData }}>
+        <MainMenuControl
+          position='topleft'
+          regionName={regionData.systemInformation.name}
+          filtersData={filtersData}
+        />
+      </FilterContext.Provider>
+
+      <ZoomControl position='bottomright' />
+
+    </>
+  )
 }
 
 const App = () => {
+  /* ** SET HOOKS ****************************************************************************** */
+
   // Estado - enpoint para series de tiempo
   const [timeSerieUrl, setTimeSerieUrl] = useState(null)
 
@@ -73,38 +214,59 @@ const App = () => {
   const [isHidden, setIsHidden] = useState(false)
 
   // request location data -> store in const 'point_feature'
-  const [activePointFeature, setActivePointFeature] = useState(null)
+  const setActivePointFeature = useState(null)[1]
+  const pointFeatures = useState({})[0]
   const { data: data2, error: error2 } = useSWR(
     'https://hydro-web.herokuapp.com/v1/locations', fetcher
   )
-  const pointFeature = data2 && !error2 ? data2 : {}
+  if (data2 && !error2 && !Object.keys(pointFeatures).length) {
+    for (const i in data2) { pointFeatures[i] = data2[i] }
+  }
 
   // request boundaries data -> store in const 'boundariesData'
-  const [activeBoundaries, setActiveBoundaries] = useState(null)
+  const boundariesData = useState([])[0]
   const { data: data1, error: error1 } = useSWR(
     'https://hydro-web.herokuapp.com/v1dw/boundaries', fetcher
   )
-  const boundariesData = data1 && !error1 ? data1 : {}
+  if ((data1 && !error1 && !boundariesData.length)) {
+    for (const i in data1) { boundariesData.push(data1[i]) }
+  }
 
   // request region data -> store in const 'regionData'
-  const [activeRegion, setActiveRegion] = useState(null)
+  const regionData = useState({})[0]
   const { data: data3, error: error3 } = useSWR(
     'https://hydro-web.herokuapp.com/v1/region', fetcher
   )
-  const regionData = data3 && !error3 ? data3 : {}
+  if (data3 && !error3 && !Object.keys(regionData).length) {
+    for (const i in data3) { regionData[i] = data3[i] }
+  }
 
   // request filters data -> store in 'ids'
   // only proceeds when the request is received or fails
+  const filtersData = useState([])[0]
   const { data: dataids, error: errorids } = useSWR(
     'https://hydro-web.herokuapp.com/v1/filters', fetcher
   )
+  if (dataids && !errorids && !filtersData.length) {
+    for (const i in dataids) { filtersData.push(dataids[i]) }
+  }
+
+  // define filterContext
+  const [filterContextData, setFilterContextData] = useState({})
+
+  // basic check for opening the system
   if (errorids) return <div>failed to load</div>
-  if ((!dataids) || (!data2) || (!data1) || (!data3)) return <div>loading...</div>
-  const filtersData = dataids && !errorids ? dataids : {}
+  if ((!dataids) || (!data1) || (!data2) || (!data3)) return <div>Loading...</div>
+
+  /* ** MAIN RENDER  *************************************************************************** */
+
   const ids = filtersData.map((filter) => filter.id)
 
   // currently active filter
-  const rootContextData = buildFilterContextData(regionData.defaultFilter)
+  if (!('filterId' in filterContextData)) {
+    fillFilterContextData(regionData.defaultFilter, filterContextData)
+    console.log('First filterContextData:', filterContextData)
+  }
 
   // basic check - boundaries must load
   if (error1) {
@@ -128,16 +290,9 @@ const App = () => {
     )
   }
 
-  let reversedPolygon
-
   // gets the central coordinates of the map into const 'position'
-  const x =
-    (regionData.map.defaultExtent.right + regionData.map.defaultExtent.left) /
-    2
-  const y =
-    (regionData.map.defaultExtent.top + regionData.map.defaultExtent.bottom) /
-    2
-  const position = [y, x]
+  const posXY = getMapCenter(regionData.map.defaultExtent)
+  const position = [posXY.y, posXY.x]
 
   // defines zoom level
   // TODO: make it a function of the map extents
@@ -145,124 +300,25 @@ const App = () => {
 
   // build page if everithing worked fine
   return (
-    <>
+    <MapContext.Provider value={{
+      pointFeatures,
+      setActivePointFeature,
+      isHidden,
+      setIsHidden,
+      timeSerieUrl,
+      setTimeSerieUrl,
+      filterContextData,
+      setFilterContextData,
+      boundariesData,
+      regionData,
+      filtersData,
+      ids
+    }}
+    >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
-        <LayersControl>
-          <BaseLayers baseLayerData={baseLayersData} />
-
-          {/* adds layer control for stations (shouldnt be 'locations'?) */}
-          <LayersControl.Overlay checked name='Stations'>
-            <LayerGroup name='Locations'>
-              {pointFeature.locations.map((pointFeature) => (
-                <Marker
-                  key={pointFeature.locationId}
-                  position={[pointFeature.y, pointFeature.x]}
-                  onClick={() => {
-                    setActivePointFeature(pointFeature)
-                  }}
-                  icon={icon}
-                >
-                  <Popup
-                    position={[pointFeature.y, pointFeature.x]}
-                    onClose={() => {
-                      setActivePointFeature(pointFeature)
-                    }}
-                  >
-                    <div>
-                      <h5>
-                        <span className='popuptitle'>
-                          {pointFeature.shortName}
-                        </span>
-                      </h5>
-                      <p>
-                        <span className='popuptitle'>Id:</span>{' '}
-                        {pointFeature.locationId}
-                      </p>
-                      <p>
-                        <span className='popuptitle'>Longitude:</span>{' '}
-                        {pointFeature.x}
-                      </p>
-                      <p>
-                        <span className='popuptitle'>Latitude:</span>{' '}
-                        {pointFeature.y}
-                      </p>
-                    </div>
-                    <DropDownTimeSeries
-                      ids={ids}
-                      locationid={pointFeature.locationId}
-                      timeSerieUrl={timeSerieUrl}
-                      setTimeSerieUrl={setTimeSerieUrl}
-                      setIsHidden={setIsHidden}
-                    />
-                    {/* <timeSeriesPlot data={data} /> */}
-                  </Popup>
-                </Marker>
-              ))}
-            </LayerGroup>
-          </LayersControl.Overlay>
-
-          {/* adds layer control for basins (shouldnt be 'boundaries'?) */}
-          <LayersControl.Overlay checked name='Basins'>
-            <LayerGroup name='Basins'>
-              {
-                /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-                boundariesData.map((poly) => {
-                  reversedPolygon = Array.from(poly.polygon.values()).map(
-                    (pol) => [pol[1], pol[0]]
-                  )
-
-                  return (
-                    <Polygon
-                      pathOptions={{
-                        color: '#069292',
-                        fillColor: null
-                      }}
-                      positions={reversedPolygon}
-                      key={poly.id}
-                    />
-                  )
-                })
-              }
-            </LayerGroup>
-          </LayersControl.Overlay>
-        </LayersControl>
-
-        {/* add (how to describe this?) */}
-        {/*
-          // TODO - I removed - desremove
-        */}
-        <Panel
-          isHidden={isHidden}
-          setIsHidden={setIsHidden}
-          timeSerieUrl={timeSerieUrl}
-          position='leaflet-right'
-        />
-
-        {/*
-        <Panel
-          isHidden={isHidden}
-          setIsHidden={setIsHidden}
-          timeSerieUrl={timeSerieUrl}
-          position='Left'
-        />
-        */}
-
-        {/* add the main floating menu */}
-        <FilterContext.Provider value={rootContextData}>
-          <MainMenuControl
-            position='topleft'
-            regionName={regionData.systemInformation.name}
-            filtersData={filtersData}
-          />
-        </FilterContext.Provider>
-
-        {/* add zoom control in the end to avoid overlap */}
-        {/*
-          // TODO - I removed - desremove
-        */}
-        <ZoomControl position='bottomright' />
+        <MapControler />
       </MapContainer>
-    </>
+    </MapContext.Provider>
   )
 }
 

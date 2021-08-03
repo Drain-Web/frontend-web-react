@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useContext } from 'react'
 import {
   Form, Container, Row, Col
 } from 'react-bootstrap'
@@ -41,21 +41,25 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-const getSubFilterSelectBox = (id, label, idTitleList, onChangeFunction) => {
+const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId }) => {
   //
   // idTitleList: Array of [option_id, option_title] pairs
   // onChangeFunction: function to be triggered when select box is changed
+  // selectedId:
 
   return (
     <div>
       <Form>
-        <Form.Control as='select' onChange={onChangeFunction} className='rounded-0 shadow'>
+        <Form.Control
+          as='select'
+          defaultValue={selectedId}
+          onChange={onChangeFunction}
+          className='rounded-0 shadow'
+        >
           {
             idTitleList.map(
               ([geoId, geoTitle]) => (
-                <option value={geoId} key={geoId}>
-                  {geoTitle}
-                </option>
+                <option value={geoId} key={geoId}>{geoTitle}</option>
               )
             )
           }
@@ -68,35 +72,35 @@ const getSubFilterSelectBox = (id, label, idTitleList, onChangeFunction) => {
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
 export const MainMenuControl = ({ regionName, filtersData }) => {
-  // defaultFilter: A dictionary as {geoFilterId: "abc", evtFilterId: "def", filterId: "abc.def", filterTitle: "ABCing @ DEFet"}
-
-  const [, setActiveFilter] = useState() // tweak to force the page rendering (TODO: replace)
-  const filterContextData = useContext(FilterContext)
+  /* ** SET HOOKS ****************************************************************************** */
 
   // identifies all geo and event filters
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
 
+  // retireves context data
+  const { filterContextData, setFilterContextData } = useContext(FilterContext)
+
   /* ** DEFS ** */
 
-  const functionOnChangeGeoFilter = (event) => {
+  const functionOnChangeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
     const newGeoFilterId = event.target.value
     const newFilterId = filterContextData.evtFilterId.concat('.').concat(newGeoFilterId)
-    setActiveFilter(newFilterId) // tweak to force the page rendering (TODO: replace)
-    filterContextData.filterId = newFilterId
-    filterContextData.geoFilterId = newGeoFilterId
+    setFilterContextData({
+      ...filterContextData, filterId: newFilterId, geoFilterId: newGeoFilterId
+    })
   }
 
   const functionOnChangeEventSubFilter = (event) => {
     // Triggered when the event selectbox is changed
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(filterContextData.geoFilterId)
-    setActiveFilter(newFilterId) // tweak to force the page rendering (TODO: replace)
-    filterContextData.filterId = newFilterId
-    filterContextData.evtFilterId = newEvtFilterId
+    setFilterContextData({
+      ...filterContextData, filterId: newFilterId, evtFilterId: newEvtFilterId
+    })
   }
 
-  /* ** MAIN ** */
+  /* ** MAIN RENDER  *************************************************************************** */
 
   // build content of the menu
   const menuContent = (
@@ -113,14 +117,22 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
       </Row>
       <Row>
         <Col>
-          {getSubFilterSelectBox('dropdown-geofilter', 'Sub Region', retGeo,
-            (changeGeoFilterEvt) => { functionOnChangeGeoFilter(changeGeoFilterEvt) })}
+          <SubFilterSelectBox
+            idTitleList={retGeo} selectedId={filterContextData.geoFilterId}
+            onChangeFunction={(changeGeoFilterEvt) => {
+              functionOnChangeGeoSubFilter(changeGeoFilterEvt)
+            }}
+          />
         </Col>
       </Row>
       <Row>
         <Col>
-          {getSubFilterSelectBox('selectbox-evtfilter', 'Event', retEvt,
-            (changeEvtFilterEvt) => { functionOnChangeEventSubFilter(changeEvtFilterEvt) })}
+          <SubFilterSelectBox
+            idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
+            onChangeFunction={(changeEvtFilterEvt) => {
+              functionOnChangeEventSubFilter(changeEvtFilterEvt)
+            }}
+          />
         </Col>
       </Row>
       {/*
@@ -140,6 +152,8 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
 
   // containing div th
   return (
-    <div className={'leaflet-control leaflet-bar '.concat(ownStyles.mainContainer)}>{menuContent}</div>
+    <div className={'leaflet-control leaflet-bar '.concat(ownStyles.mainContainer)}>
+      {menuContent}
+    </div>
   )
 }
