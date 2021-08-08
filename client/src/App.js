@@ -99,6 +99,7 @@ const App = () => {
 
   // define filterContext
   const [filterContextData, setFilterContextData] = useState({})
+  const [mapLocationsContextData, setMapLocationsContextData] = useState({})
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>
@@ -111,7 +112,6 @@ const App = () => {
   // currently active filter
   if (!('filterId' in filterContextData)) {
     fillFilterContextData(regionData.defaultFilter, filterContextData)
-    console.log('First filterContextData:', filterContextData)
   }
 
   // basic check - boundaries must load, if no data is returned by the API shows an error message
@@ -159,6 +159,8 @@ const App = () => {
       setTimeSerieUrl,
       filterContextData,
       setFilterContextData,
+      mapLocationsContextData,
+      setMapLocationsContextData,
       boundariesData,
       regionData,
       filtersData,

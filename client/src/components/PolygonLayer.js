@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
+import FilterContext from './FilterContext'
 
 let polygon
 
@@ -9,44 +10,47 @@ const PolygonLayer = ({
   reversePolygon = false,
   color = '#069292'
 }) => {
+  /* ** SET HOOKS ****************************************************************************** */
+
+  // retireves context data
+  const { filterContextData } = useContext(FilterContext)
+
+  /* ** MAIN RENDER  *************************************************************************** */
   return (
     <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {
-            /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-
             layerData.map((poly) => {
+              /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
               if (reversePolygon) {
                 polygon = Array.from(poly.polygon.values()).map((pol) => [
-                  pol[1],
-                  pol[0]
+                  pol[1], pol[0]
                 ])
-
-                return (
-                  <Polygon
-                    pathOptions={{
-                      color: color,
-                      fillColor: null
-                    }}
-                    positions={polygon}
-                    key={poly.id}
-                  />
-                )
               } else {
                 polygon = Array.from(poly.polygon.values())
-
-                return (
-                  <Polygon
-                    pathOptions={{
-                      color: color,
-                      fillColor: null
-                    }}
-                    positions={polygon}
-                    key={poly.id}
-                  />
-                )
               }
+
+              const displayPolygon = () => {
+                if ((filterContextData.geoFilterId === poly.id) ||
+                    (filterContextData.geoFilterId === 'overview')) {
+                  return true
+                }
+                return false
+              }
+
+              /* build polygons */
+              return (
+                <Polygon
+                  pathOptions={{
+                    color: color,
+                    fillColor: null
+                  }}
+                  positions={displayPolygon() && polygon}
+                  key={poly.id}
+                  filter={false}
+                />
+              )
             })
           }
         </LayerGroup>

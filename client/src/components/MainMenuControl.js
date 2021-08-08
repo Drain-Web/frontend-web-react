@@ -8,6 +8,24 @@ import FilterContext from './FilterContext'
 /* Map menu that allows selection of filters and more.
  */
 
+/* ** CONSTANTS ******************************************************************************** */
+
+class Constants {
+  static get lang () {
+    return 'en'
+  }
+
+  static get overviewId () {
+    return 'overview'
+  }
+
+  static get overviewTitle () {
+    return {
+      en: 'Overview'
+    }[Constants.lang]
+  }
+}
+
 /* ** AUX ************************************************************************************** */
 
 const identifyGeoEvents = (filtersData) => {
@@ -41,11 +59,15 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId }) => {
-  //
+const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOverviewOption }) => {
+  // Select box for the subfilters of area and event
   // idTitleList: Array of [option_id, option_title] pairs
   // onChangeFunction: function to be triggered when select box is changed
   // selectedId:
+
+  const innerIdTitleList = addOverviewOption
+    ? [[Constants.overviewId, Constants.overviewTitle]].concat(idTitleList)
+    : idTitleList
 
   return (
     <div>
@@ -57,7 +79,7 @@ const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId }) => {
           className='rounded-0 shadow'
         >
           {
-            idTitleList.map(
+            innerIdTitleList.map(
               ([geoId, geoTitle]) => (
                 <option value={geoId} key={geoId}>{geoTitle}</option>
               )
@@ -100,6 +122,10 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
     })
   }
 
+  /* ** TEMP CONSTANTS ************************************************************************* */
+
+  const addOverviewOption = true
+
   /* ** MAIN RENDER  *************************************************************************** */
 
   // build content of the menu
@@ -122,6 +148,7 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
             onChangeFunction={(changeGeoFilterEvt) => {
               functionOnChangeGeoSubFilter(changeGeoFilterEvt)
             }}
+            addOverviewOption={addOverviewOption}
           />
         </Col>
       </Row>
@@ -132,6 +159,7 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
             onChangeFunction={(changeEvtFilterEvt) => {
               functionOnChangeEventSubFilter(changeEvtFilterEvt)
             }}
+            addOverviewOption={addOverviewOption}
           />
         </Col>
       </Row>
