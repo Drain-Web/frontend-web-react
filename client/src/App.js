@@ -11,6 +11,7 @@ import { MapContainer } from 'react-leaflet'
 // import custom components
 import MapControler from './components/MapControler'
 import MapContext from './components/MapContext'
+import FlexContainer from './components/FlexContainer'
 
 // import CSS styles
 import 'style/bootstrap.min.css'
@@ -151,6 +152,7 @@ const App = () => {
 
   // build page if everithing worked fine
   return (
+
     <MapContext.Provider value={{
       locationsData,
       isHidden,
@@ -171,6 +173,7 @@ const App = () => {
         <MapControler />
       </MapContainer>
     </MapContext.Provider>
+
   )
 }
 

@@ -11,10 +11,7 @@ const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
   }
 
   return (
-    <div>
-      <button className='boton-prueba' onClick={() => buttonHandler()}>
-        {isHidden ? 'Show' : 'Hide'}
-      </button>
+    <>
 
       <div className={`${isHidden ? 'Panel hide' : 'Panel'} ${position}`}>
         {timeSerieUrl && (
@@ -24,7 +21,13 @@ const Panel = ({ isHidden, setIsHidden, timeSerieUrl, position }) => {
           </Suspense>
         )}
       </div>
-    </div>
+
+      <div className="plotting-panel-button">
+      <button className='boton-prueba' onClick={() => buttonHandler()}>
+        {isHidden ? 'Show' : 'Hide'}
+      </button>
+      </div>
+    </>
   )
 }
 

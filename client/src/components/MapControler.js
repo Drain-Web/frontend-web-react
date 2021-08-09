@@ -11,6 +11,7 @@ import PointsLayer from './PointsLayer'
 import MapContext from './MapContext'
 import BaseLayers from './BaseLayers'
 import Panel from './Panel'
+import FlexContainer from './FlexContainer'
 
 // import assets
 import { baseLayersData } from '../assets/MapBaseLayers'
@@ -79,6 +80,29 @@ const MapControler = () => {
 
   return (
     <>
+      <FlexContainer>
+
+      {/* add the main floating menu */}
+      <FilterContext.Provider value={
+        { filterContextData, setFilterContextData }
+      }
+      >
+        <MainMenuControl
+          position='topleft'
+          regionName={regionData.systemInformation.name}
+          filtersData={filtersData}
+        />
+      </FilterContext.Provider>
+
+      {/* hyrographs panel */}
+      <Panel
+        isHidden={isHidden}
+        setIsHidden={setIsHidden}
+        timeSerieUrl={timeSerieUrl}
+        position='leaflet-right'
+      />
+      {/* position='Right' */}
+
       <LayersControl>
 
         <BaseLayers baseLayerData={baseLayersData} />
@@ -107,29 +131,12 @@ const MapControler = () => {
 
       </LayersControl>
 
-      {/* hyrographs panel */}
-      <Panel
-        isHidden={isHidden}
-        setIsHidden={setIsHidden}
-        timeSerieUrl={timeSerieUrl}
-        position='leaflet-right'
-      />
-      {/* position='Right' */}
 
-      {/* add the main floating menu */}
-      <FilterContext.Provider value={
-        { filterContextData, setFilterContextData }
-      }
-      >
-        <MainMenuControl
-          position='topleft'
-          regionName={regionData.systemInformation.name}
-          filtersData={filtersData}
-        />
-      </FilterContext.Provider>
+
+
 
       <ZoomControl position='bottomright' />
-
+    </FlexContainer>      
     </>
   )
 }
