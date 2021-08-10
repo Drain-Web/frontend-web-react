@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,122 +8,101 @@ import {
   Label,
   Tooltip,
   Line,
-  Legend
-} from 'recharts'
-import '../style/TimeSeriePlot.css'
-import useSWR from 'swr'
-import axios from 'axios'
-import Plot from 'react-plotly.js'
-
+  Legend,
+} from "recharts";
+import "../style/TimeSeriePlot.css";
+import useSWR from "swr";
+import axios from "axios";
+import Plot from "react-plotly.js";
 
 const TimeSeriesPlot = ({ timeSeriesUrl }) => {
-  const [plotData, setPlotData] = useState(null)
-  const fetcher = (url) => axios.get(url).then((res) => res.data)
+  const [plotData, setPlotData] = useState(null);
+  const [plotArray, setPlotArray] = useState(null);
+
+  const fetcher = (url) => axios.get(url).then((res) => res.data);
 
   const { data: apiData, error } = useSWR(timeSeriesUrl, fetcher, {
-    suspense: true
-  })
-  if (error) return <div>failed to load</div>
-  if (!apiData) return <div>loading...</div>
+    suspense: true,
+  });
+  if (error) return <div>failed to load</div>;
+  if (!apiData) return <div>loading...</div>;
 
-  let plotDataAux
-  const 
+  let plotDataAux;
+  let plotArrayAux;
 
+  const rearrangeSeries = (series) => {
+    const objData = {};
+
+    objData["datetime"] = series.events.map((timeStep) => {
+      return timeStep.date + " " + timeStep.time;
+    });
+
+    objData["value"] = series.events.map((timeStep) => {
+      return timeStep.value;
+    });
+
+    objData["properties"] = series.header;
+
+    objData["thresholdValueSets"] = series.thresholdValueSets;
+
+    return objData;
+  };
 
   const getPlotData = async () => {
-    setPlotData(null)
+    setPlotData(null);
+    setPlotArray(null);
+
     plotDataAux = await apiData.map((series) => {
-      return ({
-        date: timeStep.date + ' ' + timeStep.time,
-        value: timeStep.value
-      })
-    })
-    setPlotData(plotDataAux)  
-  }
+      return rearrangeSeries(series);
+    });
+
+    plotArrayAux = await plotDataAux.map((serie) => {
+      return {
+        x: serie["datetime"],
+        y: serie["value"],
+        type: "scatter",
+        mode: "lines",
+        name: serie["properties"]["parameterId"],
+      };
+    });
+
+    setPlotData(plotDataAux);
+    setPlotArray(plotArrayAux);
+  };
 
   // getPlotData();
-  useEffect(() => getPlotData(), [])
+  useEffect(() => getPlotData(), []);
 
-
-console.log(plotData)
+  // const title = "Station " + plotData[0]["properties"]["stationName"];
 
   return (
     <>
-      {plotData && (
-        // <ResponsiveContainer width='90%' height='60%' className='grafica'>
-        //   <LineChart
-        //     width={500}
-        //     height={300}
-        //     data={plotData}
-        //     margin={{
-        //       top: 5,
-        //       right: 30,
-        //       left: 14,
-        //       bottom: 5
-        //     }}
-        //   >
-        //     <CartesianGrid strokeDasharray='3 3' />
-        //     <XAxis type='number' dataKey='date' domain={['dataMin', 'dataMax']}>
-        //       <Label
-        //         value='Date'
-        //         position='bottom'
-        //         style={{ textAnchor: 'middle' }}
-        //       />
-        //     </XAxis>
-        //     <YAxis>
-        //       <Label
-        //         value='Value'
-        //         position='left'
-        //         angle={-90}
-        //         style={{ textAnchor: 'middle' }}
-        //       />
-        //     </YAxis>
-        //     <Line dataKey='value' />
-        //     <Tooltip />
-        //     <Legend />
-        //     <LineChart
-        //       type='monotone'
-        //       dataKey='date'
-        //       stroke='#8884d8'
-        //       dot={false}
-        //     />
-        //   </LineChart>
-        // </ResponsiveContainer>
-      
-
-      
-
-      
-      <div>
-        {console.log(plotData["date"])}
-      <Plot
-        
-        data={[
-          {
-            x: plotData["date"],
-            y: plotData["value"],
-            type: 'scatter',
-            mode: 'lines',
-          },
-        ]}
-        layout={ {autosize: true, title: 'A Fancy Plot'} }
-      />
-      </div>
-
+      {plotArray && (
+        <div>
+          {console.log(plotArray)}
+          <Plot
+            data={plotArray}
+            layout={{
+              autosize: true,
+              title: "Station " + plotData[0]["properties"]["stationName"],
+              legend: true,
+            }}
+          />
+        </div>
       )}
     </>
-  )
-}
+  );
+};
 
 export default TimeSeriesPlot;
 
-        // data={[
-        //   {
-        //     x: {plotData["date"]},
-        //     y: {plotData["value"]},
-        //     type: 'scatter',
-        //     mode: 'lines',
-        //   },
+// data={[
+//   {
+//     x: {plotData["date"]},
+//     y: {plotData["value"]},
+//     type: 'scatter',
+//     mode: 'lines',
+//   },
 
-        // ]}
-        // layout={ {autosize: true, title: 'A Fancy Plot'} }
+// ]}
+// layout={ {autosize: true, title: 'A Fancy Plot'} }
