@@ -21,19 +21,32 @@ const fetcher = (url) => axios.get(url).then((res) => res.data)
 const updateLocations = (jsonData, setMapLocationsContextData) => {
   // this function updates TODO
   const filteredLocations = {}
+  const filteredParameters = {}
 
   for (const curFilteredTimeseries of jsonData) {
     const locationId = curFilteredTimeseries.header.location_id
+    const parameterId = curFilteredTimeseries.header.parameterId
+
     if (!(locationId in filteredLocations)) {
       filteredLocations[locationId] = []
+    }
+    if (!(parameterId in filteredParameters)) {
+      filteredParameters[parameterId] = []
     }
 
     filteredLocations[locationId].push({
       timeseriesId: curFilteredTimeseries.id
     })
+    filteredParameters[parameterId].push({
+      timeseriesId: curFilteredTimeseries.id,
+      locationId: locationId
+    })
   }
 
-  setMapLocationsContextData(filteredLocations)
+  setMapLocationsContextData({
+    byLocations: filteredLocations,
+    byParameter: filteredParameters
+  })
 }
 
 const MapControler = () => {
@@ -121,11 +134,13 @@ const MapControler = () => {
         { filterContextData, setFilterContextData }
       }
       >
-        <MainMenuControl
-          position='topleft'
-          regionName={regionData.systemInformation.name}
-          filtersData={filtersData}
-        />
+        <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
+          <MainMenuControl
+            position='topleft'
+            regionName={regionData.systemInformation.name}
+            filtersData={filtersData}
+          />
+        </MapLocationsContext.Provider>
       </FilterContext.Provider>
 
       <ZoomControl position='bottomright' />

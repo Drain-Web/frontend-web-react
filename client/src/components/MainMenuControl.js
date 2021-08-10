@@ -2,8 +2,10 @@ import React, { useContext } from 'react'
 import {
   Form, Container, Row, Col
 } from 'react-bootstrap'
+import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import ownStyles from '../style/MainMenuControl.module.css'
 import FilterContext from './FilterContext'
+import MapLocationsContext from './MapLocationsContext'
 
 /* Map menu that allows selection of filters and more.
  */
@@ -59,7 +61,7 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOverviewOption }) => {
+const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOverviewOption, label }) => {
   // Select box for the subfilters of area and event
   // idTitleList: Array of [option_id, option_title] pairs
   // onChangeFunction: function to be triggered when select box is changed
@@ -70,24 +72,49 @@ const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOver
     : idTitleList
 
   return (
-    <div>
-      <Form>
-        <Form.Control
-          as='select'
-          defaultValue={selectedId}
-          onChange={onChangeFunction}
-          className='rounded-0 shadow'
-        >
-          {
-            innerIdTitleList.map(
-              ([geoId, geoTitle]) => (
-                <option value={geoId} key={geoId}>{geoTitle}</option>
-              )
+    <FloatingLabel label={label}>
+      <Form.Control
+        as='select'
+        defaultValue={selectedId}
+        onChange={onChangeFunction}
+        className='rounded-0 shadow'
+        label={label}
+      >
+        {
+          innerIdTitleList.map(
+            ([geoId, geoTitle]) => (
+              <option value={geoId} key={geoId}>{geoTitle}</option>
             )
-          }
-        </Form.Control>
-      </Form>
-    </div>
+          )
+        }
+      </Form.Control>
+    </FloatingLabel>
+  )
+}
+
+const ParametersSelectBox = ({ mapLocationsContextData }) => {
+  const parametersDict = mapLocationsContextData.byParameter
+  if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
+    return null
+  }
+
+  return (
+    <>
+      <span>Parameters:</span>
+      <Form.Control as='select' multiple>
+        {
+          Object.entries(parametersDict).map(
+            ([key, value]) => (
+              <option key={key}>
+                {key}&nbsp;
+                ({parametersDict[key].length}&nbsp;
+                {parametersDict[key].length === 1 ? 'location' : 'locations'})
+              </option>
+            )
+          )
+        }
+      </Form.Control>
+    </>
   )
 }
 
@@ -101,6 +128,7 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
 
   // retireves context data
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
+  const { mapLocationsContextData } = useContext(MapLocationsContext)
 
   /* ** DEFS ** */
 
@@ -130,52 +158,49 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
 
   // build content of the menu
   const menuContent = (
-    <Container>
-      <Row>
-        <Col>
-          <h1>{regionName}</h1>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <hr />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <SubFilterSelectBox
-            idTitleList={retGeo} selectedId={filterContextData.geoFilterId}
-            onChangeFunction={(changeGeoFilterEvt) => {
-              functionOnChangeGeoSubFilter(changeGeoFilterEvt)
-            }}
-            addOverviewOption={addOverviewOption}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <SubFilterSelectBox
-            idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
-            onChangeFunction={(changeEvtFilterEvt) => {
-              functionOnChangeEventSubFilter(changeEvtFilterEvt)
-            }}
-            addOverviewOption={addOverviewOption}
-          />
-        </Col>
-      </Row>
-      {/*
-      <Row>
-        <Col>
-          Name: {activeFilter.filterTitle}
-        </Col>
-      </Row>
-      */}
-      <Row>
-        <Col>
-          FilterId: {filterContextData.filterId}
-        </Col>
-      </Row>
-    </Container>
+    <Form>
+      <Container>
+        <Row>
+          <Col>
+            <h1>{regionName}</h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <hr />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <SubFilterSelectBox
+              idTitleList={retGeo} selectedId={filterContextData.geoFilterId}
+              onChangeFunction={(changeGeoFilterEvt) => {
+                functionOnChangeGeoSubFilter(changeGeoFilterEvt)
+              }}
+              addOverviewOption={addOverviewOption}
+              label='Sub-Area'
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <SubFilterSelectBox
+              idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
+              onChangeFunction={(changeEvtFilterEvt) => {
+                functionOnChangeEventSubFilter(changeEvtFilterEvt)
+              }}
+              addOverviewOption={addOverviewOption}
+              label='Event'
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <ParametersSelectBox mapLocationsContextData={mapLocationsContextData} />
+          </Col>
+        </Row>
+      </Container>
+    </Form>
   )
 
   // containing div th
