@@ -71,9 +71,8 @@ const MapControler = () => {
     const urlFilterRequest = 'https://hydro-web.herokuapp.com/v1/filter/'.concat(
       filterContextData.filterId)
 
-    const urlTimeseriesRequest = ''.concat(
-      'https://hydro-web.herokuapp.com/v1/timeseries/?filter=', filterContextData.filterId
-    )
+    const urlTimeseriesRequest = 'https://hydro-web.herokuapp.com/v1/timeseries/?filter='.concat(
+      filterContextData.filterId)
 
     // move map view to fit the map extent
     fetcher(urlFilterRequest).then((jsonData) => {

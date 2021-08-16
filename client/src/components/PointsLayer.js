@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, Fragment } from 'react'
 import { Icon } from 'leaflet'
 import DropDownTimeSeries from './DropDownTimeSeries'
-import { Marker, Popup, LayersControl, LayerGroup } from 'react-leaflet'
+import { Marker, Polygon, Popup, LayersControl, LayerGroup } from 'react-leaflet'
 import MapLocationsContext from './MapLocationsContext'
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
@@ -52,45 +52,77 @@ const PointsLayer = ({
             }
 
             return (
-              <Marker
-                key={layerData.locationId}
-                position={[layerData.y, layerData.x]}
-                onClick={() => {
-                  setActivePointFeature(layerData)
-                }}
-                icon={displayMarker() ? icon : noIcon}
-              >
-                <Popup
+              <Fragment key={layerData.locationId}>
+                <Marker
                   position={[layerData.y, layerData.x]}
-                  onClose={() => {
-                    setActivePointFeature(layerData)
+                  eventHandlers={{
+                    click: () => { }
                   }}
+                  icon={displayMarker() ? icon : noIcon}
                 >
-                  <div>
-                    <h5>
-                      <span className='popuptitle'>{layerData.shortName}</span>
-                    </h5>
-                    <p>
-                      <span className='popuptitle'>Id:</span>{' '}
-                      {layerData.locationId}
-                    </p>
-                    <p>
-                      <span className='popuptitle'>Longitude:</span> {layerData.x}
-                    </p>
-                    <p>
-                      <span className='popuptitle'>Latitude:</span> {layerData.y}
-                    </p>
-                  </div>
-                  <DropDownTimeSeries
-                    ids={ids}
-                    locationid={layerData.locationId}
-                    timeSerieUrl={timeSerieUrl}
-                    setTimeSerieUrl={setTimeSerieUrl}
-                    setIsHidden={setIsHidden}
-                  />
-                  {/* <timeSeriesPlot data={data} /> */}
-                </Popup>
-              </Marker>
+                  <Popup
+                    position={[layerData.y, layerData.x]}
+                    onOpen={() => {
+                      setActivePointFeature(layerData)
+                    }}
+                    onClose={() => {
+                      /*
+                      if (activePointFeature &&
+                          (activePointFeature.locationId === layerData.locationId)) {
+                        
+                      }
+                      */
+                      setActivePointFeature(null)
+                    }}
+                  >
+                    <div>
+                      <h5>
+                        <span className='popuptitle'>{layerData.shortName}</span>
+                      </h5>
+                      <p>
+                        <span className='popuptitle'>Id:</span>{' '}
+                        {layerData.locationId}
+                      </p>
+                      <p>
+                        <span className='popuptitle'>Longitude:</span> {layerData.x}
+                      </p>
+                      <p>
+                        <span className='popuptitle'>Latitude:</span> {layerData.y}
+                      </p>
+                    </div>
+                    <DropDownTimeSeries
+                      ids={ids}
+                      locationid={layerData.locationId}
+                      timeSerieUrl={timeSerieUrl}
+                      setTimeSerieUrl={setTimeSerieUrl}
+                      setIsHidden={setIsHidden}
+                    />
+                    {/* <timeSeriesPlot data={data} /> */}
+                  </Popup>
+                </Marker>
+                {
+                  (layerData.polygon
+                    ?
+                      <Polygon
+                        pathOptions={{
+                          color: '#0000AA',
+                          fillColor: '#7777FF',
+                          fill: (activePointFeature && (activePointFeature.locationId === layerData.locationId)),
+                          opacity: (activePointFeature && (activePointFeature.locationId === layerData.locationId)) ? 0.5 : 0
+                        }}
+                        positions={
+                            JSON.parse(layerData.polygon).map((pol) => [
+                              pol[1], pol[0]
+                            ])
+                          }
+                        display='none'
+                        filter={false}
+                      />
+                    :
+                      <></>
+                  )
+                }
+              </Fragment>
             )
           })}
         </LayerGroup>

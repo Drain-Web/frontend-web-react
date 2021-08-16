@@ -63,7 +63,7 @@ const App = () => {
   // request location data -> store in const 'locationsData'
   const locationsData = useState({})[0]
   const { data: data2, error: error2 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/locations', fetcher
+    'https://hydro-web.herokuapp.com/v1dw/locations?showPolygon=true&showAttributes=true', fetcher
   )
   if (data2 && !error2 && !Object.keys(locationsData).length) {
     for (const i in data2) { locationsData[i] = data2[i] }
