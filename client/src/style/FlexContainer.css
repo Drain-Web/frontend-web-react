@@ -1,0 +1,7 @@
+.flex-container {
+  display: flex;
+}
+
+.flex-container > div {
+  flex-grow: 1;
+}

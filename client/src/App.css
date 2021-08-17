@@ -1,3 +1,9 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100vh;
@@ -7,21 +13,21 @@
 .leaflet-popup-tip {
   background: #eee;
   color: #333;
-  border: 5px hidden #1C6EA4;
+  border: 5px hidden #1c6ea4;
   border-radius: 22px;
   opacity: 0.9;
   font-size: 1.2rem;
 }
 
-.popuptitle{
+.popuptitle {
   font-weight: bold;
 }
 
-body{
-  font-family: 'Open Sans', sans-serif;
+body {
+  font-family: "Open Sans", sans-serif;
 }
 
-h1{
+h1 {
   font-size: 1.3rem;
   margin-top: 0;
   margin-bottom: 0;
