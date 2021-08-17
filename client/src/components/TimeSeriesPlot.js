@@ -84,7 +84,7 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
             data={plotArray}
             layout={{
               autosize: true,
-              title: "Station " + plotData[0]["properties"]["stationName"],
+              title: plotData[0]["properties"]["stationName"],
               legend: true,
             }}
           />
