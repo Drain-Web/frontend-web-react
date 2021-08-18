@@ -4,7 +4,8 @@ const MapLocationsContext = createContext({
   mapLocationsContextData: {
     filterId: null,
     byLocations: {},
-    byParameter: {}
+    byParameter: {},
+    showParametersLocations: new Set()
   },
   setMapLocationsContextData: (filter) => {}
 })

@@ -19,28 +19,38 @@ import { baseLayersData } from '../../assets/MapBaseLayers'
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-const updateLocations = (jsonData, setMapLocationsContextData) => {
+const updateLocations = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
   // this function updates TODO
   const filteredLocations = {}
   const filteredParameters = {}
+  const selectedParams = mapLocationsContextData.showParametersLocations
 
+  //
   for (const curFilteredTimeseries of jsonData) {
     const locationId = curFilteredTimeseries.header.location_id
     const parameterId = curFilteredTimeseries.header.parameterId
 
-    if (!(locationId in filteredLocations)) {
-      filteredLocations[locationId] = []
-    }
+    // add parameter no matter what
     if (!(parameterId in filteredParameters)) {
       filteredParameters[parameterId] = []
     }
-
-    filteredLocations[locationId].push({
-      timeseriesId: curFilteredTimeseries.id
-    })
     filteredParameters[parameterId].push({
       timeseriesId: curFilteredTimeseries.id,
       locationId: locationId
+    })
+
+    // verifies if add location
+    if (selectedParams && (!selectedParams.has(curFilteredTimeseries.header.parameterId))) {
+      console.log(curFilteredTimeseries.header.parameterId, 'not in', selectedParams)
+      continue
+    }
+
+    // add location
+    if (!(locationId in filteredLocations)) {
+      filteredLocations[locationId] = []
+    }
+    filteredLocations[locationId].push({
+      timeseriesId: curFilteredTimeseries.id
     })
   }
 
@@ -95,7 +105,7 @@ const MapControler = () => {
 
     // only show locations with timeseries in the filter
     fetcher(urlTimeseriesRequest).then((jsonData) => {
-      updateLocations(jsonData, setMapLocationsContextData)
+      updateLocations(jsonData, mapLocationsContextData, setMapLocationsContextData)
     })
   }, [filterContextData])
 
@@ -106,7 +116,9 @@ const MapControler = () => {
         <FilterContext.Provider
           value={{ filterContextData, setFilterContextData }}
         >
-          <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
+          <MapLocationsContext.Provider
+            value={{ mapLocationsContextData, setMapLocationsContextData }}
+          >
             <MainMenuControl
               position='topleft'
               regionName={regionData.systemInformation.name}

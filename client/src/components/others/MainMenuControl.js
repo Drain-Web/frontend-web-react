@@ -28,7 +28,7 @@ class Constants {
   }
 }
 
-/* ** AUX ************************************************************************************** */
+/* ** AUX FUNCS ******************************************************************************** */
 
 const identifyGeoEvents = (filtersData) => {
   // Function that identifies unique geo units and events
@@ -61,6 +61,8 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
+/* ** COMPONENTS ******************************************************************************* */
+
 const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOverviewOption, label }) => {
   // Select box for the subfilters of area and event
   // idTitleList: Array of [option_id, option_title] pairs
@@ -92,6 +94,7 @@ const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOver
   )
 }
 
+/*
 const ParametersSelectBox = ({ mapLocationsContextData }) => {
   const parametersDict = mapLocationsContextData.byParameter
   if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
@@ -117,6 +120,73 @@ const ParametersSelectBox = ({ mapLocationsContextData }) => {
     </>
   )
 }
+*/
+
+const ParametersCheckBox = () => {
+  /* Set of check boxes used to select to sub-filter out location icons */
+
+  // retireves context data
+  const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
+
+  const parametersDict = mapLocationsContextData.byParameter
+  if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
+    return null
+  }
+
+  const numLocations = (nLocations) => {
+    /* simple function to create '(_ location[s])' string */
+    const s = (nLocations === 1 ? '' : 's')
+    return `(${nLocations} location${s})`
+  }
+
+  const groupOnChange = (evt) => {
+    /* updates the LocationsContext with the new parameters */
+
+    const parameterId = evt.target.attributes.parameter.nodeValue
+    const parameterSelected = evt.target.checked
+
+    //
+    const newMapLocationsContextData = { ...mapLocationsContextData }
+    const showParamLocations = (
+      newMapLocationsContextData.showParametersLocations ?
+          newMapLocationsContextData.showParametersLocations :
+        new Set()
+    )
+    console.log('showParametersLocations: ', showParamLocations)
+
+    // update newMapLocationsContextData
+    if (parameterSelected && !(showParamLocations.has(parameterId))) {
+      showParamLocations.add(parameterId)
+    } else if ((!parameterSelected) && showParamLocations.has(parameterId)) {
+      showParamLocations.delete(parameterId)
+    }
+    newMapLocationsContextData.showParametersLocations = showParamLocations
+
+    console.log(' newMapLocationsContextData.byParameter:', newMapLocationsContextData.byParameter)
+
+    setMapLocationsContextData(newMapLocationsContextData)
+  }
+
+  return (
+    <>
+      <span>Parameters:</span>
+      <Form.Group className='mb-3' onChange={groupOnChange}>
+        {
+          Object.entries(parametersDict).map(
+            ([key, value]) => (
+              <Form.Check
+                parameter={key}
+                key={key}
+                type='checkbox'
+                label={key.concat(' ', numLocations(parametersDict[key].length))}
+              />
+            )
+          )
+        }
+      </Form.Group>
+    </>
+  )
+}
 
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
@@ -128,7 +198,7 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
 
   // retireves context data
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
-  const { mapLocationsContextData } = useContext(MapLocationsContext)
+  const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
 
   /* ** DEFS ** */
 
@@ -194,9 +264,22 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
             />
           </Col>
         </Row>
+        {/*
         <Row>
           <Col>
             <ParametersSelectBox mapLocationsContextData={mapLocationsContextData} />
+          </Col>
+        </Row>
+        */}
+        <Row>
+          <Col>
+            <MapLocationsContext.Provider
+              value={{ mapLocationsContextData, setMapLocationsContextData }}
+            >
+              <ParametersCheckBox
+                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
+              />
+            </MapLocationsContext.Provider>
           </Col>
         </Row>
       </Container>

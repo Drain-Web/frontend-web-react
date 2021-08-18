@@ -86,6 +86,7 @@ const PointsLayer = ({
                       </p>
                       <p>
                         <span className='popuptitle'>Timeseries:</span>
+                        &nbsp;
                         <span onClick={() => {
                           setTimeSerieUrl(`https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${layerData.locationId}`)
                           setIsHidden(false)
@@ -106,6 +107,7 @@ const PointsLayer = ({
                   </Popup>
                 </Marker>
                 {
+                  /* display location polygon if needed */
                   (layerData.polygon
                     ?
                       <Polygon
