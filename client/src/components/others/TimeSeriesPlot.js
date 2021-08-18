@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
+import '../../style/TimeSeriePlot.css'
+import useSWR from 'swr'
+import axios from 'axios'
+import Plot from 'react-plotly.js'
+
+/*
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,70 +14,67 @@ import {
   Label,
   Tooltip,
   Line,
-  Legend,
-} from "recharts";
-import "../../style/TimeSeriePlot.css";
-import useSWR from "swr";
-import axios from "axios";
-import Plot from "react-plotly.js";
+  Legend
+} from 'recharts'
+*/
 
 const TimeSeriesPlot = ({ timeSeriesUrl }) => {
-  const [plotData, setPlotData] = useState(null);
-  const [plotArray, setPlotArray] = useState(null);
+  const [plotData, setPlotData] = useState(null)
+  const [plotArray, setPlotArray] = useState(null)
 
-  const fetcher = (url) => axios.get(url).then((res) => res.data);
+  const fetcher = (url) => axios.get(url).then((res) => res.data)
 
   const { data: apiData, error } = useSWR(timeSeriesUrl, fetcher, {
-    suspense: true,
-  });
-  if (error) return <div>failed to load</div>;
-  if (!apiData) return <div>loading...</div>;
+    suspense: true
+  })
+  if (error) return <div>failed to load</div>
+  if (!apiData) return <div>loading...</div>
 
-  let plotDataAux;
-  let plotArrayAux;
+  let plotDataAux
+  let plotArrayAux
 
   const rearrangeSeries = (series) => {
-    const objData = {};
+    const objData = {}
 
-    objData["datetime"] = series.events.map((timeStep) => {
-      return timeStep.date + " " + timeStep.time;
-    });
+    objData.datetime = series.events.map((timeStep) => {
+      return timeStep.date + ' ' + timeStep.time
+    })
 
-    objData["value"] = series.events.map((timeStep) => {
-      return timeStep.value;
-    });
+    objData.value = series.events.map((timeStep) => {
+      return timeStep.value
+    })
 
-    objData["properties"] = series.header;
+    objData.properties = series.header
 
-    objData["thresholdValueSets"] = series.thresholdValueSets;
+    objData.thresholdValueSets = series.thresholdValueSets
 
-    return objData;
-  };
+    return objData
+  }
 
   const getPlotData = async () => {
-    setPlotData(null);
-    setPlotArray(null);
+    setPlotData(null)
+    setPlotArray(null)
 
     plotDataAux = await apiData.map((series) => {
-      return rearrangeSeries(series);
-    });
+      return rearrangeSeries(series)
+    })
 
     plotArrayAux = await plotDataAux.map((serie) => {
       return {
-        x: serie["datetime"],
-        y: serie["value"],
-        type: "scatter",
-        mode: "lines",
-        name: serie["properties"]["parameterId"],
-      };
-    });
+        x: serie.datetime,
+        y: serie.value,
+        type: 'scatter',
+        mode: 'lines',
+        name: serie.properties.parameterId
+      }
+    })
 
-    setPlotData(plotDataAux);
-    setPlotArray(plotArrayAux);
-  };
+    setPlotData(plotDataAux)
+    setPlotArray(plotArrayAux)
+  }
 
   // getPlotData();
-  useEffect(() => getPlotData(), []);
+  useEffect(() => getPlotData(), [])
 
   // const title = "Station " + plotData[0]["properties"]["stationName"];
 
@@ -84,17 +87,17 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
             data={plotArray}
             layout={{
               autosize: true,
-              title: plotData[0]["properties"]["stationName"],
-              legend: true,
+              title: plotData[0].properties.stationName,
+              legend: true
             }}
           />
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default TimeSeriesPlot;
+export default TimeSeriesPlot
 
 // data={[
 //   {
