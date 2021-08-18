@@ -9,9 +9,9 @@ import useSWR from 'swr'
 import { MapContainer } from 'react-leaflet'
 
 // import custom components
-import MapControler from './components/MapControler'
-import MapContext from './components/MapContext'
-import FlexContainer from './components/FlexContainer'
+import MapControler from './components/others/MapControler'
+import MapContext from './components/contexts/MapContext'
+import FlexContainer from './components/others/FlexContainer'
 
 // import CSS styles
 import 'style/bootstrap.min.css'

@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import TimeSeriesPlot from "./TimeSeriesPlot";
-import "../style/Panel.css";
+import "../../style/Panel.css";
 
 /* Panel open with the list of timeseries of a Location to be plot
  */

@@ -1,8 +1,9 @@
 import React, { useState, useContext, Fragment } from 'react'
 import { Icon } from 'leaflet'
-import DropDownTimeSeries from './DropDownTimeSeries'
+import DropDownTimeSeries from '../others/DropDownTimeSeries'
 import { Marker, Polygon, Popup, LayersControl, LayerGroup } from 'react-leaflet'
-import MapLocationsContext from './MapLocationsContext'
+import MapLocationsContext from '../contexts/MapLocationsContext'
+import FilterContext from '../contexts/FilterContext'
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
@@ -33,6 +34,7 @@ const PointsLayer = ({
 
   // retireves context data
   const { mapLocationsContextData } = useContext(MapLocationsContext)
+  const { filterContextData } = useContext(FilterContext)
 
   const [activePointFeature, setActivePointFeature] = useState(null)
 
@@ -50,7 +52,6 @@ const PointsLayer = ({
               }
               return false
             }
-
             return (
               <Fragment key={layerData.locationId}>
                 <Marker
@@ -66,12 +67,6 @@ const PointsLayer = ({
                       setActivePointFeature(layerData)
                     }}
                     onClose={() => {
-                      /*
-                      if (activePointFeature &&
-                          (activePointFeature.locationId === layerData.locationId)) {
-                        
-                      }
-                      */
                       setActivePointFeature(null)
                     }}
                   >
@@ -88,6 +83,16 @@ const PointsLayer = ({
                       </p>
                       <p>
                         <span className='popuptitle'>Latitude:</span> {layerData.y}
+                      </p>
+                      <p>
+                        <span className='popuptitle'>Timeseries:</span>
+                        <span onClick={() => {
+                          setTimeSerieUrl(`https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${layerData.locationId}`)
+                          setIsHidden(false)
+                        }}
+                        >
+                          Open plot
+                        </span>
                       </p>
                     </div>
                     <DropDownTimeSeries

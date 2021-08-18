@@ -3,9 +3,9 @@ import {
   Form, Container, Row, Col
 } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import ownStyles from '../style/MainMenuControl.module.css'
-import FilterContext from './FilterContext'
-import MapLocationsContext from './MapLocationsContext'
+import ownStyles from '../../style/MainMenuControl.module.css'
+import FilterContext from '../contexts/FilterContext'
+import MapLocationsContext from '../contexts/MapLocationsContext'
 
 /* Map menu that allows selection of filters and more.
  */

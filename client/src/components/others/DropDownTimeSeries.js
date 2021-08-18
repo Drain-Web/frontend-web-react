@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 import FormControl from 'react-bootstrap/FormControl'
-import '../style/Panel.css'
+import '../../style/Panel.css'
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <a

@@ -10,7 +10,7 @@ import {
   Line,
   Legend,
 } from "recharts";
-import "../style/TimeSeriePlot.css";
+import "../../style/TimeSeriePlot.css";
 import useSWR from "swr";
 import axios from "axios";
 import Plot from "react-plotly.js";

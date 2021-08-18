@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
-import FilterContext from './FilterContext'
+import FilterContext from '../contexts/FilterContext'
 
 let polygon
 

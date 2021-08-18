@@ -4,17 +4,17 @@ import axios from "axios";
 
 // import components
 import { MainMenuControl } from "./MainMenuControl";
-import MapLocationsContext from "./MapLocationsContext";
-import FilterContext from "./FilterContext";
-import PolygonLayer from "./PolygonLayer";
-import PointsLayer from "./PointsLayer";
-import MapContext from "./MapContext";
-import BaseLayers from "./BaseLayers";
+import MapLocationsContext from "../contexts/MapLocationsContext";
+import FilterContext from "../contexts/FilterContext";
+import PolygonLayer from "../layers/PolygonLayer";
+import PointsLayer from "../layers/PointsLayer";
+import MapContext from "../contexts/MapContext";
+import BaseLayers from "../layers/BaseLayers";
 import Panel from "./Panel";
 import FlexContainer from "./FlexContainer";
 
 // import assets
-import { baseLayersData } from "../assets/MapBaseLayers";
+import { baseLayersData } from "../../assets/MapBaseLayers";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
@@ -129,15 +129,18 @@ const MapControler = () => {
 
           {/* adds layer of points as a react component */}
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
-            <PointsLayer
-              layerData={locationsData}
-              layerName="Locations"
-              iconUrl="./img/browndot.png"
-              ids={ids}
-              timeSerieUrl={timeSerieUrl}
-              setTimeSerieUrl={setTimeSerieUrl}
-              setIsHidden={setIsHidden}
-            />
+            <FilterContext.Provider value={{ filterContextData }}>
+              <PointsLayer
+                layerData={locationsData}
+                layerName="Locations"
+                iconUrl="./img/browndot.png"
+                ids={ids}
+                timeSerieUrl={timeSerieUrl}
+                setTimeSerieUrl={setTimeSerieUrl}
+                setIsHidden={setIsHidden}
+                filterContextData={filterContextData}
+              />
+            </FilterContext.Provider>
           </MapLocationsContext.Provider>
 
           {/* adds a polygon layer to the control and the map as a component  */}
