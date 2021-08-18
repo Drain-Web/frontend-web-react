@@ -74,15 +74,13 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
   }
 
   // getPlotData();
-  useEffect(() => getPlotData(), [])
+  useEffect(() => getPlotData(), [timeSeriesUrl])
 
   // const title = "Station " + plotData[0]["properties"]["stationName"];
-
   return (
     <>
       {plotArray && (
         <div>
-          {console.log(plotArray)}
           <Plot
             data={plotArray}
             layout={{
