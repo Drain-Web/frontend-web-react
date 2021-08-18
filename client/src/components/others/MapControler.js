@@ -4,7 +4,7 @@ import axios from 'axios'
 
 // import components
 import { MainMenuControl } from './MainMenuControl'
-import MapLocationsContext from '../contexts/MapLocationsContext'
+import MapLocationsContext, { reviewMapLocationsContextData } from '../contexts/MapLocationsContext'
 import FilterContext from '../contexts/FilterContext'
 import PolygonLayer from '../layers/PolygonLayer'
 import PointsLayer from '../layers/PointsLayer'
@@ -54,10 +54,10 @@ const updateLocations = (jsonData, mapLocationsContextData, setMapLocationsConte
     })
   }
 
-  setMapLocationsContextData({
+  setMapLocationsContextData(reviewMapLocationsContextData({
     byLocations: filteredLocations,
     byParameter: filteredParameters
-  })
+  }))
 }
 
 const MapControler = () => {

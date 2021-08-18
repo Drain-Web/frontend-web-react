@@ -5,7 +5,8 @@ import {
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import ownStyles from '../../style/MainMenuControl.module.css'
 import FilterContext from '../contexts/FilterContext'
-import MapLocationsContext from '../contexts/MapLocationsContext'
+import MapLocationsContext, { reviewMapLocationsContextData } from
+  '../contexts/MapLocationsContext'
 
 /* Map menu that allows selection of filters and more.
  */
@@ -152,7 +153,6 @@ const ParametersCheckBox = () => {
           newMapLocationsContextData.showParametersLocations :
         new Set()
     )
-    console.log('showParametersLocations: ', showParamLocations)
 
     // update newMapLocationsContextData
     if (parameterSelected && !(showParamLocations.has(parameterId))) {
@@ -162,9 +162,7 @@ const ParametersCheckBox = () => {
     }
     newMapLocationsContextData.showParametersLocations = showParamLocations
 
-    console.log(' newMapLocationsContextData.byParameter:', newMapLocationsContextData.byParameter)
-
-    setMapLocationsContextData(newMapLocationsContextData)
+    setMapLocationsContextData(reviewMapLocationsContextData(newMapLocationsContextData))
   }
 
   return (

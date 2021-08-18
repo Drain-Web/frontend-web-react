@@ -47,7 +47,8 @@ const PointsLayer = ({
             // maker will be displayed if its location Id is in the mapLocationsContextData
             const displayMarker = () => {
               if (mapLocationsContextData.byLocations &&
-                (layerData.locationId in mapLocationsContextData.byLocations)) {
+                (layerData.locationId in mapLocationsContextData.byLocations) &&
+                (mapLocationsContextData.byLocations[layerData.locationId].show)) {
                 return true
               }
               return false
