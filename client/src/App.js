@@ -14,6 +14,7 @@ import MapContext from './components/contexts/MapContext'
 import FlexContainer from './components/others/FlexContainer'
 
 // import CSS styles
+import { apiUrl } from './libs/api.js'
 import 'style/bootstrap.min.css'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
@@ -52,6 +53,30 @@ const getMapCenter = (mapExtent) => {
   }
 }
 
+const loadingMessage = (dataSettings, dataRegion, dataBounds, dataFilts, dataLocs) => {
+  return (
+    <div>
+      Loading...<br />
+      &nbsp;general settings: {dataSettings ? 'loaded.' : '...'}<br />
+      &nbsp;region info: {dataRegion ? 'loaded.' : '...'}<br />
+      &nbsp;region info: {dataBounds ? 'loaded.' : '...'}<br />
+      &nbsp;region info: {dataFilts ? 'loaded.' : '...'}<br />
+      &nbsp;region info: {dataLocs ? 'loaded.' : '...'}<br />
+      <Spinner
+        animation='border'
+        variant='danger'
+        role='status'
+        style={{
+          width: '400px',
+          height: '400px',
+          margin: 'auto',
+          display: 'block'
+        }}
+      />
+    </div>
+  )
+}
+
 const App = () => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -61,50 +86,66 @@ const App = () => {
   // Panel state - show or hide
   const [isHidden, setIsHidden] = useState(false)
 
-  // request location data -> store in const 'locationsData'
+  // Fetched states
+  const settingsData = useState({})[0]
   const locationsData = useState({})[0]
-  const { data: data2, error: error2 } = useSWR(
+  const boundariesData = useState([])[0]
+  const regionData = useState({})[0]
+  const filtersData = useState([])[0]
+
+  // Context states
+  const [filterContextData, setFilterContextData] = useState({})
+  const [mapLocationsContextData, setMapLocationsContextData] = useState({})
+
+  // read app settings
+  const { data: dataSettings, error: errorSettings } = useSWR(
+    'settings.json', fetcher
+  )
+  if (dataSettings && (!errorSettings) && (!Object.keys(settingsData).length)) {
+    for (const i in dataSettings) settingsData[i] = dataSettings[i]
+  }
+
+  // request location data -> store in const 'locationsData'
+  const { data: dataLocs, error: error2 } = useSWR(
     'https://hydro-web.herokuapp.com/v1dw/locations?showPolygon=true&showAttributes=true', fetcher
   )
-  if (data2 && !error2 && !Object.keys(locationsData).length) {
-    for (const i in data2) { locationsData[i] = data2[i] }
+  if (dataLocs && !error2 && !Object.keys(locationsData).length) {
+    for (const i in dataLocs) { locationsData[i] = dataLocs[i] }
   }
 
   // request boundaries data -> store in const 'boundariesData'
-  const boundariesData = useState([])[0]
-  const { data: data1, error: error1 } = useSWR(
+  const { data: dataBounds, error: error1 } = useSWR(
     'https://hydro-web.herokuapp.com/v1dw/boundaries', fetcher
   )
-  if ((data1 && !error1 && !boundariesData.length)) {
-    for (const i in data1) { boundariesData.push(data1[i]) }
+  if ((dataBounds && !error1 && !boundariesData.length)) {
+    for (const i in dataBounds) { boundariesData.push(dataBounds[i]) }
   }
 
   // request region data -> store in const 'regionData'
-  const regionData = useState({})[0]
-  const { data: data3, error: error3 } = useSWR(
+  const { data: dataRegion, error: error3 } = useSWR(
     'https://hydro-web.herokuapp.com/v1/region', fetcher
   )
-  if (data3 && !error3 && !Object.keys(regionData).length) {
-    for (const i in data3) { regionData[i] = data3[i] }
+  if (dataRegion && !error3 && !Object.keys(regionData).length) {
+    for (const i in dataRegion) { regionData[i] = dataRegion[i] }
   }
 
   // request filters data -> store in 'ids'
   // only proceeds when the request is received or fails
-  const filtersData = useState([])[0]
-  const { data: dataids, error: errorids } = useSWR(
+  const { data: dataFilts, error: errorids } = useSWR(
     'https://hydro-web.herokuapp.com/v1/filters', fetcher
   )
-  if (dataids && !errorids && !filtersData.length) {
-    for (const i in dataids) { filtersData.push(dataids[i]) }
+  if (dataFilts && !errorids && !filtersData.length) {
+    for (const i in dataFilts) { filtersData.push(dataFilts[i]) }
   }
-
-  // define filterContext
-  const [filterContextData, setFilterContextData] = useState({})
-  const [mapLocationsContextData, setMapLocationsContextData] = useState({})
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>
-  if ((!dataids) || (!data1) || (!data2) || (!data3)) return <div>Loading...</div>
+  // if ((!dataFilts) || (!dataBounds) || (!dataLocs) || (!dataRegion) || (!dataSettings)) {
+  if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataSettings)) {
+    return loadingMessage(dataSettings, dataRegion, dataBounds, dataFilts, dataLocs)
+  }
+
+  // apiUrl(settingsData.apiBaseUrl, 'vA', 'b', { c: 1234 })
 
   /* ** MAIN RENDER  *************************************************************************** */
 
@@ -122,23 +163,6 @@ const App = () => {
         There is a problem, data cannot be fecthed from the API or it is taking
         much longer than usual.
       </Alert>
-    )
-  }
-
-  // if failed to load boundaries does this
-  if (!data1) {
-    return (
-      <Spinner
-        animation='border'
-        variant='danger'
-        role='status'
-        style={{
-          width: '400px',
-          height: '400px',
-          margin: 'auto',
-          display: 'block'
-        }}
-      />
     )
   }
 
@@ -170,7 +194,7 @@ const App = () => {
     }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
-        <MapControler />
+        <MapControler overviewFilter={settingsData.overviewFilter} />
       </MapContainer>
     </MapContext.Provider>
 

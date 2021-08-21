@@ -8,26 +8,10 @@ import FilterContext from '../contexts/FilterContext'
 import MapLocationsContext, { reviewMapLocationsContextData } from
   '../contexts/MapLocationsContext'
 
+const Constants = require('./Constants.js')
+
 /* Map menu that allows selection of filters and more.
  */
-
-/* ** CONSTANTS ******************************************************************************** */
-
-class Constants {
-  static get lang () {
-    return 'en'
-  }
-
-  static get overviewId () {
-    return 'overview'
-  }
-
-  static get overviewTitle () {
-    return {
-      en: 'Overview'
-    }[Constants.lang]
-  }
-}
 
 /* ** AUX FUNCS ******************************************************************************** */
 
@@ -64,7 +48,8 @@ const identifyGeoEvents = (filtersData) => {
 
 /* ** COMPONENTS ******************************************************************************* */
 
-const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOverviewOption, label }) => {
+const SubFilterSelectBox = (
+  { idTitleList, onChangeFunction, selectedId, addOverviewOption, label }) => {
   // Select box for the subfilters of area and event
   // idTitleList: Array of [option_id, option_title] pairs
   // onChangeFunction: function to be triggered when select box is changed
@@ -83,6 +68,9 @@ const SubFilterSelectBox = ({ idTitleList, onChangeFunction, selectedId, addOver
         className='rounded-0 shadow'
         label={label}
       >
+        {
+          /* overviewFilter ? (<option value='overview'>Overview</option>) : (<></>) */
+        }
         {
           innerIdTitleList.map(
             ([geoId, geoTitle]) => (
@@ -188,7 +176,7 @@ const ParametersCheckBox = () => {
 
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
-export const MainMenuControl = ({ regionName, filtersData }) => {
+export const MainMenuControl = ({ regionName, filtersData, overviewFilter }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
   // identifies all geo and event filters
@@ -218,10 +206,6 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
     })
   }
 
-  /* ** TEMP CONSTANTS ************************************************************************* */
-
-  const addOverviewOption = true
-
   /* ** MAIN RENDER  *************************************************************************** */
 
   // build content of the menu
@@ -241,11 +225,12 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
         <Row>
           <Col>
             <SubFilterSelectBox
-              idTitleList={retGeo} selectedId={filterContextData.geoFilterId}
+              idTitleList={retGeo}
+              selectedId={filterContextData.geoFilterId}
               onChangeFunction={(changeGeoFilterEvt) => {
                 functionOnChangeGeoSubFilter(changeGeoFilterEvt)
               }}
-              addOverviewOption={addOverviewOption}
+              addOverviewOption={overviewFilter}
               label='Sub-Area'
             />
           </Col>
@@ -257,7 +242,7 @@ export const MainMenuControl = ({ regionName, filtersData }) => {
               onChangeFunction={(changeEvtFilterEvt) => {
                 functionOnChangeEventSubFilter(changeEvtFilterEvt)
               }}
-              addOverviewOption={addOverviewOption}
+              addOverviewOption={overviewFilter}
               label='Event'
             />
           </Col>

@@ -60,7 +60,7 @@ const updateLocations = (jsonData, mapLocationsContextData, setMapLocationsConte
   }))
 }
 
-const MapControler = () => {
+const MapControler = ({ overviewFilter }) => {
   // this specific component is needed to allow useMap()
 
   const {
@@ -123,18 +123,19 @@ const MapControler = () => {
               position='topleft'
               regionName={regionData.systemInformation.name}
               filtersData={filtersData}
+              overviewFilter={overviewFilter}
             />
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
 
         {/* hyrographs panel */}
         <Panel
+          hideAll={timeSerieUrl}
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
           position='leaflet-right'
         />
-        {/* position='Right' */}
 
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
