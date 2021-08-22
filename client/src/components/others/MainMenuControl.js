@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import {
-  Form, Container, Row, Col
+  Col, Container, Form, Row, Tab, Tabs
 } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import ownStyles from '../../style/MainMenuControl.module.css'
@@ -83,34 +83,6 @@ const SubFilterSelectBox = (
   )
 }
 
-/*
-const ParametersSelectBox = ({ mapLocationsContextData }) => {
-  const parametersDict = mapLocationsContextData.byParameter
-  if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
-    return null
-  }
-
-  return (
-    <>
-      <span>Parameters:</span>
-      <Form.Control as='select' multiple>
-        {
-          Object.entries(parametersDict).map(
-            ([key, value]) => (
-              <option key={key}>
-                {key}&nbsp;
-                ({parametersDict[key].length}&nbsp;
-                {parametersDict[key].length === 1 ? 'location' : 'locations'})
-              </option>
-            )
-          )
-        }
-      </Form.Control>
-    </>
-  )
-}
-*/
-
 const ParametersCheckBox = () => {
   /* Set of check boxes used to select to sub-filter out location icons */
 
@@ -186,7 +158,7 @@ export const MainMenuControl = ({ regionName, filtersData, overviewFilter }) => 
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
 
-  /* ** DEFS ** */
+  /* ** DEFS *********************************************************************************** */
 
   const functionOnChangeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
@@ -206,67 +178,83 @@ export const MainMenuControl = ({ regionName, filtersData, overviewFilter }) => 
     })
   }
 
-  /* ** MAIN RENDER  *************************************************************************** */
+  const functionOnChangeTab = (newTabId) => {
+    // Triggered when a tab Overview/Filter is chaned
+    setFilterContextData({
+      ...filterContextData, inOverview: (newTabId === 'tabOverview')
+    })
+  }
+
+  /* ** MAIN RENDER **************************************************************************** */
 
   // build content of the menu
   const menuContent = (
-    <Form>
-      <Container>
-        <Row>
-          <Col>
-            <h1>{regionName}</h1>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <hr />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <SubFilterSelectBox
-              idTitleList={retGeo}
-              selectedId={filterContextData.geoFilterId}
-              onChangeFunction={(changeGeoFilterEvt) => {
-                functionOnChangeGeoSubFilter(changeGeoFilterEvt)
-              }}
-              addOverviewOption={overviewFilter}
-              label='Sub-Area'
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <SubFilterSelectBox
-              idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
-              onChangeFunction={(changeEvtFilterEvt) => {
-                functionOnChangeEventSubFilter(changeEvtFilterEvt)
-              }}
-              addOverviewOption={overviewFilter}
-              label='Event'
-            />
-          </Col>
-        </Row>
-        {/*
-        <Row>
-          <Col>
-            <ParametersSelectBox mapLocationsContextData={mapLocationsContextData} />
-          </Col>
-        </Row>
-        */}
-        <Row>
-          <Col>
-            <MapLocationsContext.Provider
-              value={{ mapLocationsContextData, setMapLocationsContextData }}
-            >
-              <ParametersCheckBox
-                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
-              />
-            </MapLocationsContext.Provider>
-          </Col>
-        </Row>
-      </Container>
-    </Form>
+    <Container>
+      <Row>
+        <Col>
+          <h1>{regionName}</h1>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <hr />
+        </Col>
+      </Row>
+      <Row>
+        <Tabs
+          className='mb-2'
+          defaultActiveKey={(filterContextData.inOverview ? 'tabOverview' : 'tabFilters')}
+          onSelect={functionOnChangeTab}
+        >
+          <Tab eventKey='tabOverview' title='Overview'>
+            <p><strong>About</strong></p>
+            <p>Here comes some information about the app.</p>
+          </Tab>
+          <Tab eventKey='tabFilters' title='Filters'>
+            <Form>
+              <Container>
+                <Row>
+                  <Col>
+                    <SubFilterSelectBox
+                      idTitleList={retGeo}
+                      selectedId={filterContextData.geoFilterId}
+                      onChangeFunction={(changeGeoFilterEvt) => {
+                        functionOnChangeGeoSubFilter(changeGeoFilterEvt)
+                      }}
+                      addOverviewOption={overviewFilter}
+                      label='Sub-Area'
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <SubFilterSelectBox
+                      idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
+                      onChangeFunction={(changeEvtFilterEvt) => {
+                        functionOnChangeEventSubFilter(changeEvtFilterEvt)
+                      }}
+                      addOverviewOption={overviewFilter}
+                      label='Event'
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <MapLocationsContext.Provider
+                      value={{ mapLocationsContextData, setMapLocationsContextData }}
+                    >
+                      <ParametersCheckBox
+                        mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
+                      />
+                    </MapLocationsContext.Provider>
+                  </Col>
+                </Row>
+              </Container>
+            </Form>
+          </Tab>
+        </Tabs>
+      </Row>
+    </Container>
   )
 
   // containing div th

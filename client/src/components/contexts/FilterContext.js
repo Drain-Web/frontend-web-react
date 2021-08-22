@@ -4,7 +4,8 @@ const FilterContext = createContext({
   filterContextData: {
     evtFilterId: null,
     geoFilterId: null,
-    filterId: null
+    filterId: null,
+    inOverview: null
   },
   setFilterContextData: (filter) => {}
 })

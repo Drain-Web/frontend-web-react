@@ -11,7 +11,6 @@ const Panel = ({ hideAll, isHidden, setIsHidden, timeSerieUrl, position }) => {
     setIsHidden(!isHidden)
   }
 
-  console.log('hideAll:', hideAll)
   if (hideAll) {
     return (
       <>

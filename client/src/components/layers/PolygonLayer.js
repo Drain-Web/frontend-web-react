@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { Fragment, useContext } from 'react'
 import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
 import FilterContext from '../contexts/FilterContext'
 
@@ -32,24 +32,23 @@ const PolygonLayer = ({
               }
 
               const displayPolygon = () => {
-                if ((filterContextData.geoFilterId === poly.id) ||
-                    (filterContextData.geoFilterId === 'overview')) {
-                  return true
-                }
-                return false
+                return ((filterContextData.geoFilterId === poly.id) ||
+                         filterContextData.inOverview) // false
               }
 
               /* build polygons */
               return (
-                <Polygon
-                  pathOptions={{
-                    color: color,
-                    fillColor: null
-                  }}
-                  positions={displayPolygon() && polygon}
-                  key={poly.id}
-                  filter={false}
-                />
+                (displayPolygon() && polygon)
+                  ? <Polygon
+                      pathOptions={{
+                        color: color,
+                        fillColor: null
+                      }}
+                      positions={polygon}
+                      key={poly.id}
+                      filter={false}
+                    />
+                  : <Fragment key={poly.id} />
               )
             })
           }

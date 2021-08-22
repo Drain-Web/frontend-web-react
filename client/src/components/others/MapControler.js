@@ -4,7 +4,7 @@ import axios from 'axios'
 
 // import components
 import { MainMenuControl } from './MainMenuControl'
-import MapLocationsContext, { reviewMapLocationsContextData } from '../contexts/MapLocationsContext'
+import MapLocationsContext, { reviewMapLocationsContextData, constraintLocationsShownByParameters } from '../contexts/MapLocationsContext'
 import FilterContext from '../contexts/FilterContext'
 import PolygonLayer from '../layers/PolygonLayer'
 import PointsLayer from '../layers/PointsLayer'
@@ -16,51 +16,83 @@ import FlexContainer from './FlexContainer'
 // import assets
 import { baseLayersData } from '../../assets/MapBaseLayers'
 
+// import libs
+import { apiUrl } from '../../libs/api.js'
+
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-const updateLocations = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
-  // this function updates TODO
-  const filteredLocations = {}
-  const filteredParameters = {}
+const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
+  // this function updates the view of the locations when the view if for filter
+  const updLocs = mapLocationsContextData.byLocations ? mapLocationsContextData.byLocations : {}
+  const updParams = {}
   const selectedParams = mapLocationsContextData.showParametersLocations
+
+  // hide all pre existing locations
+  for (const curLocationId of Object.keys(updLocs)) {
+    updLocs[curLocationId].show = false
+  }
 
   //
   for (const curFilteredTimeseries of jsonData) {
     const locationId = curFilteredTimeseries.header.location_id
     const parameterId = curFilteredTimeseries.header.parameterId
+    const timeseriesId = curFilteredTimeseries.id
 
     // add parameter no matter what
-    if (!(parameterId in filteredParameters)) {
-      filteredParameters[parameterId] = []
+    if (!(parameterId in updParams)) {
+      updParams[parameterId] = []
     }
-    filteredParameters[parameterId].push({
-      timeseriesId: curFilteredTimeseries.id,
+    updParams[parameterId].push({
+      timeseriesId: timeseriesId,
       locationId: locationId
     })
 
     // verifies if add location
-    if (selectedParams && (!selectedParams.has(curFilteredTimeseries.header.parameterId))) {
-      console.log(curFilteredTimeseries.header.parameterId, 'not in', selectedParams)
+    if (selectedParams && (!selectedParams.has(parameterId))) {
+      console.log(parameterId, 'not in', selectedParams)
       continue
     }
 
-    // add location
-    if (!(locationId in filteredLocations)) {
-      filteredLocations[locationId] = []
+    // add location if needed
+    if (!(locationId in updLocs)) {
+      updLocs[locationId] = {
+        timeseries: {}
+      }
     }
-    filteredLocations[locationId].push({
-      timeseriesId: curFilteredTimeseries.id
-    })
+    if (!(updLocs[locationId].timeseries[parameterId])) {
+      updLocs[locationId].timeseries[parameterId] = new Set()
+    }
+
+    // set to be show and include timeseries
+    updLocs[locationId].timeseries[parameterId].add(timeseriesId)
+    updLocs[locationId].show = true
   }
 
-  setMapLocationsContextData(reviewMapLocationsContextData({
-    byLocations: filteredLocations,
-    byParameter: filteredParameters
-  }))
+  const pre = {
+    ...mapLocationsContextData,
+    byLocations: updLocs,
+    byParameter: updParams
+  }
+
+  const pos = constraintLocationsShownByParameters(pre)
+
+  setMapLocationsContextData(pos)
 }
 
-const MapControler = ({ overviewFilter }) => {
+const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsContextData) => {
+  // this function updates the view of the locations when the view if for overview
+
+  if (!mapLocationsContextData.byLocations) return
+
+  const updLocs = mapLocationsContextData.byLocations
+  for (const curLocationId of Object.keys(updLocs)) {
+    updLocs[curLocationId].show = true
+  }
+  setMapLocationsContextData({ ...mapLocationsContextData, byLocations: updLocs })
+}
+
+const MapControler = ({ overviewFilter, apiBaseUrl }) => {
   // this specific component is needed to allow useMap()
 
   const {
@@ -82,31 +114,47 @@ const MapControler = ({ overviewFilter }) => {
 
   // when filterContextData is changed, load new filter data and refresh map
   useEffect(() => {
-    if (!('filterId' in filterContextData)) return null
+    // updates mapLocationsContextData
 
-    const urlFilterRequest =
-      'https://hydro-web.herokuapp.com/v1/filter/'.concat(
-        filterContextData.filterId
-      )
+    if (filterContextData.inOverview) {
+      // if it is overview, show all locations and all boundaries
 
-    const urlTimeseriesRequest =
-      'https://hydro-web.herokuapp.com/v1/timeseries/?filter='.concat(
-        filterContextData.filterId
-      )
-
-    // move map view to fit the map extent
-    fetcher(urlFilterRequest).then((jsonData) => {
-      const newMapExtent = jsonData.map.defaultExtent
+      // move map to initial zoom
+      const defaultExt = regionData.map.defaultExtent
       map.flyToBounds([
-        [newMapExtent.bottom, newMapExtent.left],
-        [newMapExtent.top, newMapExtent.right]
+        [defaultExt.bottom, defaultExt.left],
+        [defaultExt.top, defaultExt.right]
       ])
-    })
 
-    // only show locations with timeseries in the filter
-    fetcher(urlTimeseriesRequest).then((jsonData) => {
-      updateLocations(jsonData, mapLocationsContextData, setMapLocationsContextData)
-    })
+      // show all locations
+      updateLocationsToOverview(mapLocationsContextData, setMapLocationsContextData)
+
+      return null
+    } else {
+      // if it is not overview, apply filter changes
+
+      if (!('filterId' in filterContextData)) return null
+
+      // define URLs
+      const urlFilterRequest = apiUrl(apiBaseUrl, 'v1', 'filter', filterContextData.filterId)
+      const urlTimeseriesRequest = apiUrl(apiBaseUrl, 'v1', 'timeseries', {
+        filter: filterContextData.filterId
+      })
+
+      // move map view to fit the map extent
+      fetcher(urlFilterRequest).then((jsonData) => {
+        const newMapExtent = jsonData.map.defaultExtent
+        map.flyToBounds([
+          [newMapExtent.bottom, newMapExtent.left],
+          [newMapExtent.top, newMapExtent.right]
+        ])
+      })
+
+      // only show locations with timeseries in the filter
+      fetcher(urlTimeseriesRequest).then((jsonData) => {
+        updateLocationsByFilter(jsonData, mapLocationsContextData, setMapLocationsContextData)
+      })
+    }
   }, [filterContextData])
 
   return (

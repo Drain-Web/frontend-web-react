@@ -13,8 +13,10 @@ import MapControler from './components/others/MapControler'
 import MapContext from './components/contexts/MapContext'
 import FlexContainer from './components/others/FlexContainer'
 
-// import CSS styles
+// import libs
 import { apiUrl } from './libs/api.js'
+
+// import CSS styles
 import 'style/bootstrap.min.css'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
@@ -194,7 +196,10 @@ const App = () => {
     }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
-        <MapControler overviewFilter={settingsData.overviewFilter} />
+        <MapControler
+          overviewFilter={settingsData.overviewFilter}
+          apiBaseUrl={settingsData.apiBaseUrl}
+        />
       </MapContainer>
     </MapContext.Provider>
 

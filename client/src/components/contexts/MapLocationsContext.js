@@ -1,5 +1,23 @@
 import { createContext } from 'react'
 
+const constraintLocationsShownByParameters = (newMapLocationsContextData) => {
+  const newData = { ...newMapLocationsContextData }
+  if ((!newData.showParametersLocations) || (!newData.showParametersLocations.size)) {
+    return newMapLocationsContextData
+  }
+
+  // Object.entries(newData.showParametersLocations)
+  for (const paramId of newData.showParametersLocations.values()) {
+    for (const ts of newData.byParameter[paramId]) {
+      if (ts.locationId in newData.byLocations) {
+        newData.byLocations[ts.locationId].show = true
+      }
+    }
+  }
+
+  return (newData)
+}
+
 const reviewMapLocationsContextData = (newMapLocationsContextData) => {
   /* This function should be called before any call for setMapLocationsContextData() */
   const newData = { ...newMapLocationsContextData }
@@ -34,7 +52,9 @@ const MapLocationsContext = createContext({
    *  byLocations: dict as
    *   {
    *     locationId: {
-   *       timeseries: [{timeseriesId: int, timeseriesId: int, ...],
+   *       timeseries: {
+   *         parameterId: set{timeseriesId}
+   *       }[{timeseriesId: int, timeseriesId: int, ...],
    *       show: bool
    *     }
    *   }
@@ -56,4 +76,4 @@ const MapLocationsContext = createContext({
 })
 
 export default MapLocationsContext
-export { reviewMapLocationsContextData }
+export { reviewMapLocationsContextData, constraintLocationsShownByParameters }

@@ -85,33 +85,42 @@ const PointsLayer = ({
                       <p>
                         <span className='popuptitle'>Latitude:</span> {layerData.y}
                       </p>
-                      <p>
-                        <span className='popuptitle'>Timeseries:</span>
-                        &nbsp;
-                        <span onClick={() => {
-                          setTimeSerieUrl(`https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${layerData.locationId}`)
-                          setIsHidden(false)
-                        }}
-                        >
-                          Open plot
-                        </span>
-                      </p>
+                      {
+                        (!filterContextData.inOverview)
+                          ? (
+                            <p>
+                              <span className='popuptitle'>Timeseries:</span>
+                              &nbsp;
+                              <span onClick={() => {
+                                setTimeSerieUrl(`https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${layerData.locationId}`)
+                                setIsHidden(false)
+                              }}
+                              >
+                                Open plot
+                              </span>
+                            </p>)
+                          : <></>
+                      }
                     </div>
-                    <DropDownTimeSeries
-                      ids={ids}
-                      locationid={layerData.locationId}
-                      timeSerieUrl={timeSerieUrl}
-                      setTimeSerieUrl={setTimeSerieUrl}
-                      setIsHidden={setIsHidden}
-                    />
+                    {
+                      (filterContextData.inOverview)
+                        ? (
+                          <DropDownTimeSeries
+                            ids={ids}
+                            locationid={layerData.locationId}
+                            timeSerieUrl={timeSerieUrl}
+                            setTimeSerieUrl={setTimeSerieUrl}
+                            setIsHidden={setIsHidden}
+                          />)
+                        : <></>
+                    }
                     {/* <timeSeriesPlot data={data} /> */}
                   </Popup>
                 </Marker>
                 {
                   /* display location polygon if needed */
                   (layerData.polygon
-                    ?
-                      <Polygon
+                    ? <Polygon
                         pathOptions={{
                           color: '#0000AA',
                           fillColor: '#7777FF',
@@ -126,8 +135,7 @@ const PointsLayer = ({
                         display='none'
                         filter={false}
                       />
-                    :
-                      <></>
+                    : <></>
                   )
                 }
               </Fragment>

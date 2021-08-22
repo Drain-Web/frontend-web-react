@@ -12,12 +12,14 @@ const apiUrl = (baseUrl, vPath, entryPoint, parameters) => {
 
   if (!baseUrl) return null
 
-  if (parameters) {
+  if (parameters && (parameters.constructor === Object)) {
     params = []
     for (const kv of Object.entries(parameters)) {
       params.push(kv.join('='))
     }
     params = '/?'.concat(params.join('&'))
+  } else if (parameters && ((typeof parameters === 'string') || (parameters instanceof String))) {
+    params = '/'.concat(parameters)
   } else {
     params = ''
   }
