@@ -26,6 +26,8 @@ Values are chenged when user changes overview/filter tab or active filter select
 
 Holds the variables that describe the locations to be presented in the map.
 
+Must be updated after updates in ```FilterContext``` data.
+
 *filterId*: str.
 
 - TODO: redundant?

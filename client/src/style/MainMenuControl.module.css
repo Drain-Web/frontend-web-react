@@ -3,6 +3,9 @@
   height: 100vh;
   margin: 0;
   max-width: 25vw;
+  border-left-width: 0   !important;
+  border-top-width: 0    !important;
+  border-bottom-width: 0 !important;
 }
 
 .mainContainer h1 {
@@ -14,3 +17,5 @@
 .mainContainer hr {
   margin: 0.5rem 0;
 }
+
+

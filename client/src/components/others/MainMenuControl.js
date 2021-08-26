@@ -148,7 +148,9 @@ const ParametersCheckBox = () => {
 
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
-export const MainMenuControl = ({ regionName, filtersData, overviewFilter }) => {
+export const MainMenuControl = ({
+  regionName, filtersData, overviewFilter, showMainMenuControl, setShowMainMenuControl
+}) => {
   /* ** SET HOOKS ****************************************************************************** */
 
   // identifies all geo and event filters
@@ -254,12 +256,20 @@ export const MainMenuControl = ({ regionName, filtersData, overviewFilter }) => 
           </Tab>
         </Tabs>
       </Row>
+      <Row>
+        <Col style={{ paddingRight: 0 }}>
+          <button onClick={() => { setShowMainMenuControl(!showMainMenuControl) }} style={{ float: 'right' }}>
+            {showMainMenuControl ? '-' : '+'}
+          </button>
+        </Col>
+      </Row>
     </Container>
   )
 
   // containing div th
   return (
-    <div className={'leaflet-control leaflet-bar '.concat(ownStyles.mainContainer)}>
+    /* <div className={'leaflet-control leaflet-bar '.concat(ownStyles.mainContainer)}> */
+    <div className={ownStyles.mainContainer.concat(' leaflet-control leaflet-bar')}>
       {menuContent}
     </div>
   )

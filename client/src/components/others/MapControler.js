@@ -1,6 +1,7 @@
 import { LayersControl, ZoomControl, useMap } from 'react-leaflet'
-import React, { useEffect, useContext } from 'react'
+import React, { useEffect, useContext, useState } from 'react'
 import axios from 'axios'
+import { useSpring, animated } from 'react-spring'
 
 // import components
 import { MainMenuControl } from './MainMenuControl'
@@ -112,6 +113,14 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
   } = useContext(MapContext)
   const map = useMap()
 
+  const [showMainMenuControl, setShowMainMenuControl] = useState(true)
+
+  // const [greetingStatus, displayGreeting] = React.useState(true)
+  const contentProps = useSpring({
+    opacity: showMainMenuControl ? 1 : 1,
+    marginLeft: showMainMenuControl ? 0 : -440
+  })
+
   // when filterContextData is changed, load new filter data and refresh map
   useEffect(() => {
     // updates mapLocationsContextData
@@ -167,12 +176,17 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
           <MapLocationsContext.Provider
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
-            <MainMenuControl
-              position='topleft'
-              regionName={regionData.systemInformation.name}
-              filtersData={filtersData}
-              overviewFilter={overviewFilter}
-            />
+            <animated.div style={contentProps}>
+              <MainMenuControl
+                position='topleft'
+                regionName={regionData.systemInformation.name}
+                filtersData={filtersData}
+                overviewFilter={overviewFilter}
+                showMainMenuControl={showMainMenuControl}
+                setShowMainMenuControl={setShowMainMenuControl}
+              />
+            </animated.div>
+
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
 
