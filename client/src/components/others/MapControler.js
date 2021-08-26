@@ -118,7 +118,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
   // const [greetingStatus, displayGreeting] = React.useState(true)
   const contentProps = useSpring({
     opacity: showMainMenuControl ? 1 : 1,
-    marginLeft: showMainMenuControl ? 0 : -440
+    marginLeft: showMainMenuControl ? 0 : -400
   })
 
   // when filterContextData is changed, load new filter data and refresh map
