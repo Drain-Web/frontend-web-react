@@ -11,7 +11,7 @@ import { TabFilters } from './mainMenuControl/TabFilters.js'
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
 export const MainMenuControl = ({
-  regionName, filtersData, overviewFilter, showMainMenuControl, setShowMainMenuControl
+  regionName, filtersData, overviewFilter, showMainMenuControl, setShowMainMenuControl, position
 }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -69,7 +69,7 @@ export const MainMenuControl = ({
       <Row>
         <Col style={{ paddingRight: 0 }}>
           <button onClick={() => { setShowMainMenuControl(!showMainMenuControl) }} style={{ float: 'right' }}>
-            {showMainMenuControl ? '-' : '+'}
+            {showMainMenuControl ? '◀' : '▶'}
           </button>
         </Col>
       </Row>
@@ -78,7 +78,7 @@ export const MainMenuControl = ({
 
   // containing div th
   return (
-    <div className={ownStyles.mainContainer.concat(' leaflet-control leaflet-bar')}>
+    <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar ${position}`}>
       {menuContent}
     </div>
   )

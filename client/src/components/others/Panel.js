@@ -15,15 +15,19 @@ const DraggableTimeseriesDiv = ({ isHidden, timeSerieUrl, position }) => {
     if (divRef.current !== null) L.DomEvent.disableClickPropagation(divRef.current)
   })
 
+  // ${position}
   return (
-    <div className={`${isHidden ? 'Panel hide' : 'Panel'} ${position}`} ref={divRef}>
-      <Draggable bounds='parent'>
+    <div className={`${isHidden ? 'Panel hide' : 'Panel'}`} ref={divRef}>
+      {/* <Draggable bounds='parent'> */}
+      <div className='Panel-content'>
         {timeSerieUrl && (
           <Suspense fallback={<div>loading...</div>}>
             <TimeSeriesPlot timeSeriesUrl={timeSerieUrl} />
           </Suspense>
         )}
-      </Draggable>
+      </div>
+      <div className='button-close'>✕</div>
+      {/* </Draggable> */}
     </div>
   )
 }

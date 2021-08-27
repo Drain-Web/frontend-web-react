@@ -168,7 +168,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
 
   return (
     <>
-      <FlexContainer>
+      <div> {/* <FlexContainer> */}
         {/* add the main floating menu */}
         <FilterContext.Provider
           value={{ filterContextData, setFilterContextData }}
@@ -178,12 +178,12 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
           >
             <animated.div style={contentProps}>
               <MainMenuControl
-                position='topleft'
                 regionName={regionData.systemInformation.name}
                 filtersData={filtersData}
                 overviewFilter={overviewFilter}
                 showMainMenuControl={showMainMenuControl}
                 setShowMainMenuControl={setShowMainMenuControl}
+                position='leaflet-right'
               />
             </animated.div>
 
@@ -229,7 +229,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
         </LayersControl>
 
         <ZoomControl position='bottomright' />
-      </FlexContainer>
+      </div> {/* </FlexContainer> */}
     </>
   )
 }
