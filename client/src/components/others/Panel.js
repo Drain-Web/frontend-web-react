@@ -8,7 +8,7 @@ import '../../style/Panel.css'
  * Referenced by MapControler.
  */
 
-const DraggableTimeseriesDiv = ({ isHidden, timeSerieUrl, position }) => {
+const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
   const divRef = useRef(null)
 
   useEffect(() => {
@@ -26,33 +26,31 @@ const DraggableTimeseriesDiv = ({ isHidden, timeSerieUrl, position }) => {
           </Suspense>
         )}
       </div>
-      <div className='button-close'>✕</div>
+      <div className='button-close' onClick={() => { setIsHidden(!isHidden) }}>✕</div>
       {/* </Draggable> */}
     </div>
   )
 }
 
 const Panel = ({ hideAll, isHidden, setIsHidden, timeSerieUrl, position }) => {
-  const buttonHandler = () => {
-    setIsHidden(!isHidden)
-  }
-
   if (hideAll) {
     return (
       <>
         {/* TimeSeriesPlot */}
         <DraggableTimeseriesDiv
           isHidden={isHidden}
+          setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
-          position={position}
         />
 
         {/* over-the-point menu */}
+        {/*
         <div className='plotting-panel-button'>
-          <button className='boton-prueba' onClick={() => buttonHandler()}>
+          <button className='boton-prueba' onClick={() => { setIsHidden(!isHidden) }}>
             {isHidden ? 'Show' : 'Hide'}
           </button>
         </div>
+        */}
       </>
     )
   } else {

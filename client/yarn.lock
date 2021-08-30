@@ -8653,6 +8653,11 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
+use-rem-value@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/use-rem-value/-/use-rem-value-0.0.2.tgz#42d245fbea7af6a0b57c63512b3173a9c196be32"
+  integrity sha512-voHyTVrE/mxIc6QJxu+5YkouXS2JiMuXXZ8yMVJPyP3Nt3eB/Ooe7GGdL5zIFI/06cdq94w9v453i6Dxsz600g==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"

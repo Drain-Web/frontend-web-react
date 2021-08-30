@@ -1,11 +1,14 @@
 .mainContainer {
-  background-color: #f6f6f6;
+  /* background-color: #f6f6f6; */
   height: 100vh;
   margin: 0;
+  /* width:20rem; */
   max-width: 25vw;
+  border-right-width: 0  !important;
   border-left-width: 0   !important;
   border-top-width: 0    !important;
   border-bottom-width: 0 !important;
+  background: linear-gradient(180deg, rgb(190, 190, 250) 0%, rgb(220, 230, 255) 60%, rgb(200, 200, 255) 100%);
 }
 
 .mainContainer h1 {
@@ -16,4 +19,20 @@
 
 .mainContainer hr {
   margin: 0.5rem 0;
+}
+
+div.content {
+  background-color: #FFFFFF;
+  width: 18rem;
+  float: left;
+  height: 100%;
+}
+
+div.buttonSlide {
+  background-color: #FFFFFF;
+  height: 1.2rem;
+  width: 1.2rem;
+  float: left;
+  text-align: center;
+  cursor: pointer;
 }

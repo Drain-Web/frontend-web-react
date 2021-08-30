@@ -118,8 +118,9 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
   // const [greetingStatus, displayGreeting] = React.useState(true)
   const contentProps = useSpring({
     opacity: showMainMenuControl ? 1 : 1,
-    marginLeft: showMainMenuControl ? 0 : -400
+    marginLeft: showMainMenuControl ? 0 : -280
   })
+  //-400
 
   // when filterContextData is changed, load new filter data and refresh map
   useEffect(() => {
@@ -176,16 +177,16 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
           <MapLocationsContext.Provider
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
-            <animated.div style={contentProps}>
-              <MainMenuControl
-                regionName={regionData.systemInformation.name}
-                filtersData={filtersData}
-                overviewFilter={overviewFilter}
-                showMainMenuControl={showMainMenuControl}
-                setShowMainMenuControl={setShowMainMenuControl}
-                position='leaflet-right'
-              />
-            </animated.div>
+            {/* <animated.div style={contentProps}> */}
+            <MainMenuControl
+              regionName={regionData.systemInformation.name}
+              filtersData={filtersData}
+              overviewFilter={overviewFilter}
+              showMainMenuControl={showMainMenuControl}
+              setShowMainMenuControl={setShowMainMenuControl}
+              position='leaflet-right'
+            />
+            {/* </animated.div> */}
 
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
