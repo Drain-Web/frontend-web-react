@@ -1,6 +1,9 @@
 const path = require('path')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 // filename: 'bundle.js?mockVersion=' + Math.floor(Math.random() * 100) + (Math.random() + 1).toString(36).substring(7)
 
@@ -15,6 +18,12 @@ module.exports = {
     alias: {
       react: path.join(__dirname, 'node_modules', 'react')
     }
+  },
+  optimization: {
+    minimize : true,
+    minimizer: [
+      new TerserPlugin()
+    ]
   },
   module: {
     rules: [
@@ -38,7 +47,6 @@ module.exports = {
       }
     ]
   },
-  devtool: 'cheap-module-source-map',
   plugins: [
     new HtmlWebPackPlugin({
       template: './src/index.html'
@@ -47,7 +55,9 @@ module.exports = {
       patterns: [
         { from: 'public', to: '' }
       ]
-    })
+    }),
+    new CompressionPlugin(),
+    new BundleAnalyzerPlugin()
   ],
   devServer: {
     contentBase: path.join(__dirname, 'build'),

@@ -8,6 +8,7 @@
     "@popperjs/core": "^2.9.3",
     "axios": "^0.21.1",
     "bootstrap": "^5.0.2",
+    "compression-webpack-plugin": "^8.0.1",
     "core-js": "^3.15.2",
     "leaflet": "^1.7.1",
     "plotly.js": "^2.3.1",
@@ -23,7 +24,9 @@
     "recharts": "^2.0.10",
     "regenerator-runtime": "^0.13.9",
     "swr": "^0.5.6",
-    "use-rem-value": "^0.0.2"
+    "terser-webpack-plugin": "^5.1.4",
+    "use-rem-value": "^0.0.2",
+    "webpack-bundle-analyzer": "^4.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
@@ -42,6 +45,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode=development",
-    "build": "webpack --mode=production"
+    "build": "webpack --mode=production",
+    "bundle-report": "webpack-bundle-analyzer --port 4200 compilation-stats.json"
   }
 }

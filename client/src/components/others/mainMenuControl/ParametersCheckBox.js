@@ -3,6 +3,7 @@ import { Form } from 'react-bootstrap'
 
 import MapLocationsContext, { reviewMapLocationsContextData } from
   '../../contexts/MapLocationsContext'
+import ownStyles from '../../../style/MainMenuControl.module.css'
 
 /* Set of check boxes used to select to sub-filter out location icons
  */
@@ -15,7 +16,8 @@ export const ParametersCheckBox = () => {
 
   const parametersDict = mapLocationsContextData.byParameter
   if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
-    return null
+    return <div className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])}>Loading...</div>
+    // return null
   }
 
   const numLocations = (nLocations) => {
@@ -49,23 +51,22 @@ export const ParametersCheckBox = () => {
     setMapLocationsContextData(reviewMapLocationsContextData(newMapLocationsContextData))
   }
 
+  /* <Div className='form-floating'> */
+
   return (
-    <>
-      <span>Parameters:</span>
-      <Form.Group className='mb-3' onChange={groupOnChange}>
-        {
-          Object.entries(parametersDict).map(
-            ([key, value]) => (
-              <Form.Check
-                parameter={key}
-                key={key}
-                type='checkbox'
-                label={key.concat(' ', numLocations(parametersDict[key].length))}
-              />
-            )
+    <Form.Group className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])} onChange={groupOnChange}>
+      {
+        Object.entries(parametersDict).map(
+          ([key, value]) => (
+            <Form.Check
+              parameter={key}
+              key={key}
+              type='checkbox'
+              label={key.concat(' ', numLocations(parametersDict[key].length))}
+            />
           )
-        }
-      </Form.Group>
-    </>
+        )
+      }
+    </Form.Group>
   )
 }

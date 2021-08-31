@@ -1,8 +1,10 @@
 import React, { useContext } from 'react'
 import { Col, Container, Form, Row } from 'react-bootstrap'
+import FloatingLabel from 'react-bootstrap/FloatingLabel'
 
 import MapLocationsContext from '../../contexts/MapLocationsContext'
 import FilterContext from '../../contexts/FilterContext'
+import ownStyles from '../../../style/MainMenuControl.module.css'
 
 import { ParametersCheckBox } from './ParametersCheckBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
@@ -72,7 +74,7 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
 
   return (
     <Form>
-      <Container>
+      <Container className='p-0'>
         <Row>
           <Col>
             <SubFilterSelectBox
@@ -86,7 +88,7 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
             />
           </Col>
         </Row>
-        <Row>
+        <Row className={ownStyles['row-padding-top']}>
           <Col>
             <SubFilterSelectBox
               idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
@@ -98,14 +100,37 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
             />
           </Col>
         </Row>
-        <Row>
+        <Row className={ownStyles['row-padding-top']}>
           <Col>
             <MapLocationsContext.Provider
               value={{ mapLocationsContextData, setMapLocationsContextData }}
             >
-              <ParametersCheckBox
-                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
-              />
+              <FloatingLabel label='Parameters'>
+                <div className='rounded-1 form-control pt-2 pb-0 h-auto'>
+                  <ParametersCheckBox
+                    mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
+                  />
+                </div>
+              </FloatingLabel>
+            </MapLocationsContext.Provider>
+          </Col>
+        </Row>
+        <Row className={ownStyles['row-padding-top']}>
+          <Col>
+            <MapLocationsContext.Provider
+              value={{ mapLocationsContextData, setMapLocationsContextData }}
+            >
+              <FloatingLabel label='Icons'>
+                <Form.Control
+                  as='select'
+                  defaultValue='raw'
+                  onChange={() => { console.log('Changed select...') }}
+                  className='rounded-1'
+                  label='Icons'
+                >
+                  <option value='raw' key='raw'>Simple locations</option>
+                </Form.Control>
+              </FloatingLabel>
             </MapLocationsContext.Provider>
           </Col>
         </Row>

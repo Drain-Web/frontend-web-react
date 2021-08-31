@@ -1,18 +1,17 @@
 import { LayersControl, ZoomControl, useMap } from 'react-leaflet'
 import React, { useEffect, useContext, useState } from 'react'
 import axios from 'axios'
-import { useSpring, animated } from 'react-spring'
+import { useSpring } from 'react-spring'
 
 // import components
 import { MainMenuControl } from './MainMenuControl'
-import MapLocationsContext, { reviewMapLocationsContextData, constraintLocationsShownByParameters } from '../contexts/MapLocationsContext'
+import MapLocationsContext, { constraintLocationsShownByParameters } from '../contexts/MapLocationsContext'
 import FilterContext from '../contexts/FilterContext'
 import PolygonLayer from '../layers/PolygonLayer'
 import PointsLayer from '../layers/PointsLayer'
 import MapContext from '../contexts/MapContext'
 import BaseLayers from '../layers/BaseLayers'
 import Panel from './Panel'
-import FlexContainer from './FlexContainer'
 
 // import assets
 import { baseLayersData } from '../../assets/MapBaseLayers'

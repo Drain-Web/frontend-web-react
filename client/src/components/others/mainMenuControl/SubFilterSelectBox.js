@@ -24,7 +24,7 @@ export const SubFilterSelectBox = (
         as='select'
         defaultValue={selectedId}
         onChange={onChangeFunction}
-        className='rounded-0 shadow'
+        className='rounded-1'
         label={label}
       >
         {

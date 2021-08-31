@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useRef } from 'react'
 import Draggable from 'react-draggable'
-import * as L from 'leaflet'
+import { DomEvent } from 'leaflet'
 import TimeSeriesPlot from './TimeSeriesPlot'
 import '../../style/Panel.css'
 
@@ -12,7 +12,7 @@ const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
   const divRef = useRef(null)
 
   useEffect(() => {
-    if (divRef.current !== null) L.DomEvent.disableClickPropagation(divRef.current)
+    if (divRef.current !== null) DomEvent.disableClickPropagation(divRef.current)
   })
 
   // ${position}

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from 'react'
-import * as L from 'leaflet'
+import { DomEvent } from 'leaflet'
 import { Col, Container, Row, Tab, Tabs } from 'react-bootstrap'
 import { useSpring, animated } from 'react-spring'
 import useRemValue from 'use-rem-value'
@@ -23,7 +23,7 @@ export const MainMenuControl = ({
   const divRef = useRef(null)
 
   useEffect(() => {
-    L.DomEvent.disableClickPropagation(divRef.current)
+    DomEvent.disableClickPropagation(divRef.current)
   })
 
   const remValue = useRemValue()
