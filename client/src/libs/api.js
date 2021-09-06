@@ -17,7 +17,7 @@ const apiUrl = (baseUrl, vPath, entryPoint, parameters) => {
     for (const kv of Object.entries(parameters)) {
       params.push(kv.join('='))
     }
-    params = '/?'.concat(params.join('&'))
+    params = '?'.concat(params.join('&'))
   } else if (parameters && ((typeof parameters === 'string') || (parameters instanceof String))) {
     params = '/'.concat(parameters)
   } else {

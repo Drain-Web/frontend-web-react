@@ -55,15 +55,16 @@ const getMapCenter = (mapExtent) => {
   }
 }
 
-const loadingMessage = (dataSettings, dataRegion, dataBounds, dataFilts, dataLocs) => {
+const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups) => {
+  const [lded, lding] = ['loaded', '...']
   return (
     <div>
       Loading...<br />
-      &nbsp;general settings: {dataSettings ? 'loaded.' : '...'}<br />
       &nbsp;region info: {dataRegion ? 'loaded.' : '...'}<br />
-      &nbsp;region info: {dataBounds ? 'loaded.' : '...'}<br />
-      &nbsp;region info: {dataFilts ? 'loaded.' : '...'}<br />
-      &nbsp;region info: {dataLocs ? 'loaded.' : '...'}<br />
+      &nbsp;bounds info: {dataBounds ? 'loaded.' : '...'}<br />
+      &nbsp;filters info: {dataFilts ? 'loaded.' : '...'}<br />
+      &nbsp;locations info: {dataLocs ? 'loaded.' : '...'}<br />
+      &nbsp;threshold groups info: {dataThresholdGroups ? lded : lding}<br />
       <Spinner
         animation='border'
         variant='danger'
@@ -79,7 +80,7 @@ const loadingMessage = (dataSettings, dataRegion, dataBounds, dataFilts, dataLoc
   )
 }
 
-const App = () => {
+const App = ({ settings }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
   // Estado - enpoint para series de tiempo
@@ -89,7 +90,6 @@ const App = () => {
   const [isHidden, setIsHidden] = useState(false)
 
   // Fetched states
-  const settingsData = useState({})[0]
   const locationsData = useState({})[0]
   const boundariesData = useState([])[0]
   const regionData = useState({})[0]
@@ -99,55 +99,42 @@ const App = () => {
   const [filterContextData, setFilterContextData] = useState({})
   const [mapLocationsContextData, setMapLocationsContextData] = useState({})
 
-  // read app settings
-  const { data: dataSettings, error: errorSettings } = useSWR(
-    'settings.json', fetcher
-  )
-  if (dataSettings && (!errorSettings) && (!Object.keys(settingsData).length)) {
-    for (const i in dataSettings) settingsData[i] = dataSettings[i]
-  }
-
   // request location data -> store in const 'locationsData'
   const { data: dataLocs, error: error2 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1dw/locations?showPolygon=true&showAttributes=true', fetcher
-  )
+    apiUrl(settings.apiBaseUrl, 'v1dw', 'locations',
+      {'showPolygon': true, 'showAttributes': true}), fetcher)
   if (dataLocs && !error2 && !Object.keys(locationsData).length) {
-    for (const i in dataLocs) { locationsData[i] = dataLocs[i] }
-  }
+    for (const i in dataLocs) { locationsData[i] = dataLocs[i] }}
 
   // request boundaries data -> store in const 'boundariesData'
   const { data: dataBounds, error: error1 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1dw/boundaries', fetcher
-  )
+    apiUrl(settings.apiBaseUrl, 'v1dw', 'boundaries'), fetcher)
   if ((dataBounds && !error1 && !boundariesData.length)) {
-    for (const i in dataBounds) { boundariesData.push(dataBounds[i]) }
-  }
+    for (const i in dataBounds) { boundariesData.push(dataBounds[i]) }}
 
   // request region data -> store in const 'regionData'
   const { data: dataRegion, error: error3 } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/region', fetcher
-  )
+    apiUrl(settings.apiBaseUrl, 'v1', 'region'), fetcher)
   if (dataRegion && !error3 && !Object.keys(regionData).length) {
-    for (const i in dataRegion) { regionData[i] = dataRegion[i] }
-  }
+    for (const i in dataRegion) { regionData[i] = dataRegion[i] }}
 
-  // request filters data -> store in 'ids'
-  // only proceeds when the request is received or fails
+  // request filters data -> store in 'filtersData'
   const { data: dataFilts, error: errorids } = useSWR(
-    'https://hydro-web.herokuapp.com/v1/filters', fetcher
-  )
+    apiUrl(settings.apiBaseUrl, 'v1', 'filters'), fetcher)
   if (dataFilts && !errorids && !filtersData.length) {
-    for (const i in dataFilts) { filtersData.push(dataFilts[i]) }
-  }
+    for (const i in dataFilts) { filtersData.push(dataFilts[i]) }}
+
+  // load threshold groups
+  const { data: dataThresholdGroups, error: errorThreshGroups } = useSWR(
+    apiUrl(settings.apiBaseUrl, 'v1dw', 'threshold_groups'), fetcher)
+  if (dataThresholdGroups && !errorThreshGroups) {
+    for (const tg in dataThresholdGroups.thresholdGroups) { dataThresholdGroups[tg.id] = tg }}
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>
-  // if ((!dataFilts) || (!dataBounds) || (!dataLocs) || (!dataRegion) || (!dataSettings)) {
-  if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataSettings)) {
-    return loadingMessage(dataSettings, dataRegion, dataBounds, dataFilts, dataLocs)
+  if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataThresholdGroups)) {
+    return loadingMessage(dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups)
   }
-
-  // apiUrl(settingsData.apiBaseUrl, 'vA', 'b', { c: 1234 })
 
   /* ** MAIN RENDER  *************************************************************************** */
 
@@ -197,8 +184,8 @@ const App = () => {
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <MapControler
-          overviewFilter={settingsData.overviewFilter}
-          apiBaseUrl={settingsData.apiBaseUrl}
+          overviewFilter={settings.overviewFilter}
+          apiBaseUrl={settings.apiBaseUrl}
         />
       </MapContainer>
     </MapContext.Provider>
@@ -206,4 +193,22 @@ const App = () => {
   )
 }
 
-export default App
+const AppSettings = () => {
+  /* ** SET HOOKS ****************************************************************************** */
+
+  // a
+  const settingsData = useState({})[0]
+
+  // read app settings
+  // && (!Object.keys(settingsData).length)
+  const { data: dataSettings, error: errorSettings } = useSWR('settings.json', fetcher)
+  if (dataSettings && (!errorSettings)) {
+    for (const i in dataSettings) settingsData[i] = dataSettings[i]
+    return <App settings={settingsData} />
+  }
+  else {
+    return <div>Load basic settings...</div>
+  }
+}
+
+export default AppSettings
