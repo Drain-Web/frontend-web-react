@@ -147,7 +147,12 @@ const App = ({ settings }) => {
   const { data: dataThresholdValueSets, error: errorThresholdValueSets } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1dw', 'threshold_value_sets'), fetcher)
   if (dataThresholdValueSets && !errorThresholdValueSets) {
-    for (const tg in dataThresholdValueSets) { thresholdValueSetsData[tg.id] = tg }
+    for (const tg in dataThresholdValueSets.thresholdValueSets) {
+      const curObj = { ...dataThresholdValueSets.thresholdValueSets[tg] }
+      const curObjId = curObj.id
+      delete curObj.id
+      thresholdValueSetsData[curObjId] = curObj
+    }
   }
 
   // basic check for opening the system
@@ -186,7 +191,6 @@ const App = ({ settings }) => {
 
   // build page if everithing worked fine
   return (
-
     <MapContext.Provider value={{
       locationsData,
       isHidden,
@@ -201,13 +205,13 @@ const App = ({ settings }) => {
       regionData,
       filtersData,
       ids
-    }}
-    >
+    }}>
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <MapControler
           overviewFilter={settings.overviewFilter}
           apiBaseUrl={settings.apiBaseUrl}
           generalLocationIcon={settings.generalLocationIcon}
+          thresholdValueSets={thresholdValueSetsData}
         />
       </MapContainer>
     </MapContext.Provider>

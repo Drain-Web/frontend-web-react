@@ -3,10 +3,17 @@ import { Form, FloatingLabel } from 'react-bootstrap'
 
 import MapLocationsContext from '../../contexts/MapLocationsContext'
 
-export const ThresholdValueSetCheckBox = () => {
+export const ThresholdValueSetCheckBox = ({ thresholdValueSets }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
+
+  /* ** SHOW NOTHING IF ABOVE NOT LOADED ******************************************************* */
+
+  const parametersDict = mapLocationsContextData.byParameter
+  if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
+    return <></>
+  }
 
   /* ** OTHERS ********************************************************************************* */
 
@@ -17,7 +24,8 @@ export const ThresholdValueSetCheckBox = () => {
   if ((threshValueSetDict) && (Object.keys(threshValueSetDict).length > 0)){
     allOptions.push.apply(allOptions, Object.entries(threshValueSetDict).map(
       ([key, value]) => {
-        return (value.showAsOption ? <option valye={key} key={key}>{key}</option> : null)
+        const tValSet = thresholdValueSets[key].name
+        return (value.showAsOption ? <option value={key} key={key}>{tValSet}</option> : null)
       }
     ))
   }
@@ -37,5 +45,3 @@ export const ThresholdValueSetCheckBox = () => {
     </FloatingLabel>
   )
 }
-
-// <option value='raw' key='raw'>Simple locations</option>

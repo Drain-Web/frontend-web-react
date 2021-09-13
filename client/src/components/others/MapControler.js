@@ -113,7 +113,7 @@ const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsConte
   setMapLocationsContextData({ ...mapLocationsContextData, byLocations: updLocs })
 }
 
-const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
+const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon, thresholdValueSets }) => {
   // this specific component is needed to allow useMap()
 
   const {
@@ -194,6 +194,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
             <MainMenuControl
               regionName={regionData.systemInformation.name}
               filtersData={filtersData}
+              thresholdValueSets={thresholdValueSets}
               overviewFilter={overviewFilter}
               showMainMenuControl={showMainMenuControl}
               setShowMainMenuControl={setShowMainMenuControl}

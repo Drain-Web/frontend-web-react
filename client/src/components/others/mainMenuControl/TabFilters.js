@@ -43,7 +43,7 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-export const TabFilters = ({ filtersData, overviewFilter }) => {
+export const TabFilters = ({ filtersData, thresholdValueSets, overviewFilter }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
@@ -118,7 +118,7 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
             <MapLocationsContext.Provider
               value={{ mapLocationsContextData, setMapLocationsContextData }}
             > 
-              <ThresholdValueSetCheckBox />
+              <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
             </MapLocationsContext.Provider>
           </Col>
         </Row>

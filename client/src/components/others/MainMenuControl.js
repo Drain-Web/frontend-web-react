@@ -13,7 +13,8 @@ import { TabFilters } from './mainMenuControl/TabFilters.js'
 /* ** OBJ - Bootstrap div ********************************************************************** */
 
 export const MainMenuControl = ({
-  regionName, filtersData, overviewFilter, showMainMenuControl, setShowMainMenuControl, position
+  regionName, filtersData, thresholdValueSets, overviewFilter, showMainMenuControl,
+  setShowMainMenuControl, position
 }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -30,7 +31,6 @@ export const MainMenuControl = ({
 
   const contentProps = useSpring({
     marginLeft: showMainMenuControl ? 0 : -18 * remValue
-    // width: showMainMenuControl ? 18 :
   })
 
   /* ** DEFS *********************************************************************************** */
@@ -72,6 +72,7 @@ export const MainMenuControl = ({
               <Tab eventKey='tabFilters' title='Filters'>
                 <TabFilters
                   filtersData={filtersData}
+                  thresholdValueSets={thresholdValueSets}
                   overviewFilter={overviewFilter}
                 />
               </Tab>
