@@ -1,5 +1,6 @@
 {
   "apiBaseUrl": "https://hydro-web.herokuapp.com/",
   "overviewFilter": true,
-  "typeOfFilters": "event.subarea"
+  "typeOfFilters": "event.subarea",
+  "generalLocationIcon": "./img/drop.png"
 }

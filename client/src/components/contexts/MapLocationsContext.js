@@ -18,6 +18,24 @@ const constraintLocationsShownByParameters = (newMapLocationsContextData) => {
   return (newData)
 }
 
+const showThresholdValueSetsBySelectedParameters = (newMapLocationsContextData) => {
+  const newData = { ...newMapLocationsContextData }
+  
+  // if there is no selected parameters, show all thresh value sets
+  if ((!newData.showParametersLocations) || (!newData.showParametersLocations.size)) {
+    Object.keys(newData.byThresholdValueSet).map((threshValueSetId) => {
+      newData.byThresholdValueSet[threshValueSetId].showAsOption = true
+    })
+    return (newData)
+  } 
+  
+  // TODO - make it better. Hide all
+  Object.keys(newData.byThresholdValueSet).map((threshValueSetId) => {
+    newData.byThresholdValueSet[threshValueSetId].showAsOption = false
+  })
+  return (newData)
+}
+
 const reviewMapLocationsContextData = (newMapLocationsContextData) => {
   /* This function should be called before any call for setMapLocationsContextData() */
   const newData = { ...newMapLocationsContextData }
@@ -49,6 +67,9 @@ const reviewMapLocationsContextData = (newMapLocationsContextData) => {
 const MapLocationsContext = createContext({
   /* mapLocationsContextData:
    *  filterId: str. Id of the current selected filter
+   *  thresholdValueSet: str. Id of the current selected thresholdValueSet
+   *  showParametersLocations: set with parameter ids.
+   *   E.g. {'Q.obs', 'Q.sim', ...}
    *  byLocations: dict as
    *   {
    *     locationId: {
@@ -63,17 +84,25 @@ const MapLocationsContext = createContext({
    *     parameterId:
    *       [{timeseriesId: int, locationId: str}, ...]
    *   }
-   *  showParametersLocations: set with parameter ids.
-   *   E.g. {'Q.obs', 'Q.sim', ...}
+   *  byThresholdValueSet: dict as
+   *   {
+   *     thresholdValueSetId: {
+   *       timeseries: [{timeseriesId: int, locationId: str, iconUrl: str, parameterId: str}, ...],
+   *       showAsOption: bool
+   *     }
+   *   }
    */
   mapLocationsContextData: {
     filterId: null,
+    thresholdValueSet: null,
+    showParametersLocations: new Set(),
     byLocations: {},
     byParameter: {},
-    showParametersLocations: new Set()
+    byThresholdValueSet: {}
   },
   setMapLocationsContextData: (filter) => {}
 })
 
 export default MapLocationsContext
-export { reviewMapLocationsContextData, constraintLocationsShownByParameters }
+export { reviewMapLocationsContextData, constraintLocationsShownByParameters, 
+  showThresholdValueSetsBySelectedParameters }

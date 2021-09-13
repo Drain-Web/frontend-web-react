@@ -21,6 +21,8 @@ import 'style/bootstrap.min.css'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
 
+/* ** FUNCTIONS ******************************************************************************** */
+
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
@@ -55,16 +57,18 @@ const getMapCenter = (mapExtent) => {
   }
 }
 
-const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups) => {
+const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups,
+                        dataThresholdValueSets) => {
   const [lded, lding] = ['loaded', '...']
   return (
     <div>
       Loading...<br />
-      &nbsp;region info: {dataRegion ? 'loaded.' : '...'}<br />
-      &nbsp;bounds info: {dataBounds ? 'loaded.' : '...'}<br />
-      &nbsp;filters info: {dataFilts ? 'loaded.' : '...'}<br />
-      &nbsp;locations info: {dataLocs ? 'loaded.' : '...'}<br />
-      &nbsp;threshold groups info: {dataThresholdGroups ? lded : lding}<br />
+      &nbsp;regions: {dataRegion ? 'loaded.' : '...'}<br />
+      &nbsp;bounds: {dataBounds ? 'loaded.' : '...'}<br />
+      &nbsp;filters: {dataFilts ? 'loaded.' : '...'}<br />
+      &nbsp;locations: {dataLocs ? 'loaded.' : '...'}<br />
+      &nbsp;threshold groups: {dataThresholdGroups ? lded : lding}<br />
+      &nbsp;threshold value sets: {dataThresholdValueSets ? lded : lding}<br />
       <Spinner
         animation='border'
         variant='danger'
@@ -80,6 +84,8 @@ const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresho
   )
 }
 
+/* ** REACT COMPONENTS ************************************************************************* */
+
 const App = ({ settings }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -94,6 +100,8 @@ const App = ({ settings }) => {
   const boundariesData = useState([])[0]
   const regionData = useState({})[0]
   const filtersData = useState([])[0]
+  const thresholdGroupsData = useState({})[0]
+  const thresholdValueSetsData = useState({})[0]
 
   // Context states
   const [filterContextData, setFilterContextData] = useState({})
@@ -102,38 +110,51 @@ const App = ({ settings }) => {
   // request location data -> store in const 'locationsData'
   const { data: dataLocs, error: error2 } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1dw', 'locations',
-      {'showPolygon': true, 'showAttributes': true}), fetcher)
+      { showPolygon: true, showAttributes: true }), fetcher)
   if (dataLocs && !error2 && !Object.keys(locationsData).length) {
-    for (const i in dataLocs) { locationsData[i] = dataLocs[i] }}
+    for (const i in dataLocs) { locationsData[i] = dataLocs[i] }
+  }
 
   // request boundaries data -> store in const 'boundariesData'
   const { data: dataBounds, error: error1 } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1dw', 'boundaries'), fetcher)
   if ((dataBounds && !error1 && !boundariesData.length)) {
-    for (const i in dataBounds) { boundariesData.push(dataBounds[i]) }}
+    for (const i in dataBounds) { boundariesData.push(dataBounds[i]) }
+  }
 
   // request region data -> store in const 'regionData'
   const { data: dataRegion, error: error3 } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1', 'region'), fetcher)
   if (dataRegion && !error3 && !Object.keys(regionData).length) {
-    for (const i in dataRegion) { regionData[i] = dataRegion[i] }}
+    for (const i in dataRegion) { regionData[i] = dataRegion[i] }
+  }
 
   // request filters data -> store in 'filtersData'
   const { data: dataFilts, error: errorids } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1', 'filters'), fetcher)
   if (dataFilts && !errorids && !filtersData.length) {
-    for (const i in dataFilts) { filtersData.push(dataFilts[i]) }}
+    for (const i in dataFilts) { filtersData.push(dataFilts[i]) }
+  }
 
   // load threshold groups
   const { data: dataThresholdGroups, error: errorThreshGroups } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1dw', 'threshold_groups'), fetcher)
   if (dataThresholdGroups && !errorThreshGroups) {
-    for (const tg in dataThresholdGroups.thresholdGroups) { dataThresholdGroups[tg.id] = tg }}
+    for (const tg in dataThresholdGroups.thresholdGroups) { thresholdGroupsData[tg.id] = tg }
+  }
+
+  // load threshold value sets
+  const { data: dataThresholdValueSets, error: errorThresholdValueSets } = useSWR(
+    apiUrl(settings.apiBaseUrl, 'v1dw', 'threshold_value_sets'), fetcher)
+  if (dataThresholdValueSets && !errorThresholdValueSets) {
+    for (const tg in dataThresholdValueSets) { thresholdValueSetsData[tg.id] = tg }
+  }
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>
   if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataThresholdGroups)) {
-    return loadingMessage(dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups)
+    return loadingMessage(dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups,
+      dataThresholdValueSets)
   }
 
   /* ** MAIN RENDER  *************************************************************************** */
@@ -186,6 +207,7 @@ const App = ({ settings }) => {
         <MapControler
           overviewFilter={settings.overviewFilter}
           apiBaseUrl={settings.apiBaseUrl}
+          generalLocationIcon={settings.generalLocationIcon}
         />
       </MapContainer>
     </MapContext.Provider>
@@ -196,12 +218,12 @@ const App = ({ settings }) => {
 const AppSettings = () => {
   /* ** SET HOOKS ****************************************************************************** */
 
-  // a
-  const settingsData = useState({})[0]
-
   // read app settings
-  // && (!Object.keys(settingsData).length)
+  const settingsData = useState({})[0]
   const { data: dataSettings, error: errorSettings } = useSWR('settings.json', fetcher)
+  
+  /* ** MAIN RENDER  *************************************************************************** */
+  
   if (dataSettings && (!errorSettings)) {
     for (const i in dataSettings) settingsData[i] = dataSettings[i]
     return <App settings={settingsData} />

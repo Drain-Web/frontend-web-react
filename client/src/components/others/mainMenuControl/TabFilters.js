@@ -8,6 +8,7 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 
 import { ParametersCheckBox } from './ParametersCheckBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
+import { ThresholdValueSetCheckBox } from './ThresholdValueSetCheckBox'
 
 /* ** AUX FUNCS ******************************************************************************** */
 
@@ -91,7 +92,8 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
         <Row className={ownStyles['row-padding-top']}>
           <Col>
             <SubFilterSelectBox
-              idTitleList={retEvt} selectedId={filterContextData.evtFilterId}
+              idTitleList={retEvt}
+              selectedId={filterContextData.evtFilterId}
               onChangeFunction={(changeEvtFilterEvt) => {
                 functionOnChangeEventSubFilter(changeEvtFilterEvt)
               }}
@@ -105,13 +107,9 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
             <MapLocationsContext.Provider
               value={{ mapLocationsContextData, setMapLocationsContextData }}
             >
-              <FloatingLabel label='Parameters'>
-                <div className='rounded-1 form-control pt-2 pb-0 h-auto'>
-                  <ParametersCheckBox
-                    mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
-                  />
-                </div>
-              </FloatingLabel>
+              <ParametersCheckBox
+                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
+              />
             </MapLocationsContext.Provider>
           </Col>
         </Row>
@@ -119,18 +117,8 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
           <Col>
             <MapLocationsContext.Provider
               value={{ mapLocationsContextData, setMapLocationsContextData }}
-            >
-              <FloatingLabel label='Icons'>
-                <Form.Control
-                  as='select'
-                  defaultValue='raw'
-                  onChange={() => { console.log('Changed select...') }}
-                  className='rounded-1'
-                  label='Icons'
-                >
-                  <option value='raw' key='raw'>Simple locations</option>
-                </Form.Control>
-              </FloatingLabel>
+            > 
+              <ThresholdValueSetCheckBox />
             </MapLocationsContext.Provider>
           </Col>
         </Row>

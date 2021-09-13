@@ -5,7 +5,8 @@ import { useSpring } from 'react-spring'
 
 // import components
 import { MainMenuControl } from './MainMenuControl'
-import MapLocationsContext, { constraintLocationsShownByParameters } from '../contexts/MapLocationsContext'
+import MapLocationsContext, { constraintLocationsShownByParameters, 
+  showThresholdValueSetsBySelectedParameters } from '../contexts/MapLocationsContext'
 import FilterContext from '../contexts/FilterContext'
 import PolygonLayer from '../layers/PolygonLayer'
 import PointsLayer from '../layers/PointsLayer'
@@ -23,9 +24,10 @@ import { apiUrl } from '../../libs/api.js'
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
-  // this function updates the view of the locations when the view if for filter
+  // this function updates the view of the locations when the view is for filter
   const updLocs = mapLocationsContextData.byLocations ? mapLocationsContextData.byLocations : {}
   const updParams = {}
+  const updThreshValueSets = {}
   const selectedParams = mapLocationsContextData.showParametersLocations
 
   // hide all pre existing locations
@@ -38,6 +40,7 @@ const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocati
     const locationId = curFilteredTimeseries.header.location_id
     const parameterId = curFilteredTimeseries.header.parameterId
     const timeseriesId = curFilteredTimeseries.id
+    const thresholdValueSets = curFilteredTimeseries.thresholdValueSets
 
     // add parameter no matter what
     if (!(parameterId in updParams)) {
@@ -47,6 +50,22 @@ const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocati
       timeseriesId: timeseriesId,
       locationId: locationId
     })
+
+    // add threshold value sets
+    thresholdValueSets.forEach((curThresholdValueSet) => {
+      if (!(curThresholdValueSet.id in updThreshValueSets)){
+        updThreshValueSets[curThresholdValueSet.id] = {
+          timeseries: [],
+          showAsOption: false
+        }
+      }
+      updThreshValueSets[curThresholdValueSet.id].timeseries.push({
+        timeseriesId: timeseriesId,
+        locationId: locationId,
+        iconUrl: null,  // TODO - ignored now, make use of it
+        parameterId: parameterId
+      })
+    });
 
     // verifies if add location
     if (selectedParams && (!selectedParams.has(parameterId))) {
@@ -72,13 +91,15 @@ const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocati
   const pre = {
     ...mapLocationsContextData,
     byLocations: updLocs,
+    byThresholdValueSet: updThreshValueSets,
     byParameter: updParams
   }
 
-  const pos = constraintLocationsShownByParameters(pre)
+  const pos = showThresholdValueSetsBySelectedParameters(constraintLocationsShownByParameters(pre))
 
   setMapLocationsContextData(pos)
 }
+
 
 const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsContextData) => {
   // this function updates the view of the locations when the view if for overview
@@ -92,7 +113,7 @@ const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsConte
   setMapLocationsContextData({ ...mapLocationsContextData, byLocations: updLocs })
 }
 
-const MapControler = ({ overviewFilter, apiBaseUrl }) => {
+const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
   // this specific component is needed to allow useMap()
 
   const {
@@ -114,13 +135,6 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
 
   const [showMainMenuControl, setShowMainMenuControl] = useState(true)
 
-  // const [greetingStatus, displayGreeting] = React.useState(true)
-  const contentProps = useSpring({
-    opacity: showMainMenuControl ? 1 : 1,
-    marginLeft: showMainMenuControl ? 0 : -280
-  })
-  //-400
-
   // when filterContextData is changed, load new filter data and refresh map
   useEffect(() => {
     // updates mapLocationsContextData
@@ -139,6 +153,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
       updateLocationsToOverview(mapLocationsContextData, setMapLocationsContextData)
 
       return null
+
     } else {
       // if it is not overview, apply filter changes
 
@@ -176,7 +191,6 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
           <MapLocationsContext.Provider
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
-            {/* <animated.div style={contentProps}> */}
             <MainMenuControl
               regionName={regionData.systemInformation.name}
               filtersData={filtersData}
@@ -185,7 +199,6 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
               setShowMainMenuControl={setShowMainMenuControl}
               position='leaflet-right'
             />
-            {/* </animated.div> */}
 
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
@@ -208,7 +221,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl }) => {
               <PointsLayer
                 layerData={locationsData}
                 layerName='Locations'
-                iconUrl='./img/browndot.png'
+                iconUrl={generalLocationIcon}
                 ids={ids}
                 timeSerieUrl={timeSerieUrl}
                 setTimeSerieUrl={setTimeSerieUrl}

@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
-import { Form } from 'react-bootstrap'
+import { Form, FloatingLabel} from 'react-bootstrap'
 
-import MapLocationsContext, { reviewMapLocationsContextData } from
-  '../../contexts/MapLocationsContext'
+import MapLocationsContext, { reviewMapLocationsContextData, 
+  showThresholdValueSetsBySelectedParameters } from '../../contexts/MapLocationsContext'
 import ownStyles from '../../../style/MainMenuControl.module.css'
 
 /* Set of check boxes used to select to sub-filter out location icons
@@ -17,8 +17,9 @@ export const ParametersCheckBox = () => {
   const parametersDict = mapLocationsContextData.byParameter
   if ((!parametersDict) || (!Object.keys(parametersDict).length)) {
     return <div className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])}>Loading...</div>
-    // return null
   }
+
+  /* ** FUNCTIONS ****************************************************************************** */
 
   const numLocations = (nLocations) => {
     /* simple function to create '(_ location[s])' string */
@@ -48,25 +49,33 @@ export const ParametersCheckBox = () => {
     }
     newMapLocationsContextData.showParametersLocations = showParamLocations
 
-    setMapLocationsContextData(reviewMapLocationsContextData(newMapLocationsContextData))
+    const pos = showThresholdValueSetsBySelectedParameters(
+                  reviewMapLocationsContextData(newMapLocationsContextData))
+
+    setMapLocationsContextData(pos)
   }
 
-  /* <Div className='form-floating'> */
+  /* ** BUILD COMPONENT ************************************************************************ */
 
   return (
-    <Form.Group className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])} onChange={groupOnChange}>
-      {
-        Object.entries(parametersDict).map(
-          ([key, value]) => (
-            <Form.Check
-              parameter={key}
-              key={key}
-              type='checkbox'
-              label={key.concat(' ', numLocations(parametersDict[key].length))}
-            />
-          )
-        )
-      }
-    </Form.Group>
+    <FloatingLabel label='Parameters'>
+      <div className='rounded-1 form-control pt-2 pb-0 h-auto'>
+        <Form.Group className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])} 
+            onChange={groupOnChange}>
+          {
+            Object.entries(parametersDict).map(
+              ([key, value]) => (
+                <Form.Check
+                  parameter={key}
+                  key={key}
+                  type='checkbox'
+                  label={key.concat(' ', numLocations(parametersDict[key].length))}
+                />
+              )
+            )
+          }
+        </Form.Group>
+      </div>
+    </FloatingLabel>
   )
 }
