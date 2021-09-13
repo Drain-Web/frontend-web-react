@@ -43,9 +43,17 @@ Now we should have at least two remote repositories: ```origin``` (refers to the
 
     $ git remote -v
 
-Once all local changes are made, they need to be *git commited* and then pushed to the Heroku remote repository with:
+Once all local changes are made, they need to be *git commited* with the classical command:
 
-    $ git push heroku [your_dev_branch]:main
+    $ git commit -a -m "Some description of your changes"
+
+Next step is to push the changes to Heroku remote git repository. Heroku is set up to build the Docker just after it receives the git push. In the build process, Heroku maintains a *build cache* to speed things up. Sometimes the cache needs to be cleaned up with:
+
+    $ heroku builds:cache:purge -a drain-web
+
+And then the changes should be pushed to the Heroku remote repository with:
+
+    $ git push heroku [your_local_dev_branch]:main
 
 If everything worked fine, the system was built and deployed after the git push and it can be accessed at [https://drain-web.herokuapp.com/](https://drain-web.herokuapp.com/).
 
