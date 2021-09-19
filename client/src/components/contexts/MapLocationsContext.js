@@ -99,6 +99,20 @@ const MapLocationsContext = createContext({
    *       showAsOption: bool
    *     }
    *   }
+   *  thresholdGroups: dict as
+   *   {
+   *    byParameter: {
+   *     parameterId: {
+   *      tresholdGroupId: [
+   *       {
+   *        levelThreshold: {id, name, shortName, warningLevel...},
+   *        valueFunction:
+   *       }
+   *      ]
+   *     }
+   *    },
+   *    byParameterGroup: same as the 'byParameter'
+   *   }
    */
   mapLocationsContextData: {
     filterId: null,
@@ -106,7 +120,11 @@ const MapLocationsContext = createContext({
     showParametersLocations: new Set(),
     byLocations: {},
     byParameter: {},
-    byThresholdValueSet: {}
+    byThresholdValueSet: {},
+    thresholdGroups: {
+      byParameter: {},
+      byParameterGroup: {}
+    }
   },
   setMapLocationsContextData: (filter) => {}
 })

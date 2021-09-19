@@ -9,8 +9,9 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 import { ParametersCheckBox } from './ParametersCheckBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
 import { ThresholdValueSetCheckBox } from './ThresholdValueSetCheckBox'
+import { ThresholdGroupSelectBox } from './ThresholdGroupSelectBox'
 
-/* ** AUX FUNCS ******************************************************************************** */
+/* ** AUX FUNCS ****************************************************************************** */
 
 const identifyGeoEvents = (filtersData) => {
   // Function that identifies unique geo units and events
@@ -22,7 +23,7 @@ const identifyGeoEvents = (filtersData) => {
     const curFilterIdSplit = curFilter.id.split('.')
     const curFilterNameSplit = curFilter.description.split('@')
     if ((curFilterIdSplit.length !== 2) || (curFilterNameSplit.length !== 2)) {
-      console.log('Unable to parse filter "' + curFilter.id + '":"' + curFilter.description + '".')
+      console.log('Unable to parse filter "' + curFilter.id + '":' + curFilter.description + '.')
       continue
     }
     const [curEvtId, curGeoId] = curFilterIdSplit
@@ -43,13 +44,14 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-export const TabFilters = ({ filtersData, thresholdValueSets, overviewFilter }) => {
-  /* ** SET HOOKS ****************************************************************************** */
+export const TabFilters = ({ filtersData, thresholdValueSets, thresholdGroups,
+  overviewFilter }) => {
+  /* ** SET HOOKS **************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
 
-  /* ** DEFS *********************************************************************************** */
+  /* ** DEFS ********************************************************************************* */
 
   const functionOnChangeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
@@ -69,15 +71,16 @@ export const TabFilters = ({ filtersData, thresholdValueSets, overviewFilter }) 
     })
   }
 
-  /* ** MAIN RENDER **************************************************************************** */
+  /* ** MAIN RENDER ************************************************************************** */
 
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
-
   return (
-    <Form>
-      <Container className='p-0'>
-        <Row>
-          <Col>
+    <MapLocationsContext.Provider
+      value={{ mapLocationsContextData, setMapLocationsContextData }}
+    >
+      <Form>
+        <Container className='p-0'>
+          <Row><Col>
             <SubFilterSelectBox
               idTitleList={retGeo}
               selectedId={filterContextData.geoFilterId}
@@ -87,10 +90,8 @@ export const TabFilters = ({ filtersData, thresholdValueSets, overviewFilter }) 
               addOverviewOption={overviewFilter}
               label='Sub-Area'
             />
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
             <SubFilterSelectBox
               idTitleList={retEvt}
               selectedId={filterContextData.evtFilterId}
@@ -100,29 +101,20 @@ export const TabFilters = ({ filtersData, thresholdValueSets, overviewFilter }) 
               addOverviewOption={overviewFilter}
               label='Event'
             />
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
-            <MapLocationsContext.Provider
-              value={{ mapLocationsContextData, setMapLocationsContextData }}
-            >
-              <ParametersCheckBox
-                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
-              />
-            </MapLocationsContext.Provider>
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
-            <MapLocationsContext.Provider
-              value={{ mapLocationsContextData, setMapLocationsContextData }}
-            > 
-              <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
-            </MapLocationsContext.Provider>
-          </Col>
-        </Row>
-      </Container>
-    </Form>
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ParametersCheckBox />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ThresholdGroupSelectBox thresholdGroups={thresholdGroups} />
+          </Col></Row>
+        </Container>
+      </Form>
+    </MapLocationsContext.Provider>
   )
 }
+
+// mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}

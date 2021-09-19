@@ -10,13 +10,13 @@ import { TabFilters } from './mainMenuControl/TabFilters.js'
 /* Map menu that allows selection of filters and more.
  */
 
-/* ** OBJ - Bootstrap div ********************************************************************** */
+/* ** OBJ - Bootstrap div ******************************************************************** */
 
 export const MainMenuControl = ({
-  regionName, filtersData, thresholdValueSets, overviewFilter, showMainMenuControl,
-  setShowMainMenuControl, position
+  regionName, filtersData, thresholdValueSets, thresholdGroups, overviewFilter,
+  showMainMenuControl, setShowMainMenuControl, position
 }) => {
-  /* ** SET HOOKS ****************************************************************************** */
+  /* ** SET HOOKS **************************************************************************** */
 
   // retireves context data
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
@@ -33,7 +33,7 @@ export const MainMenuControl = ({
     marginLeft: showMainMenuControl ? 0 : -18 * remValue
   })
 
-  /* ** DEFS *********************************************************************************** */
+  /* ** DEFS ********************************************************************************* */
 
   const functionOnChangeTab = (newTabId) => {
     // Triggered when a tab Overview/Filter is chaned
@@ -42,7 +42,7 @@ export const MainMenuControl = ({
     })
   }
 
-  /* ** MAIN RENDER **************************************************************************** */
+  /* ** MAIN RENDER ************************************************************************** */
 
   // build content of the menu
   const menuContent = (
@@ -73,6 +73,7 @@ export const MainMenuControl = ({
                 <TabFilters
                   filtersData={filtersData}
                   thresholdValueSets={thresholdValueSets}
+                  thresholdGroups={thresholdGroups}
                   overviewFilter={overviewFilter}
                 />
               </Tab>
@@ -80,7 +81,9 @@ export const MainMenuControl = ({
           </Row>
         </Container>
       </animated.div>
-      <div className={ownStyles.buttonSlide} onClick={() => { setShowMainMenuControl(!showMainMenuControl) }}>
+      <div className={ownStyles.buttonSlide} onClick={() => { 
+        setShowMainMenuControl(!showMainMenuControl) }}
+      >
         {showMainMenuControl ? '◀' : '▶'}
       </div>
     </>

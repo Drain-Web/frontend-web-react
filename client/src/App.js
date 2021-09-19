@@ -58,7 +58,7 @@ const getMapCenter = (mapExtent) => {
 }
 
 const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups,
-                        dataThresholdValueSets) => {
+                        dataThresholdValueSets, dataParameters, dataParameterGroups) => {
   const [lded, lding] = ['loaded', '...']
   return (
     <div>
@@ -69,6 +69,7 @@ const loadingMessage = (dataRegion, dataBounds, dataFilts, dataLocs, dataThresho
       &nbsp;locations: {dataLocs ? 'loaded.' : '...'}<br />
       &nbsp;threshold groups: {dataThresholdGroups ? lded : lding}<br />
       &nbsp;threshold value sets: {dataThresholdValueSets ? lded : lding}<br />
+      &nbsp;parameters: {(dataParameters && dataParameterGroups) ? lded : lding}<br />
       <Spinner
         animation='border'
         variant='danger'
@@ -102,7 +103,9 @@ const App = ({ settings }) => {
   const filtersData = useState([])[0]
   const thresholdGroupsData = useState({})[0]
   const thresholdValueSetsData = useState({})[0]
-
+  const parametersData = useState({})[0]
+  const parameterGroupsData = useState({})[0]
+  
   // Context states
   const [filterContextData, setFilterContextData] = useState({})
   const [mapLocationsContextData, setMapLocationsContextData] = useState({})
@@ -140,7 +143,27 @@ const App = ({ settings }) => {
   const { data: dataThresholdGroups, error: errorThreshGroups } = useSWR(
     apiUrl(settings.apiBaseUrl, 'v1dw', 'threshold_groups'), fetcher)
   if (dataThresholdGroups && !errorThreshGroups) {
-    for (const tg in dataThresholdGroups.thresholdGroups) { thresholdGroupsData[tg.id] = tg }
+    for (const tg of dataThresholdGroups.thresholdGroups) {
+      thresholdGroupsData[tg.id] = tg
+    }
+  }
+
+  // load parameters
+  const { data: dataParameters, error: errorParameters } = useSWR(
+    apiUrl(settings.apiBaseUrl, 'v1', 'parameters/'), fetcher)
+  if (dataParameters && !errorParameters) {
+    for (const prm of dataParameters.timeSeriesParameters) { 
+      parametersData[prm.id] = prm
+    }
+  }
+  
+  // load parameter groups
+  const { data: dataParameterGroups, error: errorParameterGroups } = useSWR(
+    apiUrl(settings.apiBaseUrl, 'v1dw', 'parameter_groups/'), fetcher)
+  if (dataParameterGroups && !errorParameterGroups) {
+    for (const prgr of dataParameterGroups.parameterGroups) {
+      parameterGroupsData[prgr.id] = prgr
+    }
   }
 
   // load threshold value sets
@@ -157,9 +180,10 @@ const App = ({ settings }) => {
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>
-  if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataThresholdGroups)) {
+  if (!(dataFilts && dataBounds && dataLocs && dataRegion && dataThresholdGroups && 
+        dataThresholdValueSets && dataParameters && dataParameterGroups)) {
     return loadingMessage(dataRegion, dataBounds, dataFilts, dataLocs, dataThresholdGroups,
-      dataThresholdValueSets)
+      dataThresholdValueSets, dataParameters, dataParameterGroups)
   }
 
   /* ** MAIN RENDER  *************************************************************************** */
@@ -192,19 +216,19 @@ const App = ({ settings }) => {
   // build page if everithing worked fine
   return (
     <MapContext.Provider value={{
-      locationsData,
-      isHidden,
-      setIsHidden,
-      timeSerieUrl,
-      setTimeSerieUrl,
-      filterContextData,
-      setFilterContextData,
-      mapLocationsContextData,
-      setMapLocationsContextData,
-      boundariesData,
-      regionData,
-      filtersData,
-      ids
+      locationsData,               //
+      isHidden,                    //
+      setIsHidden,                 // 
+      timeSerieUrl,                //
+      setTimeSerieUrl,             //
+      filterContextData,           //
+      setFilterContextData,        //
+      mapLocationsContextData,     //
+      setMapLocationsContextData,  //
+      boundariesData,              //
+      regionData,                  //
+      filtersData,                 // 
+      ids                          // filter IDs
     }}>
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <MapControler
@@ -212,6 +236,9 @@ const App = ({ settings }) => {
           apiBaseUrl={settings.apiBaseUrl}
           generalLocationIcon={settings.generalLocationIcon}
           thresholdValueSets={thresholdValueSetsData}
+          thresholdGroups={thresholdGroupsData}
+          parameters={parametersData}
+          parameterGroups={parameterGroupsData}
         />
       </MapContainer>
     </MapContext.Provider>

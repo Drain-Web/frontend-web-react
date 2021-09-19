@@ -23,7 +23,83 @@ import { apiUrl } from '../../libs/api.js'
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
+
+const buildThreshGroupBy = (thresholdGroups, thresholdValueSets, filteredTimeseries) => {
+  // THIS FUNCTION IS HUGE!
+  // TODO 1: Create a new lib file and move this function there
+  // TODO 2: Split into 3 subfunctions 
+
+  const retDict = {
+    byParameter: {},
+    byParameterGroup: {}
+  }
+
+  for (const threshGroup in thresholdGroups) {
+    const threshGroupObj = thresholdGroups[threshGroup]
+    const valueToKey = []
+    let [paramId, paramGroupId] = [null, null]
+
+    for (const levelThreshIdx in threshGroupObj.threshold_levels) {
+      const threshLevel = threshGroupObj.threshold_levels[levelThreshIdx]
+
+      // iterate over ThreshValueSet to get the one this LevelThresh
+      let [contThreshValueSetId, valueFunction] = [null, null]
+      for (const threshValueSetId in thresholdValueSets) {
+        const threshValueSet = thresholdValueSets[threshValueSetId]
+        for (const threshValue of threshValueSet.levelThresholdValues) {
+          if (threshValue.levelThresholdId === threshLevel.id) {
+            valueFunction = threshValue.valueFunction
+            break
+          }
+        }
+        if (valueFunction != null) {
+          contThreshValueSetId = threshValueSetId
+          break
+        }
+      }
+
+      // basic check
+      if (contThreshValueSetId == null) {
+        console.warn("UNABLE TO DEFINE A ThresholdValueSet FOR LevelThreshold", threshLevel.id, 
+                       "OF ThreshGroup", threshGroupObj.id)
+        console.warn("POSSIBLE REASON: Inconsistent data from API.")
+        break
+      }
+      
+      // iterate over Timeseries to get Parameters and ParameterGroups
+      // TODO: get ParameterGroups
+      
+      if (paramId === null) {
+        for (const tsIdx in filteredTimeseries) {
+          const ts = filteredTimeseries[tsIdx]
+          for (const threshValueSetIdx in ts.thresholdValueSets) {
+            if (ts.thresholdValueSets[threshValueSetIdx].id == contThreshValueSetId) {
+              paramId = ts.header.parameterId
+              break
+            }
+          }
+          if (paramId != null) { break }
+        }
+      }
+
+      // add to stuff
+      valueToKey.push({
+        levelThreshold: threshLevel,
+        valueFunction: valueFunction
+      })
+    }
+
+    // create key
+    if (!retDict.byParameter[paramId]) { retDict.byParameter[paramId] = {} }
+    retDict.byParameter[paramId][threshGroupObj.id] = valueToKey
+  }
+
+  return retDict
+}
+
+
+const updateLocationsByFilter = (filteredTimeseries, mapLocationsContextData, setMapLocationsContextData,
+                                 thresholdValueSets, thresholdGroups, parameters, parameterGroups) => {
   // this function updates the view of the locations when the view is for filter
   const updLocs = mapLocationsContextData.byLocations ? mapLocationsContextData.byLocations : {}
   const updParams = {}
@@ -36,7 +112,7 @@ const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocati
   }
 
   //
-  for (const curFilteredTimeseries of jsonData) {
+  for (const curFilteredTimeseries of filteredTimeseries) {
     const locationId = curFilteredTimeseries.header.location_id
     const parameterId = curFilteredTimeseries.header.parameterId
     const timeseriesId = curFilteredTimeseries.id
@@ -92,7 +168,8 @@ const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocati
     ...mapLocationsContextData,
     byLocations: updLocs,
     byThresholdValueSet: updThreshValueSets,
-    byParameter: updParams
+    byParameter: updParams,
+    thresholdGroups: buildThreshGroupBy(thresholdGroups, thresholdValueSets, filteredTimeseries)
   }
 
   const pos = showThresholdValueSetsBySelectedParameters(constraintLocationsShownByParameters(pre))
@@ -113,7 +190,9 @@ const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsConte
   setMapLocationsContextData({ ...mapLocationsContextData, byLocations: updLocs })
 }
 
-const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon, thresholdValueSets }) => {
+const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon,
+                        thresholdValueSets, thresholdGroups,
+                        parameters, parameterGroups }) => {
   // this specific component is needed to allow useMap()
 
   const {
@@ -176,7 +255,8 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon, thresho
 
       // only show locations with timeseries in the filter
       fetcher(urlTimeseriesRequest).then((jsonData) => {
-        updateLocationsByFilter(jsonData, mapLocationsContextData, setMapLocationsContextData)
+        updateLocationsByFilter(jsonData, mapLocationsContextData, setMapLocationsContextData,
+          thresholdValueSets, thresholdGroups, parameters, parameterGroups)
       })
     }
   }, [filterContextData])
@@ -195,6 +275,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon, thresho
               regionName={regionData.systemInformation.name}
               filtersData={filtersData}
               thresholdValueSets={thresholdValueSets}
+              thresholdGroups={thresholdGroups}
               overviewFilter={overviewFilter}
               showMainMenuControl={showMainMenuControl}
               setShowMainMenuControl={setShowMainMenuControl}

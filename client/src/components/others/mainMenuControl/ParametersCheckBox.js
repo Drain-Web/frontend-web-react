@@ -9,7 +9,7 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
  */
 
 export const ParametersCheckBox = () => {
-  /* ** SET HOOKS ****************************************************************************** */
+  /* ** SET HOOKS **************************************************************************** */
 
   // retireves context data
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
@@ -19,7 +19,7 @@ export const ParametersCheckBox = () => {
     return <div className={'mb-2 h-auto '.concat(ownStyles['labeled-content'])}>Loading...</div>
   }
 
-  /* ** FUNCTIONS ****************************************************************************** */
+  /* ** FUNCTIONS **************************************************************************** */
 
   const numLocations = (nLocations) => {
     /* simple function to create '(_ location[s])' string */
@@ -55,7 +55,7 @@ export const ParametersCheckBox = () => {
     setMapLocationsContextData(pos)
   }
 
-  /* ** BUILD COMPONENT ************************************************************************ */
+  /* ** BUILD COMPONENT ********************************************************************** */
 
   return (
     <FloatingLabel label='Parameters'>
