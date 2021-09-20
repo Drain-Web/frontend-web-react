@@ -13,7 +13,7 @@ import { TabFilters } from './mainMenuControl/TabFilters.js'
 /* ** OBJ - Bootstrap div ******************************************************************** */
 
 export const MainMenuControl = ({
-  regionName, filtersData, thresholdValueSets, thresholdGroups, overviewFilter,
+  regionName, filtersData, locationsData, thresholdValueSets, thresholdGroups, overviewFilter,
   showMainMenuControl, setShowMainMenuControl, position
 }) => {
   /* ** SET HOOKS **************************************************************************** */
@@ -72,6 +72,7 @@ export const MainMenuControl = ({
               <Tab eventKey='tabFilters' title='Filters'>
                 <TabFilters
                   filtersData={filtersData}
+                  locationsData={locationsData}
                   thresholdValueSets={thresholdValueSets}
                   thresholdGroups={thresholdGroups}
                   overviewFilter={overviewFilter}

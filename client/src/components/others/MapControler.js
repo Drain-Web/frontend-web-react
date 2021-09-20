@@ -156,12 +156,20 @@ const updateLocationsByFilter = (filteredTimeseries, mapLocationsContextData, se
       }
     }
     if (!(updLocs[locationId].timeseries[parameterId])) {
-      updLocs[locationId].timeseries[parameterId] = new Set()
+      updLocs[locationId].timeseries[parameterId] = {}
     }
 
     // set to be show and include timeseries
-    updLocs[locationId].timeseries[parameterId].add(timeseriesId)
+    updLocs[locationId].timeseries[parameterId][timeseriesId] = {}
     updLocs[locationId].show = true
+
+    // add statistics if they are present
+    if ("maxValue" in curFilteredTimeseries) {
+      updLocs[locationId].timeseries[parameterId][timeseriesId]["maxValue"] = curFilteredTimeseries.maxValue
+    }
+    if ("minValue" in curFilteredTimeseries) {
+      updLocs[locationId].timeseries[parameterId][timeseriesId]["minValue"] = curFilteredTimeseries.minValue
+    }
   }
 
   const pre = {
@@ -241,7 +249,8 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon,
       // define URLs
       const urlFilterRequest = apiUrl(apiBaseUrl, 'v1', 'filter', filterContextData.filterId)
       const urlTimeseriesRequest = apiUrl(apiBaseUrl, 'v1', 'timeseries', {
-        filter: filterContextData.filterId
+        filter: filterContextData.filterId,
+        showStatistics: true
       })
 
       // move map view to fit the map extent
@@ -274,6 +283,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon,
             <MainMenuControl
               regionName={regionData.systemInformation.name}
               filtersData={filtersData}
+              locationsData={locationsData}
               thresholdValueSets={thresholdValueSets}
               thresholdGroups={thresholdGroups}
               overviewFilter={overviewFilter}

@@ -24,6 +24,14 @@ const PointsLayer = ({
     popupAnchor: [0, -15]
   })
 
+  const newIcon = (newIconUrl) => {
+    return new Icon({
+      iconUrl: newIconUrl,
+      iconSize: [iconSize, iconSize],
+      popupAnchor: [0, -15]
+    })
+  }
+
   // mock location icon for a place not-to-be-shown
   const noIcon = new Icon({
     iconUrl: iconUrl,
@@ -46,6 +54,8 @@ const PointsLayer = ({
           {
             layerData.locations.map((layerData) => {
               // maker will be displayed if its location Id is in the mapLocationsContextData
+              
+              // function that decides if a location will be shown
               const displayMarker = () => {
                 if (mapLocationsContextData.byLocations &&
                   (layerData.locationId in mapLocationsContextData.byLocations) &&
@@ -54,6 +64,21 @@ const PointsLayer = ({
                 }
                 return false
               }
+
+              // function that defines the iconUrl
+              const getIconUrl = () => {
+                const mapLoc = mapLocationsContextData.byLocations[layerData.locationId]
+                if (!mapLoc.warning) {
+                  return iconUrl  // TODO: 
+                } else {
+                  return mapLoc.warning.iconName
+                }
+              }
+              
+              if (displayMarker()) {
+                console.log("getIconUrl:", getIconUrl())
+              }
+
               return (
                 <Fragment key={layerData.locationId}>
                   <Marker
@@ -61,7 +86,7 @@ const PointsLayer = ({
                     eventHandlers={{
                       click: () => { }
                     }}
-                    icon={displayMarker() ? icon : noIcon}
+                    icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
                   >
                     <Popup
                       position={[layerData.y, layerData.x]}

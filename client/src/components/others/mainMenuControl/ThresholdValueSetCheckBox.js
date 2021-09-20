@@ -32,7 +32,7 @@ export const ThresholdValueSetCheckBox = ({ thresholdValueSets }) => {
 
   /* ** MAIN RENDER **************************************************************************** */
   return(
-    <FloatingLabel label='Icons'>
+    <FloatingLabel label='Icons - Thresh Value Set'>
       <Form.Control
         as='select'
         defaultValue='raw'

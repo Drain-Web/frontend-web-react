@@ -2,5 +2,15 @@
   "apiBaseUrl": "https://hydro-web.herokuapp.com/",
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
-  "generalLocationIcon": "./img/drop.png"
+  "generalLocationIcon": "./img/drop.svg",
+  "thresholdGroups": {
+    "peakQ": {
+      "function": "ts.maxValue",
+      "noWarningIcon": "./img/location_icons/warning_Hnowarning.svg"
+    },
+    "peakH": {
+      "function": "ts.maxValue",
+      "noWarningIcon": "./img/location_icons/warning_Qnowarning.svg"
+    }
+  }
 }
