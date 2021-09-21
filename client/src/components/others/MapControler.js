@@ -1,117 +1,133 @@
-import { LayersControl, ZoomControl, useMap } from 'react-leaflet'
-import React, { useEffect, useContext, useState } from 'react'
-import axios from 'axios'
-import { useSpring } from 'react-spring'
+import { LayersControl, ZoomControl, useMap } from "react-leaflet";
+import React, { useEffect, useContext, useState } from "react";
+import axios from "axios";
+import { useSpring } from "react-spring";
 
 // import components
-import { MainMenuControl } from './MainMenuControl'
-import MapLocationsContext, { constraintLocationsShownByParameters, 
-  showThresholdValueSetsBySelectedParameters } from '../contexts/MapLocationsContext'
-import FilterContext from '../contexts/FilterContext'
-import PolygonLayer from '../layers/PolygonLayer'
-import PointsLayer from '../layers/PointsLayer'
-import MapContext from '../contexts/MapContext'
-import BaseLayers from '../layers/BaseLayers'
-import Panel from './Panel'
+import { MainMenuControl } from "./MainMenuControl";
+import MapLocationsContext, {
+  constraintLocationsShownByParameters,
+  showThresholdValueSetsBySelectedParameters,
+} from "../contexts/MapLocationsContext";
+import FilterContext from "../contexts/FilterContext";
+import PolygonLayer from "../layers/PolygonLayer";
+import PointsLayer from "../layers/PointsLayer";
+import MapContext from "../contexts/MapContext";
+import BaseLayers from "../layers/BaseLayers";
+import Panel from "./Panel";
+import GeoJsonLayer from "../layers/GeoJsonLayer";
 
 // import assets
-import { baseLayersData } from '../../assets/MapBaseLayers'
+import { baseLayersData } from "../../assets/MapBaseLayers";
 
 // import libs
-import { apiUrl } from '../../libs/api.js'
+import { apiUrl } from "../../libs/api.js";
 
 // function 'fetcher' will do HTTP requests
-const fetcher = (url) => axios.get(url).then((res) => res.data)
+const fetcher = (url) => axios.get(url).then((res) => res.data);
 
-const updateLocationsByFilter = (jsonData, mapLocationsContextData, setMapLocationsContextData) => {
+const updateLocationsByFilter = (
+  jsonData,
+  mapLocationsContextData,
+  setMapLocationsContextData
+) => {
   // this function updates the view of the locations when the view is for filter
-  const updLocs = mapLocationsContextData.byLocations ? mapLocationsContextData.byLocations : {}
-  const updParams = {}
-  const updThreshValueSets = {}
-  const selectedParams = mapLocationsContextData.showParametersLocations
+  const updLocs = mapLocationsContextData.byLocations
+    ? mapLocationsContextData.byLocations
+    : {};
+  const updParams = {};
+  const updThreshValueSets = {};
+  const selectedParams = mapLocationsContextData.showParametersLocations;
 
   // hide all pre existing locations
   for (const curLocationId of Object.keys(updLocs)) {
-    updLocs[curLocationId].show = false
+    updLocs[curLocationId].show = false;
   }
 
   //
   for (const curFilteredTimeseries of jsonData) {
-    const locationId = curFilteredTimeseries.header.location_id
-    const parameterId = curFilteredTimeseries.header.parameterId
-    const timeseriesId = curFilteredTimeseries.id
-    const thresholdValueSets = curFilteredTimeseries.thresholdValueSets
+    const locationId = curFilteredTimeseries.header.location_id;
+    const parameterId = curFilteredTimeseries.header.parameterId;
+    const timeseriesId = curFilteredTimeseries.id;
+    const thresholdValueSets = curFilteredTimeseries.thresholdValueSets;
 
     // add parameter no matter what
     if (!(parameterId in updParams)) {
-      updParams[parameterId] = []
+      updParams[parameterId] = [];
     }
     updParams[parameterId].push({
       timeseriesId: timeseriesId,
-      locationId: locationId
-    })
+      locationId: locationId,
+    });
 
     // add threshold value sets
     thresholdValueSets.forEach((curThresholdValueSet) => {
-      if (!(curThresholdValueSet.id in updThreshValueSets)){
+      if (!(curThresholdValueSet.id in updThreshValueSets)) {
         updThreshValueSets[curThresholdValueSet.id] = {
           timeseries: [],
-          showAsOption: false
-        }
+          showAsOption: false,
+        };
       }
       updThreshValueSets[curThresholdValueSet.id].timeseries.push({
         timeseriesId: timeseriesId,
         locationId: locationId,
-        iconUrl: null,  // TODO - ignored now, make use of it
-        parameterId: parameterId
-      })
+        iconUrl: null, // TODO - ignored now, make use of it
+        parameterId: parameterId,
+      });
     });
 
     // verifies if add location
-    if (selectedParams && (!selectedParams.has(parameterId))) {
-      console.log(parameterId, 'not in', selectedParams)
-      continue
+    if (selectedParams && !selectedParams.has(parameterId)) {
+      console.log(parameterId, "not in", selectedParams);
+      continue;
     }
 
     // add location if needed
     if (!(locationId in updLocs)) {
       updLocs[locationId] = {
-        timeseries: {}
-      }
+        timeseries: {},
+      };
     }
-    if (!(updLocs[locationId].timeseries[parameterId])) {
-      updLocs[locationId].timeseries[parameterId] = new Set()
+    if (!updLocs[locationId].timeseries[parameterId]) {
+      updLocs[locationId].timeseries[parameterId] = new Set();
     }
 
     // set to be show and include timeseries
-    updLocs[locationId].timeseries[parameterId].add(timeseriesId)
-    updLocs[locationId].show = true
+    updLocs[locationId].timeseries[parameterId].add(timeseriesId);
+    updLocs[locationId].show = true;
   }
 
   const pre = {
     ...mapLocationsContextData,
     byLocations: updLocs,
     byThresholdValueSet: updThreshValueSets,
-    byParameter: updParams
-  }
+    byParameter: updParams,
+  };
 
-  const pos = showThresholdValueSetsBySelectedParameters(constraintLocationsShownByParameters(pre))
+  const pos = showThresholdValueSetsBySelectedParameters(
+    constraintLocationsShownByParameters(pre)
+  );
 
-  setMapLocationsContextData(pos)
-}
+  setMapLocationsContextData(pos);
+};
 
-
-const updateLocationsToOverview = (mapLocationsContextData, setMapLocationsContextData) => {
+const updateLocationsToOverview = (
+  mapLocationsContextData,
+  setMapLocationsContextData
+) => {
   // this function updates the view of the locations when the view if for overview
 
-  if (!mapLocationsContextData.byLocations) return
+  if (!mapLocationsContextData.byLocations) return;
 
-  const updLocs = mapLocationsContextData.byLocations
+  const updLocs = mapLocationsContextData.byLocations;
   for (const curLocationId of Object.keys(updLocs)) {
-    updLocs[curLocationId].show = true
+    updLocs[curLocationId].show = true;
   }
-  setMapLocationsContextData({ ...mapLocationsContextData, byLocations: updLocs })
-}
+  setMapLocationsContextData({
+    ...mapLocationsContextData,
+    byLocations: updLocs,
+  });
+};
 
 const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
   // this specific component is needed to allow useMap()
@@ -129,11 +145,11 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
     boundariesData,
     regionData,
     filtersData,
-    ids
-  } = useContext(MapContext)
-  const map = useMap()
+    ids,
+  } = useContext(MapContext);
+  const map = useMap();
 
-  const [showMainMenuControl, setShowMainMenuControl] = useState(true)
+  const [showMainMenuControl, setShowMainMenuControl] = useState(true);
 
   // when filterContextData is changed, load new filter data and refresh map
   useEffect(() => {
@@ -143,47 +159,60 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
       // if it is overview, show all locations and all boundaries
 
       // move map to initial zoom
-      const defaultExt = regionData.map.defaultExtent
+      const defaultExt = regionData.map.defaultExtent;
       map.flyToBounds([
         [defaultExt.bottom, defaultExt.left],
-        [defaultExt.top, defaultExt.right]
-      ])
+        [defaultExt.top, defaultExt.right],
+      ]);
 
       // show all locations
-      updateLocationsToOverview(mapLocationsContextData, setMapLocationsContextData)
+      updateLocationsToOverview(
+        mapLocationsContextData,
+        setMapLocationsContextData
+      );
 
-      return null
-
+      return null;
     } else {
       // if it is not overview, apply filter changes
 
-      if (!('filterId' in filterContextData)) return null
+      if (!("filterId" in filterContextData)) return null;
 
       // define URLs
-      const urlFilterRequest = apiUrl(apiBaseUrl, 'v1', 'filter', filterContextData.filterId)
-      const urlTimeseriesRequest = apiUrl(apiBaseUrl, 'v1', 'timeseries', {
-        filter: filterContextData.filterId
-      })
+      const urlFilterRequest = apiUrl(
+        apiBaseUrl,
+        "v1",
+        "filter",
+        filterContextData.filterId
+      );
+      const urlTimeseriesRequest = apiUrl(apiBaseUrl, "v1", "timeseries", {
+        filter: filterContextData.filterId,
+      });
 
       // move map view to fit the map extent
       fetcher(urlFilterRequest).then((jsonData) => {
-        const newMapExtent = jsonData.map.defaultExtent
+        const newMapExtent = jsonData.map.defaultExtent;
         map.flyToBounds([
           [newMapExtent.bottom, newMapExtent.left],
-          [newMapExtent.top, newMapExtent.right]
-        ])
-      })
+          [newMapExtent.top, newMapExtent.right],
+        ]);
+      });
 
       // only show locations with timeseries in the filter
       fetcher(urlTimeseriesRequest).then((jsonData) => {
-        updateLocationsByFilter(jsonData, mapLocationsContextData, setMapLocationsContextData)
-      })
+        updateLocationsByFilter(
+          jsonData,
+          mapLocationsContextData,
+          setMapLocationsContextData
+        );
+      });
     }
-  }, [filterContextData])
+  }, [filterContextData]);
 
   return (
     <>
-      <div> {/* <FlexContainer> */}
+      <div>
+        {" "}
+        {/* <FlexContainer> */}
         {/* add the main floating menu */}
         <FilterContext.Provider
           value={{ filterContextData, setFilterContextData }}
@@ -197,21 +226,18 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
               overviewFilter={overviewFilter}
               showMainMenuControl={showMainMenuControl}
               setShowMainMenuControl={setShowMainMenuControl}
-              position='leaflet-right'
+              position="leaflet-right"
             />
-
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
-
         {/* hyrographs panel */}
         <Panel
           hideAll={timeSerieUrl}
           isHidden={isHidden}
           setIsHidden={setIsHidden}
           timeSerieUrl={timeSerieUrl}
-          position='leaflet-right'
+          position="leaflet-right"
         />
-
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -220,7 +246,7 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
             <FilterContext.Provider value={{ filterContextData }}>
               <PointsLayer
                 layerData={locationsData}
-                layerName='Locations'
+                layerName="Locations"
                 iconUrl={generalLocationIcon}
                 ids={ids}
                 timeSerieUrl={timeSerieUrl}
@@ -235,16 +261,18 @@ const MapControler = ({ overviewFilter, apiBaseUrl, generalLocationIcon }) => {
           <FilterContext.Provider value={{ filterContextData }}>
             <PolygonLayer
               layerData={boundariesData}
-              layerName='Boundaries'
+              layerName="Boundaries"
               reversePolygon
             />
           </FilterContext.Provider>
+
+          <GeoJsonLayer />
         </LayersControl>
-
-        <ZoomControl position='bottomright' />
-      </div> {/* </FlexContainer> */}
+        <ZoomControl position="bottomright" />
+      </div>{" "}
+      {/* </FlexContainer> */}
     </>
-  )
-}
+  );
+};
 
-export default MapControler
+export default MapControler;
