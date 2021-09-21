@@ -63,7 +63,9 @@ const loadingMessage = (
   dataFilts,
   dataLocs,
   dataThresholdGroups,
-  dataThresholdValueSets
+  dataThresholdValueSets,
+  dataParameters,
+  dataParameterGroups
 ) => {
   const [lded, lding] = ["loaded", "..."];
   return (
@@ -81,6 +83,8 @@ const loadingMessage = (
       &nbsp;threshold groups: {dataThresholdGroups ? lded : lding}
       <br />
       &nbsp;threshold value sets: {dataThresholdValueSets ? lded : lding}
+      <br />
+      &nbsp;parameters: {dataParameters && dataParameterGroups ? lded : lding}
       <br />
       <Spinner
         animation="border"
@@ -115,6 +119,8 @@ const App = ({ settings }) => {
   const filtersData = useState([])[0];
   const thresholdGroupsData = useState({})[0];
   const thresholdValueSetsData = useState({})[0];
+  const parametersData = useState({})[0];
+  const parameterGroupsData = useState({})[0];
 
   // Context states
   const [filterContextData, setFilterContextData] = useState({});
@@ -173,8 +179,30 @@ const App = ({ settings }) => {
     fetcher
   );
   if (dataThresholdGroups && !errorThreshGroups) {
-    for (const tg in dataThresholdGroups.thresholdGroups) {
+    for (const tg of dataThresholdGroups.thresholdGroups) {
       thresholdGroupsData[tg.id] = tg;
+    }
+  }
+
+  // load parameters
+  const { data: dataParameters, error: errorParameters } = useSWR(
+    apiUrl(settings.apiBaseUrl, "v1", "parameters/"),
+    fetcher
+  );
+  if (dataParameters && !errorParameters) {
+    for (const prm of dataParameters.timeSeriesParameters) {
+      parametersData[prm.id] = prm;
+    }
+  }
+
+  // load parameter groups
+  const { data: dataParameterGroups, error: errorParameterGroups } = useSWR(
+    apiUrl(settings.apiBaseUrl, "v1dw", "parameter_groups/"),
+    fetcher
+  );
+  if (dataParameterGroups && !errorParameterGroups) {
+    for (const prgr of dataParameterGroups.parameterGroups) {
+      parameterGroupsData[prgr.id] = prgr;
     }
   }
 
@@ -185,15 +213,27 @@ const App = ({ settings }) => {
       fetcher
     );
   if (dataThresholdValueSets && !errorThresholdValueSets) {
-    for (const tg in dataThresholdValueSets) {
-      thresholdValueSetsData[tg.id] = tg;
+    for (const tg in dataThresholdValueSets.thresholdValueSets) {
+      const curObj = { ...dataThresholdValueSets.thresholdValueSets[tg] };
+      const curObjId = curObj.id;
+      delete curObj.id;
+      thresholdValueSetsData[curObjId] = curObj;
     }
   }
 
   // basic check for opening the system
   if (errorids) return <div>failed to load</div>;
   if (
-    !(dataFilts && dataBounds && dataLocs && dataRegion && dataThresholdGroups)
+    !(
+      dataFilts &&
+      dataBounds &&
+      dataLocs &&
+      dataRegion &&
+      dataThresholdGroups &&
+      dataThresholdValueSets &&
+      dataParameters &&
+      dataParameterGroups
+    )
   ) {
     return loadingMessage(
       dataRegion,
@@ -201,7 +241,9 @@ const App = ({ settings }) => {
       dataFilts,
       dataLocs,
       dataThresholdGroups,
-      dataThresholdValueSets
+      dataThresholdValueSets,
+      dataParameters,
+      dataParameterGroups
     );
   }
 
@@ -236,19 +278,19 @@ const App = ({ settings }) => {
   return (
     <MapContext.Provider
       value={{
-        locationsData,
-        isHidden,
-        setIsHidden,
-        timeSerieUrl,
-        setTimeSerieUrl,
-        filterContextData,
-        setFilterContextData,
-        mapLocationsContextData,
-        setMapLocationsContextData,
-        boundariesData,
-        regionData,
-        filtersData,
-        ids,
+        locationsData, //
+        isHidden, //
+        setIsHidden, //
+        timeSerieUrl, //
+        setTimeSerieUrl, //
+        filterContextData, //
+        setFilterContextData, //
+        mapLocationsContextData, //
+        setMapLocationsContextData, //
+        boundariesData, //
+        regionData, //
+        filtersData, //
+        ids, // filter IDs
       }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
@@ -256,6 +298,10 @@ const App = ({ settings }) => {
           overviewFilter={settings.overviewFilter}
           apiBaseUrl={settings.apiBaseUrl}
           generalLocationIcon={settings.generalLocationIcon}
+          thresholdValueSets={thresholdValueSetsData}
+          thresholdGroups={thresholdGroupsData}
+          parameters={parametersData}
+          parameterGroups={parameterGroupsData}
         />
       </MapContainer>
     </MapContext.Provider>

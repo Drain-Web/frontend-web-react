@@ -9,8 +9,9 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 import { ParametersCheckBox } from './ParametersCheckBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
 import { ThresholdValueSetCheckBox } from './ThresholdValueSetCheckBox'
+import { ThresholdGroupSelectBox } from './ThresholdGroupSelectBox'
 
-/* ** AUX FUNCS ******************************************************************************** */
+/* ** AUX FUNCS ****************************************************************************** */
 
 const identifyGeoEvents = (filtersData) => {
   // Function that identifies unique geo units and events
@@ -22,7 +23,7 @@ const identifyGeoEvents = (filtersData) => {
     const curFilterIdSplit = curFilter.id.split('.')
     const curFilterNameSplit = curFilter.description.split('@')
     if ((curFilterIdSplit.length !== 2) || (curFilterNameSplit.length !== 2)) {
-      console.log('Unable to parse filter "' + curFilter.id + '":"' + curFilter.description + '".')
+      console.log('Unable to parse filter "' + curFilter.id + '":' + curFilter.description + '.')
       continue
     }
     const [curEvtId, curGeoId] = curFilterIdSplit
@@ -43,13 +44,128 @@ const identifyGeoEvents = (filtersData) => {
   return { geo: geoList, events: evtList }
 }
 
-export const TabFilters = ({ filtersData, overviewFilter }) => {
-  /* ** SET HOOKS ****************************************************************************** */
+const isLocationAttribute = (valueFunction) => {
+  const firstLetter = valueFunction.charAt(0)
+  const lastLetter = valueFunction.charAt(valueFunction.length-1)
+  return ((firstLetter === '@') && (lastLetter == '@'))
+}
+
+const getByIdFromList = (list, id) => {
+  for (const idx in list) {
+    if (list[idx].id === id) { return (list[idx]) }
+  }
+  return (null)
+}
+
+
+const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, locationsData) => {
+  // changes 
+
+  // get selected parameter id
+  const selectedParamIds = mapLocationsContextData.showParametersLocations
+  let selectedParamId = null
+  if ((selectedParamIds) && (selectedParamIds.size == 1)){
+    selectedParamId = selectedParamIds.values().next().value
+  } else {
+    console.log("No selectedParamId from", selectedParamIds)
+  }
+
+  // goes updating location icons
+  const thresholdGroupsByParams = mapLocationsContextData.thresholdGroups.byParameter
+  console.log("mapLocationsContextData I:", mapLocationsContextData)
+  for (const curLocationId in mapLocationsContextData.byLocations) {
+    const curLocation = mapLocationsContextData.byLocations[curLocationId]
+
+    // set as default icon
+    if (!selectedParamId) {
+      // TODO
+      continue
+    }
+
+    // define proper icon
+    for (const curParameterId in curLocation.timeseries) {
+      if (curParameterId in thresholdGroupsByParams) {
+        if (selectedThreshGroupId in thresholdGroupsByParams[curParameterId]) {
+          const threshGroup = thresholdGroupsByParams[curParameterId][selectedThreshGroupId]
+
+          // get the statistic associated to the thresh Group
+          const curTSs = curLocation.timeseries[curParameterId]
+          const curTS = curTSs[Object.keys(curTSs)[0]]
+          const levelValue = curTS.maxValue  // TODO: make it variable
+
+          // get location attributes
+          let locationAttributes = null
+          for (const curLocationStatIdx in locationsData.locations){
+            const curSubLocation = locationsData.locations[curLocationStatIdx]
+            if (curSubLocation.locationId == curLocationId) {
+              locationAttributes = curSubLocation.attributes
+              break
+            }
+          }
+          // console.log("locationAttributes:", locationAttributes)
+          
+          let [anyThreshFound, lastWarningOverpast] = [false, null]
+
+          // get the first limit extrapolated
+          for (const curLevelThreshIdx in threshGroup){
+            // get this location value if available
+            const curLevelThresh = threshGroup[curLevelThreshIdx]
+            const curValueFunction = curLevelThresh.valueFunction
+            const curWarningLevel = curLevelThresh.levelThreshold.upWarningLevelId
+
+            //
+            if (isLocationAttribute(curValueFunction)) {
+              const locAttrId = curValueFunction.substr(1, curValueFunction.length-2)
+              // console.log("Loc Attr:", curValueFunction, '->', locAttrId)
+              const locAttrDict = getByIdFromList(locationAttributes, locAttrId)
+              // console.log('     got:', locAttrDict)
+              if (locAttrDict) {
+                anyThreshFound = true
+                if (levelValue <= locAttrDict.number) { break }
+                lastWarningOverpast = curWarningLevel
+              }
+
+            } else {
+              console.warn("IGNORED: Not a Loc Attr:", curValueFunction)
+              console.warn("TODO: Implement this case.")
+              continue
+            }
+          }
+
+          if (!anyThreshFound) {
+            curLocation.show = false
+            break
+          }
+
+          // set selected warning to location
+          if (!lastWarningOverpast) {
+            curLocation.warning = null
+            continue
+          }
+
+          // finally set the warning
+          curLocation.warning = lastWarningOverpast
+
+          // if got into here, this is done
+          break
+        }
+      }
+    }
+  }
+
+  console.log("mapLocationsContextData O:", mapLocationsContextData)
+  return { ...mapLocationsContextData }
+}
+
+
+export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thresholdGroups,
+  overviewFilter }) => {
+  /* ** SET HOOKS **************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
   const { filterContextData, setFilterContextData } = useContext(FilterContext)
 
-  /* ** DEFS *********************************************************************************** */
+  /* ** DEFS ********************************************************************************* */
 
   const functionOnChangeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
@@ -69,15 +185,24 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
     })
   }
 
-  /* ** MAIN RENDER **************************************************************************** */
+  const functionOnChangeIconsThreshGroup = (event) => {
+    // Triggered when the threshold group icon selectbox is changed
+    const newEvtThreshGroupId = event.target.value
+    setMapLocationsContextData(updateLocationIcons(mapLocationsContextData, newEvtThreshGroupId,
+      locationsData))
+  }
+
+  /* ** MAIN RENDER ************************************************************************** */
+  console.log("locationsData:", locationsData)
 
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
-
   return (
-    <Form>
-      <Container className='p-0'>
-        <Row>
-          <Col>
+    <MapLocationsContext.Provider
+      value={{ mapLocationsContextData, setMapLocationsContextData }}
+    >
+      <Form>
+        <Container className='p-0'>
+          <Row><Col>
             <SubFilterSelectBox
               idTitleList={retGeo}
               selectedId={filterContextData.geoFilterId}
@@ -87,10 +212,8 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
               addOverviewOption={overviewFilter}
               label='Sub-Area'
             />
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
             <SubFilterSelectBox
               idTitleList={retEvt}
               selectedId={filterContextData.evtFilterId}
@@ -100,29 +223,25 @@ export const TabFilters = ({ filtersData, overviewFilter }) => {
               addOverviewOption={overviewFilter}
               label='Event'
             />
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
-            <MapLocationsContext.Provider
-              value={{ mapLocationsContextData, setMapLocationsContextData }}
-            >
-              <ParametersCheckBox
-                mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}
-              />
-            </MapLocationsContext.Provider>
-          </Col>
-        </Row>
-        <Row className={ownStyles['row-padding-top']}>
-          <Col>
-            <MapLocationsContext.Provider
-              value={{ mapLocationsContextData, setMapLocationsContextData }}
-            > 
-              <ThresholdValueSetCheckBox />
-            </MapLocationsContext.Provider>
-          </Col>
-        </Row>
-      </Container>
-    </Form>
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ParametersCheckBox />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <ThresholdGroupSelectBox
+              thresholdGroups={thresholdGroups}
+              onChangeFunction={(changeThresholdGroupEvt) => {
+                functionOnChangeIconsThreshGroup(changeThresholdGroupEvt)
+              }}
+            />
+          </Col></Row>
+        </Container>
+      </Form>
+    </MapLocationsContext.Provider>
   )
 }
+
+// mapLocationsContextData={{ mapLocationsContextData, setMapLocationsContextData }}

@@ -29,9 +29,17 @@ const showThresholdValueSetsBySelectedParameters = (newMapLocationsContextData) 
     return (newData)
   } 
   
-  // TODO - make it better. Hide all
+  // if there are parameters selected, only show the ones to which there is a timeseries associated
   Object.keys(newData.byThresholdValueSet).map((threshValueSetId) => {
-    newData.byThresholdValueSet[threshValueSetId].showAsOption = false
+    // check if any timeseries has this threshValueSet
+    let anyTimeseries = false
+    for (const curTimeseries of newData.byThresholdValueSet[threshValueSetId].timeseries) {
+      if (newData.showParametersLocations.has(curTimeseries.parameterId)) {
+        anyTimeseries = true
+        break
+      }
+    }
+    newData.byThresholdValueSet[threshValueSetId].showAsOption = anyTimeseries
   })
   return (newData)
 }
@@ -91,6 +99,20 @@ const MapLocationsContext = createContext({
    *       showAsOption: bool
    *     }
    *   }
+   *  thresholdGroups: dict as
+   *   {
+   *    byParameter: {
+   *     parameterId: {
+   *      tresholdGroupId: [
+   *       {
+   *        levelThreshold: {id, name, shortName, warningLevel...},
+   *        valueFunction:
+   *       }
+   *      ]
+   *     }
+   *    },
+   *    byParameterGroup: same as the 'byParameter'
+   *   }
    */
   mapLocationsContextData: {
     filterId: null,
@@ -98,7 +120,11 @@ const MapLocationsContext = createContext({
     showParametersLocations: new Set(),
     byLocations: {},
     byParameter: {},
-    byThresholdValueSet: {}
+    byThresholdValueSet: {},
+    thresholdGroups: {
+      byParameter: {},
+      byParameterGroup: {}
+    }
   },
   setMapLocationsContextData: (filter) => {}
 })

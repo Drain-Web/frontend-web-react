@@ -11,17 +11,20 @@ import { TabLocationInfo } from "./mainMenuControl/TabLocationInfo.js";
 /* Map menu that allows selection of filters and more.
  */
 
-/* ** OBJ - Bootstrap div ********************************************************************** */
+/* ** OBJ - Bootstrap div ******************************************************************** */
 
 export const MainMenuControl = ({
   regionName,
   filtersData,
+  locationsData,
+  thresholdValueSets,
+  thresholdGroups,
   overviewFilter,
   showMainMenuControl,
   setShowMainMenuControl,
   position,
 }) => {
-  /* ** SET HOOKS ****************************************************************************** */
+  /* ** SET HOOKS **************************************************************************** */
 
   // retireves context data
   const { filterContextData, setFilterContextData } = useContext(FilterContext);
@@ -36,10 +39,9 @@ export const MainMenuControl = ({
 
   const contentProps = useSpring({
     marginLeft: showMainMenuControl ? 0 : -18 * remValue,
-    // width: showMainMenuControl ? 18 :
   });
 
-  /* ** DEFS *********************************************************************************** */
+  /* ** DEFS ********************************************************************************* */
 
   const functionOnChangeTab = (newTabId) => {
     // Triggered when a tab Overview/Filter is chaned
@@ -49,7 +51,7 @@ export const MainMenuControl = ({
     });
   };
 
-  /* ** MAIN RENDER **************************************************************************** */
+  /* ** MAIN RENDER ************************************************************************** */
 
   // build content of the menu
   const menuContent = (
@@ -83,6 +85,9 @@ export const MainMenuControl = ({
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
                   filtersData={filtersData}
+                  locationsData={locationsData}
+                  thresholdValueSets={thresholdValueSets}
+                  thresholdGroups={thresholdGroups}
                   overviewFilter={overviewFilter}
                 />
               </Tab>
