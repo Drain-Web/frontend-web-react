@@ -10,6 +10,7 @@ import {
 } from "react-leaflet";
 import MapLocationsContext from "../contexts/MapLocationsContext";
 import FilterContext from "../contexts/FilterContext";
+import TabActiveFeatureInfoContext from "../contexts/TabActiveFeatureInfoContext";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 
@@ -96,65 +97,11 @@ const PointsLayer = ({
                   onClose={() => {
                     setActivePointFeature(null);
                   }}
+                  onClick={() => {
+                    setActivePointFeature(null);
+                  }}
                   icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
-                >
-                  <Popup>
-                    <div>
-                      <h5>
-                        <span className="popuptitle">
-                          {layerData.shortName}
-                        </span>
-                      </h5>
-                      <p>
-                        <span className="popuptitle">Id:</span>{" "}
-                        {layerData.locationId}
-                      </p>
-                      <p>
-                        <span className="popuptitle">Longitude:</span>{" "}
-                        {layerData.x}
-                      </p>
-                      <p>
-                        <span className="popuptitle">Latitude:</span>{" "}
-                        {layerData.y}
-                      </p>
-                      {!filterContextData.inOverview ? (
-                        <p>
-                          <span
-                            onClick={() => {
-                              setTimeSerieUrl(
-                                `https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${layerData.locationId}`
-                              );
-                              setIsHidden(false);
-                            }}
-                          >
-                            <Button variant="primary" disabled>
-                              <Spinner
-                                as="span"
-                                size="sm"
-                                role="status"
-                                aria-hidden="true"
-                              />
-                              Plot event
-                            </Button>
-                          </span>
-                        </p>
-                      ) : (
-                        <></>
-                      )}
-                    </div>
-                    {filterContextData.inOverview ? (
-                      <DropDownTimeSeries
-                        ids={ids}
-                        locationid={layerData.locationId}
-                        timeSerieUrl={timeSerieUrl}
-                        setTimeSerieUrl={setTimeSerieUrl}
-                        setIsHidden={setIsHidden}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </Popup>
-                </Marker>
+                ></Marker>
                 {
                   /* display location polygon if needed */
                   layerData.polygon ? (

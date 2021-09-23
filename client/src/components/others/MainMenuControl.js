@@ -5,8 +5,8 @@ import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
 import ownStyles from "../../style/MainMenuControl.module.css";
 import FilterContext from "../contexts/FilterContext";
-import { TabFilters } from "./mainMenuControl/TabFilters.js";
-import { TabLocationInfo } from "./mainMenuControl/TabLocationInfo.js";
+import { TabFilters } from "./mainMenuControl/TabFilters";
+import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
 
 /* Map menu that allows selection of filters and more.
  */
@@ -92,8 +92,8 @@ export const MainMenuControl = ({
                 />
               </Tab>
 
-              <Tab eventKey="tabLocationInfo" title="Location">
-                <TabLocationInfo
+              <Tab eventKey="tabActiveFeatureInfo" title="Info">
+                <TabActiveFeatureInfo
                   filtersData={filtersData}
                   overviewFilter={overviewFilter}
                 />
