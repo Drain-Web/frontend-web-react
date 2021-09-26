@@ -193,7 +193,6 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
   }
 
   /* ** MAIN RENDER ************************************************************************** */
-  console.log("locationsData:", locationsData)
 
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
   return (

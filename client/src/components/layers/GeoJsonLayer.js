@@ -1,27 +1,33 @@
-import networkGeoJson from "../../assets/network.json";
 import React from "react";
 import GeoJsonVtLayer from "./GeoJsonVtLayer";
+import axios from "axios";
+import useSWR from "swr";
 
-function GeoJsonLayer() {
+// function 'fetcher' will do HTTP requests
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
+function GeoJsonLayer({ layerSettings }) {
   const [geoJSON, setGeoJSON] = React.useState(null);
 
+  const { data: geojsonData, error: geojsonError } = useSWR(
+    layerSettings.url,
+    fetcher
+  );
+
   React.useEffect(() => {
-    setGeoJSON(networkGeoJson);
-  });
+    setGeoJSON(geojsonData);
+  }, [geojsonData]);
 
   if (!geoJSON) {
     return null;
   }
-
-  var options = {
-    maxZoom: 16,
-    tolerance: 30,
-    debug: 0,
-    extent: 400,
+  
+  const options = {
     style: {
-      color: "#F2FF00",
-    },
-  };
+      color: layerSettings.lineColor,
+      weight: layerSettings.lineWeight
+    }
+  }
 
   return <GeoJsonVtLayer geoJSON={geoJSON} options={options} />;
 }

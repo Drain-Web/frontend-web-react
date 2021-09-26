@@ -237,16 +237,13 @@ const updateLocationsToOverview = (
 };
 
 const MapControler = ({
-  overviewFilter,
-  apiBaseUrl,
-  generalLocationIcon,
+  settings,
   thresholdValueSets,
   thresholdGroups,
   parameters,
   parameterGroups,
 }) => {
   // this specific component is needed to allow useMap()
-
   const {
     locationsData,
     isHidden,
@@ -294,12 +291,9 @@ const MapControler = ({
 
       // define URLs
       const urlFilterRequest = apiUrl(
-        apiBaseUrl,
-        "v1",
-        "filter",
-        filterContextData.filterId
+        settings.apiBaseUrl, "v1", "filter", filterContextData.filterId
       );
-      const urlTimeseriesRequest = apiUrl(apiBaseUrl, "v1", "timeseries", {
+      const urlTimeseriesRequest = apiUrl(settings.apiBaseUrl, "v1", "timeseries", {
         filter: filterContextData.filterId,
         showStatistics: true,
       });
@@ -346,7 +340,7 @@ const MapControler = ({
               locationsData={locationsData}
               thresholdValueSets={thresholdValueSets}
               thresholdGroups={thresholdGroups}
-              overviewFilter={overviewFilter}
+              overviewFilter={settings.overviewFilter}
               showMainMenuControl={showMainMenuControl}
               setShowMainMenuControl={setShowMainMenuControl}
               position="leaflet-right"
@@ -370,7 +364,7 @@ const MapControler = ({
               <PointsLayer
                 layerData={locationsData}
                 layerName="Locations"
-                iconUrl={generalLocationIcon}
+                iconUrl={settings.generalLocationIcon}
                 ids={ids}
                 timeSerieUrl={timeSerieUrl}
                 setTimeSerieUrl={setTimeSerieUrl}
@@ -380,7 +374,7 @@ const MapControler = ({
             </FilterContext.Provider>
           </MapLocationsContext.Provider>
 
-          {/* adds a polygon layer to the control and the map as a component  */}
+          {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <FilterContext.Provider value={{ filterContextData }}>
             <PolygonLayer
               layerData={boundariesData}
@@ -389,7 +383,12 @@ const MapControler = ({
             />
           </FilterContext.Provider>
 
-          <GeoJsonLayer />
+          {/* adds GeoJson layer to the control and to the map as a component - river network */}
+          { 
+            settings.riverNetwork.fullRaw ?
+            <GeoJsonLayer layerSettings={settings.riverNetwork.fullRaw} /> :
+            <></>
+          }
         </LayersControl>
         <ZoomControl position="bottomright" />
       </div>{" "}

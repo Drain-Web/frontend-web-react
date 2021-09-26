@@ -12,5 +12,12 @@
       "function": "ts.maxValue",
       "noWarningIcon": "./img/location_icons/warning_Qnowarning.svg"
     }
+  },
+  "riverNetwork": {
+    "fullRaw": {
+      "lineColor": "#4488FF",
+      "lineWeight": 1,
+      "url": "./geo/river_network_raw.json"
+    }
   }
 }

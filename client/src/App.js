@@ -295,9 +295,7 @@ const App = ({ settings }) => {
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <MapControler
-          overviewFilter={settings.overviewFilter}
-          apiBaseUrl={settings.apiBaseUrl}
-          generalLocationIcon={settings.generalLocationIcon}
+          settings={settings}
           thresholdValueSets={thresholdValueSetsData}
           thresholdGroups={thresholdGroupsData}
           parameters={parametersData}
