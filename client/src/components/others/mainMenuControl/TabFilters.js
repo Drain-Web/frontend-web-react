@@ -57,8 +57,15 @@ const getByIdFromList = (list, id) => {
   return (null)
 }
 
+const getByFilterIdFromDict = (dict, filterId) => {
+  for (const idx of Object.keys(dict)) {
+    if (dict[idx].filterId === filterId) { return (dict[idx]) }
+  }
+  return (null)
+}
 
-const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, locationsData) => {
+
+const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, locationsData, filterId) => {
   // changes 
 
   // get selected parameter id
@@ -90,8 +97,9 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
 
           // get the statistic associated to the thresh Group
           const curTSs = curLocation.timeseries[curParameterId]
-          const curTS = curTSs[Object.keys(curTSs)[0]]
-          const levelValue = curTS.maxValue  // TODO: make it variable
+          const curTS = getByFilterIdFromDict(curTSs, filterId)
+          if (!curTS) { continue }
+          const levelValue = curTS.maxValue             // TODO: make it variable
 
           // get location attributes
           let locationAttributes = null
@@ -185,11 +193,11 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     })
   }
 
-  const functionOnChangeIconsThreshGroup = (event) => {
+  const functionOnChangeIconsThreshGroup = (event, filterId) => {
     // Triggered when the threshold group icon selectbox is changed
     const newEvtThreshGroupId = event.target.value
     setMapLocationsContextData(updateLocationIcons(mapLocationsContextData, newEvtThreshGroupId,
-      locationsData))
+      locationsData, filterId))
   }
 
   /* ** MAIN RENDER ************************************************************************** */
@@ -226,14 +234,16 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <Row className={ownStyles['row-padding-top']}><Col>
             <ParametersCheckBox />
           </Col></Row>
+          {/*
           <Row className={ownStyles['row-padding-top']}><Col>
             <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
           </Col></Row>
+          */}
           <Row className={ownStyles['row-padding-top']}><Col>
             <ThresholdGroupSelectBox
               thresholdGroups={thresholdGroups}
               onChangeFunction={(changeThresholdGroupEvt) => {
-                functionOnChangeIconsThreshGroup(changeThresholdGroupEvt)
+                functionOnChangeIconsThreshGroup(changeThresholdGroupEvt, filterContextData.filterId)
               }}
             />
           </Col></Row>
