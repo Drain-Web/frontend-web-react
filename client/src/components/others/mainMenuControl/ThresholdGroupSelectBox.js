@@ -27,11 +27,18 @@ export const ThresholdGroupSelectBox = ({ thresholdGroups, onChangeFunction }) =
   const allOptions = [(<option value='default' key='default'>Just locations</option>)]
   if ((selectedParams) && (selectedParams.size == 1)) {
     const selectedParamId = selectedParams.values().next().value
-    allOptions.push.apply(allOptions, Object.entries(byParametersDict[selectedParamId]).map(
-      ([key, value]) => {
-        return (<option value={key} key={key}>{thresholdGroups[key].name}</option>)
-      }
-    ))
+    if (selectedParamId in byParametersDict) {
+      const byParams = byParametersDict[selectedParamId]
+      allOptions.push.apply(allOptions, Object.entries(byParams).map(
+        ([key, value]) => {
+          return (<option value={key} key={key}>{thresholdGroups[key].name}</option>)
+        }
+      ))
+    } else {
+      alert("ISSUE: check log")
+      console.log("Not found:", selectedParamId)
+      console.log("       in:", byParametersDict)
+    }
   }
 
   /* ** MAIN RENDER ************************************************************************** */

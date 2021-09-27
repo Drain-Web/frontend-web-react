@@ -13,8 +13,8 @@ const GeoJsonVtLayer = createTileLayerComponent(function createGridLayer(
   context
 ) {
   return {
-    instance: L.gridLayer.geoJson(geoJSON, withPane(options, context)),
-    context,
+    instance: L.gridLayer.geoJson(geoJSON, options.options),
+    context
   };
 },
 updateGridLayer);

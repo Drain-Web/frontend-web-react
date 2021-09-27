@@ -82,15 +82,11 @@ const PointsLayer = ({
               const mapLoc =
                 mapLocationsContextData.byLocations[layerDataPoint.locationId];
               if (!mapLoc.warning) {
-                return iconUrl; // TODO:
+                return iconUrl; // TODO: make if accept undefined location
               } else {
                 return mapLoc.warning.iconName;
               }
             };
-
-            if (displayMarker()) {
-              console.log("getIconUrl:", getIconUrl());
-            }
 
             return (
               <Fragment key={layerDataPoint.locationId}>
