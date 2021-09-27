@@ -4,7 +4,8 @@ import FloatingLabel from "react-bootstrap/FloatingLabel";
 
 import MapLocationsContext from "../../contexts/MapLocationsContext";
 import FilterContext from "../../contexts/FilterContext";
-import TabActiveFeatureInfoContext from "../../contexts/TabActiveFeatureInfoContext";
+import MapContext from "../../contexts/MapContext";
+import { TabActiveFeatureInfoContext } from "../../contexts/TabActiveFeatureInfoContext";
 import ownStyles from "../../../style/MainMenuControl.module.css";
 
 import Spinner from "react-bootstrap/Spinner";
@@ -15,40 +16,52 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
   const { mapLocationsContextData } = useContext(MapLocationsContext);
   const { filterContextData } = useContext(FilterContext);
   const {
-    tabActiveFeatureInfoContextData,
-    setTabActiveFeatureInfoContextData,
-  } = useContext(TabActiveFeatureInfoContext);
+    activePointFeature,
+    setActivePointFeature,
+    setTimeSerieUrl,
+    setIsHidden,
+  } = useContext(MapContext);
+
+  // const { showActiveFeatureInfo, setShowActiveFeatureInfo } = useContext(
+  // TabActiveFeatureInfoContext
+  // );
 
   return (
     <>
-      {" "}
-      <div>
-        <h5>
-          <span className="popuptitle">prueba</span>
-        </h5>
-        <p>
-          <span className="popuptitle">Id:</span> prueba
-        </p>
-        <p>
-          <span className="popuptitle">Longitude:</span> prueba
-        </p>
-        <p>
-          <span className="popuptitle">Latitude:</span> prueba
-        </p>
-        {!filterContextData.inOverview ? (
+      {activePointFeature && (
+        <div>
+          <h5>
+            <span className="popuptitle">{activePointFeature.shortName}</span>
+          </h5>
           <p>
-            <span onClick={() => {}}>
-              <Button variant="primary" disabled>
-                <Spinner as="span" size="sm" role="status" aria-hidden="true" />
-                Plot event
-              </Button>
-            </span>
+            <span className="popuptitle">Id:</span>{" "}
+            {activePointFeature.locationId}
           </p>
-        ) : (
-          <></>
-        )}
-      </div>
-      ;
+          <p>
+            <span className="popuptitle">Longitude:</span>{" "}
+            {activePointFeature.x}
+          </p>
+          <p>
+            <span className="popuptitle">Latitude:</span> {activePointFeature.y}
+          </p>
+          {!filterContextData.inOverview ? (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setTimeSerieUrl(
+                  `https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${activePointFeature.locationId}`
+                );
+                setIsHidden(false);
+              }}
+            >
+              <Spinner as="span" size="sm" role="status" aria-hidden="true" />
+              Plot event
+            </Button>
+          ) : (
+            <></>
+          )}
+        </div>
+      )}
     </>
   );
 };

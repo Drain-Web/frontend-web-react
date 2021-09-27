@@ -10,6 +10,7 @@ import {
 } from "react-leaflet";
 import MapLocationsContext from "../contexts/MapLocationsContext";
 import FilterContext from "../contexts/FilterContext";
+import MapContext from "../contexts/MapContext";
 import TabActiveFeatureInfoContext from "../contexts/TabActiveFeatureInfoContext";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
@@ -26,6 +27,7 @@ const PointsLayer = ({
   setTimeSerieUrl,
   setIsHidden,
 }) => {
+  const { activePointFeature, setActivePointFeature } = useContext(MapContext);
   // regular location icon
   const icon = new Icon({
     iconUrl: iconUrl,
@@ -53,22 +55,22 @@ const PointsLayer = ({
   const { mapLocationsContextData } = useContext(MapLocationsContext);
   const { filterContextData } = useContext(FilterContext);
 
-  const [activePointFeature, setActivePointFeature] = useState(null);
-
   /* ** MAIN RENDER  *************************************************************************** */
   return (
     <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
-          {layerData.locations.map((layerData) => {
+          {layerData.locations.map((layerDataPoint) => {
             // maker will be displayed if its location Id is in the mapLocationsContextData
 
             // function that decides if a location will be shown
             const displayMarker = () => {
               if (
                 mapLocationsContextData.byLocations &&
-                layerData.locationId in mapLocationsContextData.byLocations &&
-                mapLocationsContextData.byLocations[layerData.locationId].show
+                layerDataPoint.locationId in
+                  mapLocationsContextData.byLocations &&
+                mapLocationsContextData.byLocations[layerDataPoint.locationId]
+                  .show
               ) {
                 return true;
               }
@@ -78,7 +80,7 @@ const PointsLayer = ({
             // function that defines the iconUrl
             const getIconUrl = () => {
               const mapLoc =
-                mapLocationsContextData.byLocations[layerData.locationId];
+                mapLocationsContextData.byLocations[layerDataPoint.locationId];
               if (!mapLoc.warning) {
                 return iconUrl; // TODO:
               } else {
@@ -91,20 +93,29 @@ const PointsLayer = ({
             }
 
             return (
-              <Fragment key={layerData.locationId}>
+              <Fragment key={layerDataPoint.locationId}>
                 <Marker
-                  position={[layerData.y, layerData.x]}
-                  onClose={() => {
-                    setActivePointFeature(null);
-                  }}
-                  onClick={() => {
-                    setActivePointFeature(null);
+                  position={[layerDataPoint.y, layerDataPoint.x]}
+                  eventHandlers={{
+                    click: () => {
+                      if (activePointFeature === null) {
+                        setActivePointFeature(layerDataPoint);
+                      } else {
+                        setActivePointFeature((previousValue) => {
+                          if (previousValue === layerDataPoint) {
+                            return null;
+                          } else {
+                            return layerDataPoint;
+                          }
+                        });
+                      }
+                    },
                   }}
                   icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
                 ></Marker>
                 {
                   /* display location polygon if needed */
-                  layerData.polygon ? (
+                  layerDataPoint.polygon ? (
                     <Polygon
                       pathOptions={{
                         color: "#0000AA",
@@ -112,17 +123,17 @@ const PointsLayer = ({
                         fill:
                           activePointFeature &&
                           activePointFeature.locationId ===
-                            layerData.locationId,
+                            layerDataPoint.locationId,
                         opacity:
                           activePointFeature &&
-                          activePointFeature.locationId === layerData.locationId
+                          activePointFeature.locationId ===
+                            layerDataPoint.locationId
                             ? 0.5
                             : 0,
                       }}
-                      positions={JSON.parse(layerData.polygon).map((pol) => [
-                        pol[1],
-                        pol[0],
-                      ])}
+                      positions={JSON.parse(layerDataPoint.polygon).map(
+                        (pol) => [pol[1], pol[0]]
+                      )}
                       display="none"
                       filter={false}
                     />

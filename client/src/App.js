@@ -111,6 +111,7 @@ const App = ({ settings }) => {
 
   // Panel state - show or hide
   const [isHidden, setIsHidden] = useState(false);
+  const [activePointFeature, setActivePointFeature] = useState(null);
 
   // Fetched states
   const locationsData = useState({})[0];
@@ -278,6 +279,8 @@ const App = ({ settings }) => {
   return (
     <MapContext.Provider
       value={{
+        setActivePointFeature,
+        activePointFeature,
         locationsData, //
         isHidden, //
         setIsHidden, //

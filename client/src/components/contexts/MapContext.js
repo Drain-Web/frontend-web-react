@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext } from "react";
 
 const MapContext = createContext({
   mapContextData: {
@@ -6,6 +6,7 @@ const MapContext = createContext({
     zoom: null,
     region: null,
     pointFeatures: null,
+    activePointFeature: null,
     setActivePointFeature: null,
     isHidden: null,
     setIsHidden: null,
@@ -16,9 +17,9 @@ const MapContext = createContext({
     boundariesData: null,
     regionData: null,
     filtersData: null,
-    ids: null
+    ids: null,
   },
-  setMapContextData: (mapData) => {}
-})
+  setMapContextData: (mapData) => {},
+});
 
-export default MapContext
+export default MapContext;

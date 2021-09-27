@@ -1,8 +1,14 @@
-import { createContext } from "react";
+import { createContext, useState } from "react";
 
-const TabActiveFeatureInfoContext = createContext({
-  tabActiveFeatureInfoContextData: {},
-  setTabActiveFeatureInfoContextData: (filter) => {},
-});
+export const TabActiveFeatureInfoContext = createContext();
 
-export default TabActiveFeatureInfoContext;
+export const TabActiveFeatureInfoProvider = ({ children }) => {
+  const [showActiveFeatureInfo, setShowActiveFeatureInfo] = useState(true);
+  return (
+    <TabActiveFeatureInfoContext.Provider
+      value={{ showActiveFeatureInfo, setShowActiveFeatureInfo }}
+    >
+      {children}
+    </TabActiveFeatureInfoContext.Provider>
+  );
+};
