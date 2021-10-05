@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import "../../style/TimeSeriePlot.css";
 import useSWR from "swr";
 import axios from "axios";
-import Plot from "react-plotly.js";
+import TimeSeriesPlotLayouts from "./TimeSeriesPlotLayouts";
 
 const TimeSeriesPlot = ({ timeSeriesUrl }) => {
   const [plotData, setPlotData] = useState(null);
   const [plotArray, setPlotArray] = useState(null);
+  const [availableVariables, setAvailableVariables] = useState(null);
 
   const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -16,6 +17,7 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
   if (error) return <div>failed to load</div>;
   if (!apiData) return <div>loading...</div>;
 
+  // Aux variables to set data used for plots
   let plotDataAux;
   let plotArrayAux;
 
@@ -54,50 +56,30 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
         name: serie.properties.parameterId,
       };
     });
-    console.log(plotDataAux[0].properties);
-    console.log(plotDataAux[0].thresholdValueSets);
 
+    console.log(plotDataAux[0].properties);
+
+    setAvailableVariables(
+      plotArrayAux
+        .map((serie) => serie.name.slice(0, 1))
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort()
+        .reverse()
+    );
     setPlotData(plotDataAux);
     setPlotArray(plotArrayAux);
   };
 
   useEffect(() => getPlotData(), [timeSeriesUrl]);
 
-  const updatemenus = [
-    {
-      yanchor: "top",
-      buttons: [
-        {
-          method: "restyle",
-          args: [{ "line.color": "red" }],
-          label: "red",
-        },
-        {
-          method: "restyle",
-          args: [{ "line.color": "blue" }],
-          label: "blue",
-        },
-        {
-          method: "restyle",
-          args: [{ "line.color": "green" }],
-          label: "green",
-        },
-      ],
-    },
-  ];
-
   return (
     <>
       {plotArray && (
         <div>
-          <Plot
-            data={plotArray}
-            layout={{
-              autosize: true,
-              title: plotData[0].properties.location_id.replace("_", " "),
-              legend: true,
-              updatemenus: { updatemenus },
-            }}
+          <TimeSeriesPlotLayouts
+            plotArray={plotArray}
+            plotData={plotData}
+            availableVariables={availableVariables}
           />
         </div>
       )}

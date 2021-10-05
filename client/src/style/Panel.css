@@ -7,7 +7,11 @@ body {
   display: inline-block;
   box-sizing: border-box;
   /* background-color: #f6f6f6; */
-  background: linear-gradient(180deg, rgb(190, 190, 250) 0%, rgb(255, 255, 255) 100%);
+  background: linear-gradient(
+    180deg,
+    rgb(190, 190, 250) 0%,
+    rgb(255, 255, 255) 100%
+  );
   position: relative;
   /* top: 0%; */
   /* right: 5%; */
@@ -15,7 +19,7 @@ body {
   z-index: 1000;
   /* min-height: 500px; */
   /* max-height: 50vh; */
-  /* width: 500px; */  /* width: 70%; */
+  /* width: 500px; */ /* width: 70%; */
   /* border-radius: 24px; */
   /* opacity: 0.9; */
   /* border: 0.2rem solid #c2bfba; */
@@ -32,17 +36,17 @@ body {
 }
 
 div.button-close {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   width: 1rem;
   float: left;
   text-align: center;
-  cursor:pointer
+  cursor: pointer;
 }
 
 div.Panel-content {
-  background-color: #FFFFFF;
-  width: 700px;
-  float: left
+  background-color: #ffffff;
+  width: 750px;
+  float: left;
 }
 
 .boton-prueba {
