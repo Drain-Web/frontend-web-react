@@ -4,7 +4,7 @@ import DropDownTimeSeries from "../others/DropDownTimeSeries";
 import {
   Marker,
   Polygon,
-  Popup,
+  Tooltip,
   LayersControl,
   LayerGroup,
 } from "react-leaflet";
@@ -108,7 +108,14 @@ const PointsLayer = ({
                     },
                   }}
                   icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
-                ></Marker>
+                >
+                  <Tooltip>
+                    <div style={{ fontsize: "18px", maxWidth: "100" }}>
+                      Prueba, acá pueden ir quizas los valores máximos de cada
+                      variable disponible en la estación?
+                    </div>
+                  </Tooltip>
+                </Marker>
                 {
                   /* display location polygon if needed */
                   layerDataPoint.polygon ? (

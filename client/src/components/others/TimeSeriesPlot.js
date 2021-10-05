@@ -8,6 +8,7 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
   const [plotData, setPlotData] = useState(null);
   const [plotArray, setPlotArray] = useState(null);
   const [availableVariables, setAvailableVariables] = useState(null);
+  const [unitsVariables, setUnitsVariables] = useState(null);
 
   const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -20,6 +21,8 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
   // Aux variables to set data used for plots
   let plotDataAux;
   let plotArrayAux;
+  let countVariables = 0;
+  let currentVariable = "";
 
   const rearrangeSeries = (series) => {
     const objData = {};
@@ -47,25 +50,49 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
       return rearrangeSeries(series);
     });
 
-    plotArrayAux = await plotDataAux.map((serie) => {
-      return {
-        x: serie.datetime,
-        y: serie.value,
-        type: "scatter",
-        mode: "lines",
-        name: serie.properties.parameterId,
-      };
-    });
+    plotArrayAux = await plotDataAux
+      .sort((a, b) =>
+        a.properties.parameterId > b.properties.parameterId
+          ? 1
+          : b.properties.parameterId > a.properties.parameterId
+          ? -1
+          : 0
+      )
+      .map((serie) => {
+        if (currentVariable != serie.properties.parameterId.slice(0, 1)) {
+          countVariables = countVariables + 1;
+          currentVariable = serie.properties.parameterId.slice(0, 1);
+        } else {
+          currentVariable = serie.properties.parameterId.slice(0, 1);
+        }
 
-    console.log(plotDataAux[0].properties);
+        return {
+          x: serie.datetime,
+          y: serie.value,
+          type: "scatter",
+          mode: "lines",
+          name: serie.properties.parameterId,
+          yaxis: "y" + countVariables.toString(),
+          units: serie.properties.units,
+        };
+      });
+
+    console.log(plotArrayAux);
 
     setAvailableVariables(
       plotArrayAux
         .map((serie) => serie.name.slice(0, 1))
         .filter((v, i, a) => a.indexOf(v) === i)
-        .sort()
-        .reverse()
+      // .sort()
+      // .reverse()
     );
+
+    setUnitsVariables(
+      plotArrayAux
+        .map((serie) => serie.units)
+        .filter((v, i, a) => a.indexOf(v) === i)
+    );
+
     setPlotData(plotDataAux);
     setPlotArray(plotArrayAux);
   };
@@ -80,6 +107,7 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
             plotArray={plotArray}
             plotData={plotData}
             availableVariables={availableVariables}
+            unitsVariables={unitsVariables}
           />
         </div>
       )}
