@@ -19,6 +19,7 @@ import { apiUrl } from "./libs/api.js";
 // import CSS styles
 import "style/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
+import "style/GeoSearchBox.css";
 import "./App.css";
 
 /* ** FUNCTIONS ******************************************************************************** */

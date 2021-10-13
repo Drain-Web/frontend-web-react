@@ -15,7 +15,8 @@ import PointsLayer from "../layers/PointsLayer";
 import MapContext from "../contexts/MapContext";
 import BaseLayers from "../layers/BaseLayers";
 import Panel from "./Panel";
-import GeoJsonLayer from "../layers/GeoJsonLayer";
+import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
+import SearchField from "./GeoSearchBox";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -28,9 +29,9 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 const getThesholdValueSet = (threshLevelId, thresholdValueSets) => {
   // Given a threshold level ID, identifies its theshold value set
-  
+
   let [contThreshValueSetId, valueFunction] = [null, null];
-  
+
   for (const threshValueSetId in thresholdValueSets) {
     const threshValueSet = thresholdValueSets[threshValueSetId];
     for (const threshValue of threshValueSet.levelThresholdValues) {
@@ -44,24 +45,24 @@ const getThesholdValueSet = (threshLevelId, thresholdValueSets) => {
       break;
     }
   }
-  return [contThreshValueSetId, valueFunction]
-}
+  return [contThreshValueSetId, valueFunction];
+};
 
 const getParameterIds = (contThreshValueSetId, filteredTimeseries) => {
   // Identifies the parameters of the timeseries that are subject to a given ThreshValueSet
 
-  const paramIds = new Set()
+  const paramIds = new Set();
   for (const tsIdx in filteredTimeseries) {
     const ts = filteredTimeseries[tsIdx];
     for (const threshValueSetIdx in ts.thresholdValueSets) {
       if (ts.thresholdValueSets[threshValueSetIdx].id == contThreshValueSetId) {
-        paramIds.add(ts.header.parameterId)
+        paramIds.add(ts.header.parameterId);
       }
     }
   }
 
-  return paramIds
-}
+  return paramIds;
+};
 
 const buildThreshGroupBy = (
   thresholdGroups,
@@ -78,26 +79,35 @@ const buildThreshGroupBy = (
   for (const threshGroup in thresholdGroups) {
     const threshGroupObj = thresholdGroups[threshGroup];
     const valueToKey = [];
-    const paramIds = new Set()
+    const paramIds = new Set();
 
     for (const levelThreshIdx in threshGroupObj.threshold_levels) {
       const threshLevel = threshGroupObj.threshold_levels[levelThreshIdx];
 
       // iterate over ThreshValueSet to get the one this LevelThresh
-      const [contThreshValueSetId, valueFunction] = getThesholdValueSet(threshLevel.id,
-                                                                        thresholdValueSets)
+      const [contThreshValueSetId, valueFunction] = getThesholdValueSet(
+        threshLevel.id,
+        thresholdValueSets
+      );
 
       // basic check
       if (contThreshValueSetId == null) {
-        console.warn("UNABLE TO DEFINE A ThresholdValueSet FOR LevelThreshold", threshLevel.id,
-                     "OF ThreshGroup", threshGroupObj.id);
+        console.warn(
+          "UNABLE TO DEFINE A ThresholdValueSet FOR LevelThreshold",
+          threshLevel.id,
+          "OF ThreshGroup",
+          threshGroupObj.id
+        );
         console.warn("POSSIBLE REASON: Inconsistent data from API.");
         break;
       }
 
       // identify parameter IDs
-      const curParamIds = getParameterIds(contThreshValueSetId, filteredTimeseries)
-      curParamIds.forEach(paramIds.add, paramIds)
+      const curParamIds = getParameterIds(
+        contThreshValueSetId,
+        filteredTimeseries
+      );
+      curParamIds.forEach(paramIds.add, paramIds);
 
       // identify parameter groups IDs
       // TODO
@@ -193,7 +203,7 @@ const updateLocationsByFilter = (
 
     // set to be show and include timeseries
     updLocs[locationId].timeseries[parameterId][timeseriesId] = {
-      filterId: filterId
+      filterId: filterId,
     };
     updLocs[locationId].show = true;
 
@@ -300,12 +310,20 @@ const MapControler = ({
 
       // define URLs
       const urlFilterRequest = apiUrl(
-        settings.apiBaseUrl, "v1", "filter", filterContextData.filterId
+        settings.apiBaseUrl,
+        "v1",
+        "filter",
+        filterContextData.filterId
       );
-      const urlTimeseriesRequest = apiUrl(settings.apiBaseUrl, "v1", "timeseries", {
-        filter: filterContextData.filterId,
-        showStatistics: true,
-      });
+      const urlTimeseriesRequest = apiUrl(
+        settings.apiBaseUrl,
+        "v1",
+        "timeseries",
+        {
+          filter: filterContextData.filterId,
+          showStatistics: true,
+        }
+      );
 
       // move map view to fit the map extent
       fetcher(urlFilterRequest).then((jsonData) => {
@@ -394,12 +412,15 @@ const MapControler = ({
           </FilterContext.Provider>
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
-          {
-            settings.riverNetwork.fullRaw ?
-              <GeoJsonLayer layerSettings={settings.riverNetwork.fullRaw} /> :
-              <></>
-          }
+          {settings.riverNetwork.fullRaw ? (
+            <GeoJsonLayerRiverNetwork
+              layerSettings={settings.riverNetwork.fullRaw}
+            />
+          ) : (
+            <></>
+          )}
         </LayersControl>
+        <SearchField />
         <ZoomControl position="bottomright" />
       </div>{" "}
       {/* </FlexContainer> */}

@@ -109,11 +109,8 @@ const PointsLayer = ({
                   }}
                   icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
                 >
-                  <Tooltip>
-                    <div style={{ fontsize: "18px", maxWidth: "100" }}>
-                      Prueba, acá pueden ir quizas los valores máximos de cada
-                      variable disponible en la estación?
-                    </div>
+                  <Tooltip className="myCSSClass">
+                    Location: {layerDataPoint.locationId}
                   </Tooltip>
                 </Marker>
                 {

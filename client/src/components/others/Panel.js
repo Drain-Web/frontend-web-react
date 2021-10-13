@@ -4,7 +4,6 @@ import { DomEvent } from "leaflet";
 import TimeSeriesPlot from "./TimeSeriesPlot";
 import "../../style/Panel.css";
 import Spinner from "react-bootstrap/Spinner";
-import CloseButton from "react-bootstrap/CloseButton";
 
 /* Panel open with the list of timeseries of a Location to be plot and the timeseries plot
  * Referenced by MapControler.
@@ -22,21 +21,23 @@ const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
   return (
     <div className={`${isHidden ? "Panel hide" : "Panel"}`} ref={divRef}>
       {/* <Draggable bounds='parent'> */}
-      <div className="Panel-content">
-        {timeSerieUrl && (
-          <Suspense
-            fallback={
-              <div>
-                <Spinner animation="border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </Spinner>
-              </div>
-            }
-          >
-            <TimeSeriesPlot timeSeriesUrl={timeSerieUrl} />
-          </Suspense>
-        )}
-      </div>
+      <Draggable>
+        <div className="Panel-content">
+          {timeSerieUrl && (
+            <Suspense
+              fallback={
+                <div>
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </div>
+              }
+            >
+              <TimeSeriesPlot timeSeriesUrl={timeSerieUrl} />
+            </Suspense>
+          )}
+        </div>
+      </Draggable>
       <div
         className="button-close"
         onClick={() => {

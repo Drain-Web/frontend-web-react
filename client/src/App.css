@@ -32,3 +32,15 @@ h1 {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.myCSSClass {
+  max-width: 400px;
+  border: 2px solid cyan;
+  font-size: medium;
+}
+.leaflet-tooltip-left.myCSSClass::before {
+  border-left-color: cyan;
+}
+.leaflet-tooltip-right.myCSSClass::before {
+  border-right-color: cyan;
+}
