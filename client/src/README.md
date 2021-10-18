@@ -74,7 +74,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
 --
 
-    settingsData: {
+    settings: {
       *the content of client/public/settings.json, described in client/public/README.md*
     }
 
@@ -131,16 +131,24 @@ They are **expected** to be hooked by ```useState```.
         },
         typeAlert: {
           threshold_TODO_Id: $threshold_TODO_Id$,
-          
+          moduleInstanceId: <observations|simulations|$moduleInstanceId$>
         },
         typeEvaluation: {
-
+          parameterGroupId: $parameterGroupId$,
+          metric: <KGE|RMSE>,
+          observationModuleInstanceId: $moduleInstanceId$,
+          simulationModuleInstanceId: $moduleInstanceId$
         },
         typeCompetition: {
-
+          parameterGroupId: $parameterGroupId$,
+          metric: <KGE|RMSE>,
+          observationModuleInstanceId: $moduleInstanceId$,
+          simulationModuleInstanceIds: set($moduleInstanceId$)
         },
         typeComparison: {
-
+          parameterGroupId: $parameterGroupId$,
+          metric: <higherMax|higherMean|lowerMax|lowerMean>,
+          moduleInstanceIds: set($moduleInstanceId$)
         }
       }
     }

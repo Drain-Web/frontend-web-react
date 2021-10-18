@@ -292,6 +292,32 @@ const App = ({ settings }) => {
     return null;
   }
 
+  const consFixed = {
+    region: regionData,
+    boundaries: boundariesData,
+    filters: filtersData,
+    locations: locationsData,
+    parameters: parametersData,
+    parameterGroups: parameterGroupsData,
+    thresholdValueSets: thresholdValueSetsData,
+    thresholdGroups: thresholdGroupsData,
+    settings: settings
+  }
+
+  const consCache = {
+    filters: {},
+    location: {}
+  }
+
+  const varsState = {
+    context: {
+      filterId: null,
+      icons: {
+        iconType: null
+      }
+    }
+  }
+
   return (
     <MapContext.Provider
       value={{
