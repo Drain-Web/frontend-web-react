@@ -322,6 +322,7 @@ const MapControler = ({
         {
           filter: filterContextData.filterId,
           showStatistics: true,
+          onlyHeaders: true
         }
       );
 
