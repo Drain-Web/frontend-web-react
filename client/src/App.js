@@ -6,7 +6,7 @@ import useSWR from "swr";
 // import 'core-js/stable'
 
 // import react-compatible components
-import { MapContainer } from "react-leaflet";
+import { MapContainer, useMapEvents } from "react-leaflet";
 
 // import custom components
 import MapControler from "./components/others/MapControler";
@@ -277,6 +277,21 @@ const App = ({ settings }) => {
   const zoom = 9;
 
   // build page if everithing worked fine
+
+  function GetZoomLevel() {
+    const [zoomLevel, setZoomLevel] = useState(zoom); // initial zoom level provided for MapContainer
+
+    const mapEvents = useMapEvents({
+      zoomend: () => {
+        setZoomLevel(mapEvents.getZoom());
+      },
+    });
+
+    console.log(zoomLevel);
+
+    return null;
+  }
+
   return (
     <MapContext.Provider
       value={{
@@ -298,6 +313,7 @@ const App = ({ settings }) => {
       }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
+        <GetZoomLevel />
         <MapControler
           settings={settings}
           thresholdValueSets={thresholdValueSetsData}
