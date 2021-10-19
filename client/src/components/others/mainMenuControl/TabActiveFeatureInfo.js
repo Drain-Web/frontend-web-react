@@ -22,27 +22,24 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
     setIsHidden,
   } = useContext(MapContext);
 
-  // const { showActiveFeatureInfo, setShowActiveFeatureInfo } = useContext(
-  // TabActiveFeatureInfoContext
-  // );
-
   return (
     <>
-      {activePointFeature && (
+      {activePointFeature ? (
         <div>
           <h5>
             <span className="popuptitle">{activePointFeature.shortName}</span>
           </h5>
           <p>
-            <span className="popuptitle">Id:</span>{" "}
-            {activePointFeature.locationId}
+            <span className="popupsubtitle">Id: </span>
+            <span className="popuptext">{activePointFeature.locationId}</span>
           </p>
           <p>
-            <span className="popuptitle">Longitude:</span>{" "}
-            {activePointFeature.x}
+            <span className="popupsubtitle">Longitude: </span>
+            <span className="popuptext">{activePointFeature.x}</span>
           </p>
           <p>
-            <span className="popuptitle">Latitude:</span> {activePointFeature.y}
+            <span className="popupsubtitle">Latitude: </span>
+            <span className="popuptext">{activePointFeature.y}</span>
           </p>
           {!filterContextData.inOverview ? (
             <Button
@@ -60,6 +57,10 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
           ) : (
             <></>
           )}
+        </div>
+      ) : (
+        <div className="popuptext">
+          Click on a location icon to get more information.
         </div>
       )}
     </>

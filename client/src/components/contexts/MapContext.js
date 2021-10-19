@@ -18,6 +18,10 @@ const MapContext = createContext({
     regionData: null,
     filtersData: null,
     ids: null,
+    activeTab: null,
+    setActiveTab: null,
+    zoomLevel: null,
+    setZoomLevel: null,
   },
   setMapContextData: (mapData) => {},
 });

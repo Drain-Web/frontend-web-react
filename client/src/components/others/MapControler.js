@@ -322,7 +322,7 @@ const MapControler = ({
         {
           filter: filterContextData.filterId,
           showStatistics: true,
-          onlyHeaders: true
+          onlyHeaders: true,
         }
       );
 
@@ -413,6 +413,7 @@ const MapControler = ({
           </FilterContext.Provider>
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
+
           {settings.riverNetwork.fullRaw ? (
             <GeoJsonLayerRiverNetwork
               layerSettings={settings.riverNetwork.fullRaw}

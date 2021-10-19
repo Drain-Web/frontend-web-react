@@ -5,6 +5,7 @@ import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
 import ownStyles from "../../style/MainMenuControl.module.css";
 import FilterContext from "../contexts/FilterContext";
+import MapContext from "../contexts/MapContext";
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
 
@@ -28,6 +29,7 @@ export const MainMenuControl = ({
 
   // retireves context data
   const { filterContextData, setFilterContextData } = useContext(FilterContext);
+  const { activeTab, setActiveTab } = useContext(MapContext);
 
   const divRef = useRef(null);
 
@@ -74,13 +76,18 @@ export const MainMenuControl = ({
               defaultActiveKey={
                 filterContextData.inOverview ? "tabOverview" : "tabFilters"
               }
-              onSelect={functionOnChangeTab}
+              activeKey={activeTab}
+              // onSelect={functionOnChangeTab}
+              onSelect={(k) => setActiveTab(k)}
+              // onChange={setActiveTab}
             >
               <Tab eventKey="tabOverview" title="Overview">
                 <p>
-                  <strong>About</strong>
+                  <span className="popuptitle">About</span>
                 </p>
-                <p>Here comes some information about the app.</p>
+                <span className="popuptext">
+                  <p>Here comes some information about the app.</p>
+                </span>
               </Tab>
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters

@@ -21,6 +21,16 @@
 
 .popuptitle {
   font-weight: bold;
+  font-size: large;
+}
+
+.popupsubtitle {
+  font-weight: bold;
+  font-size: medium;
+}
+
+.popuptext {
+  font-size: medium;
 }
 
 body {
@@ -33,14 +43,10 @@ h1 {
   margin-bottom: 0;
 }
 
-.myCSSClass {
+.toolTipClass {
   max-width: 400px;
-  border: 2px solid cyan;
-  font-size: medium;
 }
-.leaflet-tooltip-left.myCSSClass::before {
-  border-left-color: cyan;
+.leaflet-tooltip-left.toolTipClass::before {
 }
-.leaflet-tooltip-right.myCSSClass::before {
-  border-right-color: cyan;
+.leaflet-tooltip-right.toolTipClass::before {
 }
