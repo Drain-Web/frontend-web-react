@@ -63,8 +63,8 @@ const TimeSeriesPlotLayouts = ({
     };
   }
 
-  console.log(unitsVariables);
-  console.log(availableVariables);
+  // console.log(unitsVariables);
+  // console.log(availableVariables);
 
   return (
     <>

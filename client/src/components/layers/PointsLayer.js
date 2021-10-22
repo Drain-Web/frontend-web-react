@@ -24,6 +24,8 @@ const PointsLayer = ({
   iconSize = 22
 }) => {
   const { activePointFeature, setActivePointFeature } = useContext(MapContext);
+  const { activeTab, setActiveTab } = useContext(MapContext);
+
   // regular location icon
   const icon = new Icon({
     iconUrl: iconUrl,
@@ -57,6 +59,7 @@ const PointsLayer = ({
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {layerData.locations.map((layerDataPoint) => {
+            console.log(layerDataPoint);
             // maker will be displayed if its location Id is in the mapLocationsContextData
 
             // function that decides if a location will be shown
@@ -91,8 +94,10 @@ const PointsLayer = ({
                   eventHandlers={{
                     click: () => {
                       if (activePointFeature === null) {
+                        setActiveTab("tabActiveFeatureInfo");
                         setActivePointFeature(layerDataPoint);
                       } else {
+                        setActiveTab(activeTab);
                         setActivePointFeature((previousValue) => {
                           if (previousValue === layerDataPoint) {
                             return null;
@@ -105,8 +110,28 @@ const PointsLayer = ({
                   }}
                   icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
                 >
-                  <Tooltip className="myCSSClass">
-                    Location: {layerDataPoint.locationId}
+                  <Tooltip className="toolTipClass">
+                    <div>
+                      <h5>
+                        <span className="popuptitle">
+                          {layerDataPoint.shortName}
+                        </span>
+                      </h5>
+                      <p>
+                        <span className="popupsubtitle">Id: </span>
+                        <span className="popuptext">
+                          {layerDataPoint.locationId}
+                        </span>
+                      </p>
+                      <p>
+                        <span className="popupsubtitle">Longitude: </span>
+                        <span className="popuptext">{layerDataPoint.x}</span>
+                      </p>
+                      <p>
+                        <span className="popupsubtitle">Latitude: </span>
+                        <span className="popuptext">{layerDataPoint.y}</span>
+                      </p>
+                    </div>
                   </Tooltip>
                 </Marker>
                 {
@@ -128,7 +153,9 @@ const PointsLayer = ({
                             : 0,
                       }}
                       positions={JSON.parse(layerDataPoint.polygon).map(
-                        (pol) => [pol[1], pol[0]]
+                        (pol) => {
+                          return [pol[1], pol[0]];
+                        }
                       )}
                       display="none"
                       filter={false}

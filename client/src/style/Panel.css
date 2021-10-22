@@ -37,15 +37,16 @@ body {
 
 div.button-close {
   background-color: #ffffff;
-  width: 1rem;
+  width: 2rem;
   float: left;
   text-align: center;
   cursor: pointer;
+  z-index: 1000;
 }
 
 div.Panel-content {
   background-color: #ffffff;
-  width: 750px;
+  max-width: 60%;
   float: left;
 }
 

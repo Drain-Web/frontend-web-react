@@ -3,15 +3,14 @@ import { Alert, Spinner } from "react-bootstrap";
 import "regenerator-runtime/runtime";
 import axios from "axios";
 import useSWR from "swr";
+import { MapContainer } from "react-leaflet";
 // import 'core-js/stable'
-
-// import react-compatible components
-import { MapContainer, useMapEvents } from "react-leaflet";
 
 // import custom components
 import MapControler from "./components/others/MapControler";
 import MapContext from "./components/contexts/MapContext";
 import FlexContainer from "./components/others/FlexContainer";
+import GetZoomLevel from "./components/others/GetZoomLevel";
 
 // import libs
 import { apiUrl } from "./libs/api.js";
@@ -110,6 +109,8 @@ const App = ({ settings }) => {
   // Context states
   const [filterContextData, setFilterContextData] = useState({});
   const [mapLocationsContextData, setMapLocationsContextData] = useState({});
+  const [activeTab, setActiveTab] = useState("tabFilters");
+  const [zoomLevel, setZoomLevel] = useState(9);
 
   // basic check for opening the system
   const consFixed = loadConsFixed(settings)
@@ -134,22 +135,6 @@ const App = ({ settings }) => {
   // defines zoom level
   // TODO: make it a function of the map extents
   const zoom = 9;
-
-  // build page if everithing worked fine
-
-  function GetZoomLevel() {
-    const [zoomLevel, setZoomLevel] = useState(zoom); // initial zoom level provided for MapContainer
-
-    const mapEvents = useMapEvents({
-      zoomend: () => {
-        setZoomLevel(mapEvents.getZoom());
-      },
-    });
-
-    console.log(zoomLevel);
-
-    return null;
-  }
 
   const consCache = {
     filters: {},
@@ -177,7 +162,11 @@ const App = ({ settings }) => {
         filterContextData,
         setFilterContextData,
         mapLocationsContextData,
-        setMapLocationsContextData
+        setMapLocationsContextData,
+        activeTab,
+        setActiveTab,
+        zoomLevel,
+        setZoomLevel
       }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
