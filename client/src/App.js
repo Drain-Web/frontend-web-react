@@ -15,6 +15,7 @@ import FlexContainer from "./components/others/FlexContainer";
 
 // import libs
 import { apiUrl } from "./libs/api.js";
+import { loadConsFixed, isStillLoadingConsFixed } from './libs/appLoad.js'
 
 // import CSS styles
 import "style/bootstrap.min.css";
@@ -29,8 +30,6 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 // function used to fill the filterContext dictionary
 const fillFilterContextData = (filterId, filterContextData) => {
-  // filterId: full string of the filter Id
-  // filterContextData: dictionary to be filled
 
   if (!filterId) return {};
 
@@ -58,34 +57,28 @@ const getMapCenter = (mapExtent) => {
   };
 };
 
-const loadingMessage = (
-  dataRegion,
-  dataBounds,
-  dataFilts,
-  dataLocs,
-  dataThresholdGroups,
-  dataThresholdValueSets,
-  dataParameters,
-  dataParameterGroups
-) => {
-  const [lded, lding] = ["loaded", "..."];
+// function for defining the '' or 'not loading' message
+const wasLoaded = (k, v) => {
+  return (
+    <>
+      &nbsp;&nbsp;-&nbsp;&nbsp;{k}: { (v) ? 'loaded' : '...' }<br />
+    </>
+  )
+}
+
+// build loading message
+const loadingMessage = (cF) => {
   return (
     <div>
-      Loading...
-      <br />
-      &nbsp;regions: {dataRegion ? "loaded." : "..."}
-      <br />
-      &nbsp;bounds: {dataBounds ? "loaded." : "..."}
-      <br />
-      &nbsp;filters: {dataFilts ? "loaded." : "..."}
-      <br />
-      &nbsp;locations: {dataLocs ? "loaded." : "..."}
-      <br />
-      &nbsp;threshold groups: {dataThresholdGroups ? lded : lding}
-      <br />
-      &nbsp;threshold value sets: {dataThresholdValueSets ? lded : lding}
-      <br />
-      &nbsp;parameters: {dataParameters && dataParameterGroups ? lded : lding}
+      Loading...<br />
+      {wasLoaded('regions', cF['region'])}
+      {wasLoaded('boundaries', cF['boundaries'])}
+      {wasLoaded('filters', cF['filters'])}
+      {wasLoaded('locations', cF['locations'])}
+      {wasLoaded('threshold groups', cF['thresholdGroups'])}
+      {wasLoaded('threshold value sets', cF['thresholdValueSets'])}
+      {wasLoaded('parameters', cF['parameters'])}
+      {wasLoaded('parameter groups', cF['parameterGroups'])}
       <br />
       <Spinner
         animation="border"
@@ -114,162 +107,28 @@ const App = ({ settings }) => {
   const [isHidden, setIsHidden] = useState(false);
   const [activePointFeature, setActivePointFeature] = useState(null);
 
-  // Fetched states
-  const locationsData = useState({})[0];
-  const boundariesData = useState([])[0];
-  const regionData = useState({})[0];
-  const filtersData = useState([])[0];
-  const thresholdGroupsData = useState({})[0];
-  const thresholdValueSetsData = useState({})[0];
-  const parametersData = useState({})[0];
-  const parameterGroupsData = useState({})[0];
-
   // Context states
   const [filterContextData, setFilterContextData] = useState({});
   const [mapLocationsContextData, setMapLocationsContextData] = useState({});
 
-  // request location data -> store in const 'locationsData'
-  const { data: dataLocs, error: error2 } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1dw", "locations", {
-      showPolygon: true,
-      showAttributes: true,
-    }),
-    fetcher
-  );
-  if (dataLocs && !error2 && !Object.keys(locationsData).length) {
-    for (const i in dataLocs) {
-      locationsData[i] = dataLocs[i];
-    }
-  }
-
-  // request boundaries data -> store in const 'boundariesData'
-  const { data: dataBounds, error: error1 } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1dw", "boundaries"),
-    fetcher
-  );
-  if (dataBounds && !error1 && !boundariesData.length) {
-    for (const i in dataBounds) {
-      boundariesData.push(dataBounds[i]);
-    }
-  }
-
-  // request region data -> store in const 'regionData'
-  const { data: dataRegion, error: error3 } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1", "region"),
-    fetcher
-  );
-  if (dataRegion && !error3 && !Object.keys(regionData).length) {
-    for (const i in dataRegion) {
-      regionData[i] = dataRegion[i];
-    }
-  }
-
-  // request filters data -> store in 'filtersData'
-  const { data: dataFilts, error: errorids } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1", "filters"),
-    fetcher
-  );
-  if (dataFilts && !errorids && !filtersData.length) {
-    for (const i in dataFilts) {
-      filtersData.push(dataFilts[i]);
-    }
-  }
-
-  // load threshold groups
-  const { data: dataThresholdGroups, error: errorThreshGroups } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1dw", "threshold_groups"),
-    fetcher
-  );
-  if (dataThresholdGroups && !errorThreshGroups) {
-    for (const tg of dataThresholdGroups.thresholdGroups) {
-      thresholdGroupsData[tg.id] = tg;
-    }
-  }
-
-  // load parameters
-  const { data: dataParameters, error: errorParameters } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1", "parameters/"),
-    fetcher
-  );
-  if (dataParameters && !errorParameters) {
-    for (const prm of dataParameters.timeSeriesParameters) {
-      parametersData[prm.id] = prm;
-    }
-  }
-
-  // load parameter groups
-  const { data: dataParameterGroups, error: errorParameterGroups } = useSWR(
-    apiUrl(settings.apiBaseUrl, "v1dw", "parameter_groups/"),
-    fetcher
-  );
-  if (dataParameterGroups && !errorParameterGroups) {
-    for (const prgr of dataParameterGroups.parameterGroups) {
-      parameterGroupsData[prgr.id] = prgr;
-    }
-  }
-
-  // load threshold value sets
-  const { data: dataThresholdValueSets, error: errorThresholdValueSets } =
-    useSWR(
-      apiUrl(settings.apiBaseUrl, "v1dw", "threshold_value_sets"),
-      fetcher
-    );
-  if (dataThresholdValueSets && !errorThresholdValueSets) {
-    for (const tg in dataThresholdValueSets.thresholdValueSets) {
-      const curObj = { ...dataThresholdValueSets.thresholdValueSets[tg] };
-      const curObjId = curObj.id;
-      delete curObj.id;
-      thresholdValueSetsData[curObjId] = curObj;
-    }
-  }
-
   // basic check for opening the system
-  if (errorids) return <div>failed to load</div>;
-  if (
-    !(
-      dataFilts &&
-      dataBounds &&
-      dataLocs &&
-      dataRegion &&
-      dataThresholdGroups &&
-      dataThresholdValueSets &&
-      dataParameters &&
-      dataParameterGroups
-    )
-  ) {
-    return loadingMessage(
-      dataRegion,
-      dataBounds,
-      dataFilts,
-      dataLocs,
-      dataThresholdGroups,
-      dataThresholdValueSets,
-      dataParameters,
-      dataParameterGroups
-    );
-  }
+  const consFixed = loadConsFixed(settings)
+
+  // check if still loading
+  const isLoading = isStillLoadingConsFixed(consFixed)
+  if (isLoading) { return loadingMessage(consFixed) }
 
   /* ** MAIN RENDER  *************************************************************************** */
 
-  const ids = filtersData.map((filter) => filter.id);
+  const filterIds = consFixed['filters'].map((filter) => filter.id);
 
   // currently active filter
   if (!("filterId" in filterContextData)) {
-    fillFilterContextData(regionData.defaultFilter, filterContextData);
-  }
-
-  // basic check - boundaries must load, if no data is returned by the API shows an error message
-  if (error1) {
-    return (
-      <Alert variant="danger">
-        There is a problem, data cannot be fecthed from the API or it is taking
-        much longer than usual.
-      </Alert>
-    );
+    fillFilterContextData(consFixed['region'].defaultFilter, filterContextData);
   }
 
   // gets the central coordinates of the map into const 'position'
-  const posXY = getMapCenter(regionData.map.defaultExtent);
+  const posXY = getMapCenter(consFixed['region'].map.defaultExtent);
   const position = [posXY.y, posXY.x];
 
   // defines zoom level
@@ -292,18 +151,6 @@ const App = ({ settings }) => {
     return null;
   }
 
-  const consFixed = {
-    region: regionData,
-    boundaries: boundariesData,
-    filters: filtersData,
-    locations: locationsData,
-    parameters: parametersData,
-    parameterGroups: parameterGroupsData,
-    thresholdValueSets: thresholdValueSetsData,
-    thresholdGroups: thresholdGroupsData,
-    settings: settings
-  }
-
   const consCache = {
     filters: {},
     location: {}
@@ -323,30 +170,19 @@ const App = ({ settings }) => {
       value={{
         setActivePointFeature,
         activePointFeature,
-        locationsData, //
-        isHidden, //
-        setIsHidden, //
-        timeSerieUrl, //
-        setTimeSerieUrl, //
-        filterContextData, //
-        setFilterContextData, //
-        mapLocationsContextData, //
-        setMapLocationsContextData, //
-        boundariesData, //
-        regionData, //
-        filtersData, //
-        ids, // filter IDs
+        isHidden,
+        setIsHidden,
+        timeSerieUrl,
+        setTimeSerieUrl,
+        filterContextData,
+        setFilterContextData,
+        mapLocationsContextData,
+        setMapLocationsContextData
       }}
     >
       <MapContainer center={position} zoom={zoom} zoomControl={false}>
         <GetZoomLevel />
-        <MapControler
-          settings={settings}
-          thresholdValueSets={thresholdValueSetsData}
-          thresholdGroups={thresholdGroupsData}
-          parameters={parametersData}
-          parameterGroups={parameterGroupsData}
-        />
+        <MapControler settings={settings} consFixed={consFixed}/>
       </MapContainer>
     </MapContext.Provider>
   );
@@ -357,10 +193,7 @@ const AppSettings = () => {
 
   // read app settings
   const settingsData = useState({})[0];
-  const { data: dataSettings, error: errorSettings } = useSWR(
-    "settings.json",
-    fetcher
-  );
+  const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher);
 
   /* ** MAIN RENDER  *************************************************************************** */
 

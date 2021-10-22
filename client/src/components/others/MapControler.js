@@ -255,16 +255,10 @@ const updateLocationsToOverview = (
   });
 };
 
-const MapControler = ({
-  settings,
-  thresholdValueSets,
-  thresholdGroups,
-  parameters,
-  parameterGroups,
-}) => {
+const MapControler = ({ settings, consFixed }) => {
+
   // this specific component is needed to allow useMap()
   const {
-    locationsData,
     isHidden,
     setIsHidden,
     timeSerieUrl,
@@ -272,11 +266,7 @@ const MapControler = ({
     filterContextData,
     setFilterContextData,
     mapLocationsContextData,
-    setMapLocationsContextData,
-    boundariesData,
-    regionData,
-    filtersData,
-    ids,
+    setMapLocationsContextData
   } = useContext(MapContext);
   const map = useMap();
 
@@ -341,10 +331,10 @@ const MapControler = ({
           jsonData,
           mapLocationsContextData,
           setMapLocationsContextData,
-          thresholdValueSets,
-          thresholdGroups,
-          parameters,
-          parameterGroups,
+          consFixed['thresholdValueSets'],
+          consFixed['thresholdGroup'],
+          consFixed['parameters'],
+          consFixed['parameterGroups'],
           filterContextData.filterId
         );
       });
@@ -364,11 +354,11 @@ const MapControler = ({
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
             <MainMenuControl
-              regionName={regionData.systemInformation.name}
-              filtersData={filtersData}
-              locationsData={locationsData}
-              thresholdValueSets={thresholdValueSets}
-              thresholdGroups={thresholdGroups}
+              regionName={consFixed['region'].systemInformation.name}
+              filtersData={consFixed['filters']}
+              locationsData={consFixed['locations']}
+              thresholdValueSets={consFixed['thresholdValueSets']}
+              thresholdGroups={consFixed['thresholdGroup']}
               overviewFilter={settings.overviewFilter}
               showMainMenuControl={showMainMenuControl}
               setShowMainMenuControl={setShowMainMenuControl}
@@ -391,14 +381,9 @@ const MapControler = ({
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
             <FilterContext.Provider value={{ filterContextData }}>
               <PointsLayer
-                layerData={locationsData}
+                layerData={consFixed['locations']}
                 layerName="Locations"
                 iconUrl={settings.generalLocationIcon}
-                ids={ids}
-                timeSerieUrl={timeSerieUrl}
-                setTimeSerieUrl={setTimeSerieUrl}
-                setIsHidden={setIsHidden}
-                filterContextData={filterContextData}
               />
             </FilterContext.Provider>
           </MapLocationsContext.Provider>
@@ -406,7 +391,7 @@ const MapControler = ({
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <FilterContext.Provider value={{ filterContextData }}>
             <PolygonLayer
-              layerData={boundariesData}
+              layerData={consFixed['boundaries']}
               layerName="Boundaries"
               reversePolygon
             />

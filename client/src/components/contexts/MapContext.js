@@ -13,11 +13,7 @@ const MapContext = createContext({
     timeSerieUrl: null,
     setTimeSerieUrl: null,
     filterContextData: null,
-    setFilterContextData: null,
-    boundariesData: null,
-    regionData: null,
-    filtersData: null,
-    ids: null,
+    setFilterContextData: null
   },
   setMapContextData: (mapData) => {},
 });

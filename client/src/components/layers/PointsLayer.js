@@ -21,11 +21,7 @@ const PointsLayer = ({
   layerData,
   layerName,
   iconUrl,
-  iconSize = 22,
-  ids,
-  timeSerieUrl,
-  setTimeSerieUrl,
-  setIsHidden,
+  iconSize = 22
 }) => {
   const { activePointFeature, setActivePointFeature } = useContext(MapContext);
   // regular location icon
