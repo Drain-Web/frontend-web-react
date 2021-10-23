@@ -130,7 +130,9 @@ const loadConsFixed = ( settings ) => {
 const isStillLoadingConsFixed = (consFixed) => {
   let allLoaded = true
   for (const k in consFixed) {
-    if (Array.isArray(consFixed[k]) && (consFixed[k].length == 0)) {
+    if (!consFixed[k]) {
+      allLoaded = false
+    } else if (Array.isArray(consFixed[k]) && (consFixed[k].length == 0)) {
       allLoaded = false
     } else if ((consFixed[k].constructor == Object) && (Object.keys(consFixed[k]).length == 0)) {
       allLoaded = false

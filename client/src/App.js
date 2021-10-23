@@ -13,7 +13,6 @@ import FlexContainer from "./components/others/FlexContainer";
 import GetZoomLevel from "./components/others/GetZoomLevel";
 
 // import libs
-import { apiUrl } from "./libs/api.js";
 import { loadConsFixed, isStillLoadingConsFixed } from './libs/appLoad.js'
 
 // import CSS styles
@@ -121,8 +120,6 @@ const App = ({ settings }) => {
 
   /* ** MAIN RENDER  *************************************************************************** */
 
-  const filterIds = consFixed['filters'].map((filter) => filter.id);
-
   // currently active filter
   if (!("filterId" in filterContextData)) {
     fillFilterContextData(consFixed['region'].defaultFilter, filterContextData);
@@ -153,8 +150,8 @@ const App = ({ settings }) => {
   return (
     <MapContext.Provider
       value={{
-        setActivePointFeature,
         activePointFeature,
+        setActivePointFeature,
         isHidden,
         setIsHidden,
         timeSerieUrl,
