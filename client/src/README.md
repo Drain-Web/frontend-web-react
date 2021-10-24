@@ -161,3 +161,12 @@ They are **expected** to be hooked by ```useState```.
         display: <true|false>
       }
     }
+
+--
+
+    domObjects: {
+      mainMenuControl: {
+        show: <true|false>,
+        activeTab: <tabOverview|tabFilters|tabActiveFeatureInfo>
+      }
+    }

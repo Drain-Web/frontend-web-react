@@ -9,22 +9,22 @@ const VarsState = createContext(
     varsState: {
       // 'context' stores what is currently selected by the user
       context: {
-        filterId: null,                         // filterId
+        filterId: null,                             // filterId
         icons: {
-          iconType: null,                       // <uniform|alerts|evaluation|competition|comparison>
+          iconType: null,                           // <uniform|alerts|evaluation|competition|comparison>
           typeUniform: {
-            filterBy: null,                     // <null|parameter|parameterGroup|moduleInstance>
+            filterBy: null,                         // <null|parameter|parameterGroup|moduleInstance>
             filterValues: new Set()                 // <parameterIds|parameterGroupIds|moduleInstanceIds>
           },
           typeAlert: {
-            threshold_TODO_Id: null,            // threshold_TODO_Id
-            moduleInstanceId: null              // <observations|simulations|$moduleInstanceId$>
+            threshold_TODO_Id: null,                // threshold_TODO_Id
+            moduleInstanceId: null                  // <observations|simulations|$moduleInstanceId$>
           },
           typeEvaluation: {
-            parameterGroupId: null,             // parameterGroupId
-            metric: null,                       // <KGE|RMSE>
-            observationModuleInstanceId: null,  // moduleInstanceId
-            simulationModuleInstanceId: null    // moduleInstanceId
+            parameterGroupId: null,                 // parameterGroupId
+            metric: null,                           // <KGE|RMSE>
+            observationModuleInstanceId: null,      // moduleInstanceId
+            simulationModuleInstanceId: null        // moduleInstanceId
           },
           typeCompetition: {
             parameterGroupId: null,                 // parameterGroupId
@@ -42,6 +42,14 @@ const VarsState = createContext(
 
       // 'locations' stores what expected to be shown in the map with respect to location icons
       locations: {},
+
+      // 'domObjects' stores the visual states of DOM objects
+      domObjects: {
+        mainMenuControl: {
+          show: true,
+          activeTab: "tabFilters"                   // <tabOverview|tabFilters|tabActiveFeatureInfo>
+        }
+      }
     },
     setVarsState: (filter) => {}
   }

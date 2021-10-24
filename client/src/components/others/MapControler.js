@@ -12,7 +12,7 @@ import BaseLayers from "../layers/BaseLayers";
 import Panel from "./Panel";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
-import VarsState from "../contexts/VarsState";
+// import VarsState from "../contexts/VarsState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -36,10 +36,8 @@ const MapControler = ({ settings, consFixed }) => {
   } = useContext(MapContext);
   const map = useMap();
 
-  const {varsState, setVarsState} = useContext(VarsState)
-  console.log("varsState:-", varsState)
-
-  const [showMainMenuControl, setShowMainMenuControl] = useState(true);
+  // const {varsState, setVarsState} = useContext(VarsState)
+  // console.log("varsState:-", varsState)
 
   // when filterContextData is changed, load new filter data and refresh map
   // useEffect(onChangeFilterContextData, [filterContextData]);
@@ -59,14 +57,8 @@ const MapControler = ({ settings, consFixed }) => {
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
             <MainMenuControl
-              regionName={consFixed['region'].systemInformation.name}
-              filtersData={consFixed['filters']}
-              locationsData={consFixed['locations']}
-              thresholdValueSets={consFixed['thresholdValueSets']}
-              thresholdGroups={consFixed['thresholdGroup']}
-              overviewFilter={settings.overviewFilter}
-              showMainMenuControl={showMainMenuControl}
-              setShowMainMenuControl={setShowMainMenuControl}
+              settings={settings}
+              consFixed={consFixed}
               position="leaflet-right"
             />
           </MapLocationsContext.Provider>

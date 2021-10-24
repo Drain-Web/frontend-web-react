@@ -1,36 +1,42 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { DomEvent } from "leaflet";
 import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
-import ownStyles from "../../style/MainMenuControl.module.css";
+
+// import custom components
 import FilterContext from "../contexts/FilterContext";
 import MapContext from "../contexts/MapContext";
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
+import VarsState from "../contexts/VarsState";
+import varsStateLib from "../contexts/varsStateLib";
 
-/* Map menu that allows selection of filters and more.
+// import CSS styles
+import ownStyles from "../../style/MainMenuControl.module.css";
+
+/*
+ * Map menu that allows selection of filters and more.
  */
 
 /* ** OBJ - Bootstrap div ******************************************************************** */
 
 export const MainMenuControl = ({
-  regionName,
-  filtersData,
-  locationsData,
-  thresholdValueSets,
-  thresholdGroups,
-  overviewFilter,
-  showMainMenuControl,
-  setShowMainMenuControl,
-  position,
+  settings,
+  consFixed,
+  position
 }) => {
   /* ** SET HOOKS **************************************************************************** */
 
-  // retireves context data
+  // Retireves context data
+  // TODO: move to varsState
   const { filterContextData, setFilterContextData } = useContext(FilterContext);
   const { activeTab, setActiveTab } = useContext(MapContext);
 
+  // Get global states and set local states
+  const { varsState, setVarsState } = useContext(VarsState)
+  const [showMe, setShowMe] = useState(varsStateLib.getMainMenuControlShow(varsState))
+  
   const divRef = useRef(null);
 
   useEffect(() => {
@@ -40,18 +46,8 @@ export const MainMenuControl = ({
   const remValue = useRemValue();
 
   const contentProps = useSpring({
-    marginLeft: showMainMenuControl ? 0 : -18 * remValue,
+    marginLeft: showMe ? 0 : -18 * remValue,
   });
-
-  /* ** DEFS ********************************************************************************* */
-
-  const functionOnChangeTab = (newTabId) => {
-    // Triggered when a tab Overview/Filter is chaned
-    setFilterContextData({
-      ...filterContextData,
-      inOverview: newTabId === "tabOverview",
-    });
-  };
 
   /* ** MAIN RENDER ************************************************************************** */
 
@@ -62,7 +58,7 @@ export const MainMenuControl = ({
         <Container className="h-100" ref={divRef}>
           <Row>
             <Col>
-              <h1>{regionName}</h1>
+              <h1>{consFixed['region'].systemInformation.name}</h1>
             </Col>
           </Row>
           <Row>
@@ -77,9 +73,7 @@ export const MainMenuControl = ({
                 filterContextData.inOverview ? "tabOverview" : "tabFilters"
               }
               activeKey={activeTab}
-              // onSelect={functionOnChangeTab}
               onSelect={(k) => setActiveTab(k)}
-              // onChange={setActiveTab}
             >
               <Tab eventKey="tabOverview" title="Overview">
                 <p>
@@ -89,22 +83,24 @@ export const MainMenuControl = ({
                   <p>Here comes some information about the app.</p>
                 </span>
               </Tab>
+              
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
-                  filtersData={filtersData}
-                  locationsData={locationsData}
-                  thresholdValueSets={thresholdValueSets}
-                  thresholdGroups={thresholdGroups}
-                  overviewFilter={overviewFilter}
+                  filtersData={consFixed['filters']}
+                  locationsData={consFixed['locations']}
+                  thresholdValueSets={consFixed['thresholdValueSets']}
+                  thresholdGroups={consFixed['thresholdGroup']}
+                  overviewFilter={settings.overviewFilter}
                 />
               </Tab>
 
               <Tab eventKey="tabActiveFeatureInfo" title="Info">
                 <TabActiveFeatureInfo
-                  filtersData={filtersData}
-                  overviewFilter={overviewFilter}
+                  filtersData={consFixed['filters']}
+                  overviewFilter={settings.overviewFilter}
                 />
               </Tab>
+
             </Tabs>
           </Row>
         </Container>
@@ -112,10 +108,12 @@ export const MainMenuControl = ({
       <div
         className={ownStyles.buttonSlide}
         onClick={() => {
-          setShowMainMenuControl(!showMainMenuControl);
+          varsStateLib.toggleMainMenuControl(varsState)
+          setVarsState(varsState)
+          setShowMe(varsStateLib.getMainMenuControlShow(varsState))
         }}
       >
-        {showMainMenuControl ? "◀" : "▶"}
+        {varsState['domObjects']['mainMenuControl']['show'] ? "◀" : "▶"}
       </div>
     </>
   );

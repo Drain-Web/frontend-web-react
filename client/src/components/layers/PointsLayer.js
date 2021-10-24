@@ -59,7 +59,6 @@ const PointsLayer = ({
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {layerData.locations.map((layerDataPoint) => {
-            console.log(layerDataPoint);
             // maker will be displayed if its location Id is in the mapLocationsContextData
 
             // function that decides if a location will be shown

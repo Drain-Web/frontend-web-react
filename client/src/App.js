@@ -1,21 +1,19 @@
 import React, { useState } from "react";
-import { Alert, Spinner } from "react-bootstrap";
 import "regenerator-runtime/runtime";
 import axios from "axios";
 import useSWR from "swr";
 import { MapContainer } from "react-leaflet";
-// import 'core-js/stable'
 
 // import custom components
+import AppLoading from "./components/others/AppLoading";
 import MapControler from "./components/others/MapControler";
 import MapContext from "./components/contexts/MapContext";
-import FlexContainer from "./components/others/FlexContainer";
 import GetZoomLevel from "./components/others/GetZoomLevel";
 import VarsState from "./components/contexts/VarsState";
-import varStateLib from "./components/contexts/varsStateLib";
+import varsStateLib from "./components/contexts/varsStateLib";
 
 // import libs
-import { loadConsFixed, isStillLoadingConsFixed, isStillLoadingConsFixedValue }
+import { loadConsFixed, isStillLoadingConsFixed }
   from './libs/appLoad.js'
 
 // import CSS styles
@@ -58,44 +56,6 @@ const getMapCenter = (mapExtent) => {
   };
 };
 
-// function for defining the '' or 'not loading' message
-const wasLoaded = (k, v) => {
-  return (
-    <>
-      &nbsp;&nbsp;-&nbsp;&nbsp;{k}: { isStillLoadingConsFixedValue(v) ? '...' : 'loaded' }<br />
-    </>
-  )
-}
-
-// build loading message
-const loadingMessage = (cF) => {
-  return (
-    <div>
-      Loading...<br />
-      {wasLoaded('regions', cF['region'])}
-      {wasLoaded('boundaries', cF['boundaries'])}
-      {wasLoaded('filters', cF['filters'])}
-      {wasLoaded('locations', cF['locations'])}
-      {wasLoaded('threshold groups', cF['thresholdGroups'])}
-      {wasLoaded('threshold value sets', cF['thresholdValueSets'])}
-      {wasLoaded('parameters', cF['parameters'])}
-      {wasLoaded('parameter groups', cF['parameterGroups'])}
-      <br />
-      <Spinner
-        animation="border"
-        variant="danger"
-        role="status"
-        style={{
-          width: "400px",
-          height: "400px",
-          margin: "auto",
-          display: "block",
-        }}
-      />
-    </div>
-  );
-};
-
 /* ** REACT COMPONENTS ************************************************************************* */
 
 const App = ({ settings }) => {
@@ -122,22 +82,32 @@ const App = ({ settings }) => {
 
   // check if still loading
   const isLoading = isStillLoadingConsFixed(consFixed)
-  if (isLoading) { return loadingMessage(consFixed) }
+  if (isLoading) { return <AppLoading consFixed={consFixed} /> }
 
   /* ** FILL varState with default values ****************************************************** */
   /* ** TODO - move to appLoad.js ************************************************************** */
 
-  // add locations
+  let newVarsState = { ...varsState };
+  let updatedVarsState = false;
+
+  // add locations (if needed)
   if (Object.keys(varsState['locations']).length == 0) {
-    varStateLib.addLocations(consFixed['locations']['locations'].map(loc => loc['locationId']),
-                             'icoDef', false, varsState, setVarsState)
+    const locationIds = consFixed['locations']['locations'].map(loc => loc['locationId']);
+    const locationsIcon = settings['generalLocationIcon'];
+    newVarsState = varsStateLib.addLocations(locationIds, locationsIcon, true, newVarsState);
+    updatedVarsState = true
   }
 
-  // set defalt context
-  if (!varsState['context']) {
-    // TODO: varStateLib.setContextFilterId()
-    // TODO: varStateLib.setContextIcons("uniform", {})
+  // set defalt context (if needed)
+  if (!newVarsState['context']['filterId']) {
+    newVarsState = varsStateLib.setContextFilterId(consFixed['region']['defaultFilter'],
+                                                   newVarsState)
+    newVarsState = varsStateLib.setContextIcons("uniform", {}, newVarsState)
+    updatedVarsState = true
   }
+
+  // trigger render (if needed)
+  if (updatedVarsState) { setVarsState(newVarsState) }
 
   /* ** MAIN RENDER **************************************************************************** */
 
@@ -178,10 +148,10 @@ const App = ({ settings }) => {
         setZoomLevel
       }}
     >
-      <VarsState.Provider value={ {varsState, setVarsState} }>
+      <VarsState.Provider value={{ varsState, setVarsState }}>
         <MapContainer center={position} zoom={zoom} zoomControl={false}>
           <GetZoomLevel />
-          <MapControler settings={settings} consFixed={consFixed}/>
+          <MapControler settings={settings} consFixed={consFixed} />
         </MapContainer>
       </VarsState.Provider>
     </MapContext.Provider>
