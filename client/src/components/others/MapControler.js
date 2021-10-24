@@ -12,6 +12,7 @@ import BaseLayers from "../layers/BaseLayers";
 import Panel from "./Panel";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
+import VarsState from "../contexts/VarsState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -34,6 +35,9 @@ const MapControler = ({ settings, consFixed }) => {
     setMapLocationsContextData
   } = useContext(MapContext);
   const map = useMap();
+
+  const {varsState, setVarsState} = useContext(VarsState)
+  console.log("varsState:-", varsState)
 
   const [showMainMenuControl, setShowMainMenuControl] = useState(true);
 

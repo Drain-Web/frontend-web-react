@@ -127,20 +127,27 @@ const loadConsFixed = ( settings ) => {
 }
 
 
+const isStillLoadingConsFixedValue = (value) => {
+  if (!value) {
+    return true
+  } else if (Array.isArray(value) && (value.length == 0)) {
+    return true
+  } else if ((value.constructor == Object) && (Object.keys(value).length == 0)) {
+    return true
+  } else if (!value) {
+    return true
+  } else {
+    return false
+  }
+}
+
+
 const isStillLoadingConsFixed = (consFixed) => {
   let allLoaded = true
   for (const k in consFixed) {
-    if (!consFixed[k]) {
-      allLoaded = false
-    } else if (Array.isArray(consFixed[k]) && (consFixed[k].length == 0)) {
-      allLoaded = false
-    } else if ((consFixed[k].constructor == Object) && (Object.keys(consFixed[k]).length == 0)) {
-      allLoaded = false
-    } else if (!consFixed[k]) {
-      allLoaded = false
-    }
+    allLoaded = isStillLoadingConsFixedValue(consFixed[k]) ? false : allLoaded
   }
   return !allLoaded
 }
 
-export { loadConsFixed, isStillLoadingConsFixed }
+export { loadConsFixed, isStillLoadingConsFixed, isStillLoadingConsFixedValue }

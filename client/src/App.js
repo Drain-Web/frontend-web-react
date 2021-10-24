@@ -11,9 +11,12 @@ import MapControler from "./components/others/MapControler";
 import MapContext from "./components/contexts/MapContext";
 import FlexContainer from "./components/others/FlexContainer";
 import GetZoomLevel from "./components/others/GetZoomLevel";
+import VarsState from "./components/contexts/VarsState";
+import varStateLib from "./components/contexts/varsStateLib";
 
 // import libs
-import { loadConsFixed, isStillLoadingConsFixed } from './libs/appLoad.js'
+import { loadConsFixed, isStillLoadingConsFixed, isStillLoadingConsFixedValue }
+  from './libs/appLoad.js'
 
 // import CSS styles
 import "style/bootstrap.min.css";
@@ -59,7 +62,7 @@ const getMapCenter = (mapExtent) => {
 const wasLoaded = (k, v) => {
   return (
     <>
-      &nbsp;&nbsp;-&nbsp;&nbsp;{k}: { (v) ? 'loaded' : '...' }<br />
+      &nbsp;&nbsp;-&nbsp;&nbsp;{k}: { isStillLoadingConsFixedValue(v) ? '...' : 'loaded' }<br />
     </>
   )
 }
@@ -111,6 +114,9 @@ const App = ({ settings }) => {
   const [activeTab, setActiveTab] = useState("tabFilters");
   const [zoomLevel, setZoomLevel] = useState(9);
 
+  // TODO: make this the only state
+  const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
+
   // basic check for opening the system
   const consFixed = loadConsFixed(settings)
 
@@ -118,7 +124,22 @@ const App = ({ settings }) => {
   const isLoading = isStillLoadingConsFixed(consFixed)
   if (isLoading) { return loadingMessage(consFixed) }
 
-  /* ** MAIN RENDER  *************************************************************************** */
+  /* ** FILL varState with default values ****************************************************** */
+  /* ** TODO - move to appLoad.js ************************************************************** */
+
+  // add locations
+  if (Object.keys(varsState['locations']).length == 0) {
+    varStateLib.addLocations(consFixed['locations']['locations'].map(loc => loc['locationId']),
+                             'icoDef', false, varsState, setVarsState)
+  }
+
+  // set defalt context
+  if (!varsState['context']) {
+    // TODO: varStateLib.setContextFilterId()
+    // TODO: varStateLib.setContextIcons("uniform", {})
+  }
+
+  /* ** MAIN RENDER **************************************************************************** */
 
   // currently active filter
   if (!("filterId" in filterContextData)) {
@@ -136,15 +157,6 @@ const App = ({ settings }) => {
   const consCache = {
     filters: {},
     location: {}
-  }
-
-  const varsState = {
-    context: {
-      filterId: null,
-      icons: {
-        iconType: null
-      }
-    }
   }
 
   return (
@@ -166,10 +178,12 @@ const App = ({ settings }) => {
         setZoomLevel
       }}
     >
-      <MapContainer center={position} zoom={zoom} zoomControl={false}>
-        <GetZoomLevel />
-        <MapControler settings={settings} consFixed={consFixed}/>
-      </MapContainer>
+      <VarsState.Provider value={ {varsState, setVarsState} }>
+        <MapContainer center={position} zoom={zoom} zoomControl={false}>
+          <GetZoomLevel />
+          <MapControler settings={settings} consFixed={consFixed}/>
+        </MapContainer>
+      </VarsState.Provider>
     </MapContext.Provider>
   );
 };
