@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "regenerator-runtime/runtime";
 import axios from "axios";
 import useSWR from "swr";
@@ -7,14 +7,15 @@ import { MapContainer } from "react-leaflet";
 // import custom components
 import AppLoading from "./components/others/AppLoading";
 import MapControler from "./components/others/MapControler";
-import MapContext from "./components/contexts/MapContext";
 import GetZoomLevel from "./components/others/GetZoomLevel";
+
+// import contexts
+import MapContext from "./components/contexts/MapContext";
+import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";
-import varsStateLib from "./components/contexts/varsStateLib";
 
 // import libs
-import { loadConsFixed, isStillLoadingConsFixed }
-  from './libs/appLoad.js'
+import appLoad from './libs/appLoad.js'
 
 // import CSS styles
 import "style/bootstrap.min.css";
@@ -74,40 +75,22 @@ const App = ({ settings }) => {
   const [activeTab, setActiveTab] = useState("tabFilters");
   const [zoomLevel, setZoomLevel] = useState(9);
 
-  // TODO: make this the only state
+  // TODO: make these the only states
   const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
-
-  // basic check for opening the system
-  const consFixed = loadConsFixed(settings)
+  const consFixed = useState(appLoad.loadConsFixed(settings))[0]
 
   // check if still loading
-  const isLoading = isStillLoadingConsFixed(consFixed)
-  if (isLoading) { return <AppLoading consFixed={consFixed} /> }
+  if (appLoad.isStillLoadingConsFixed(consFixed)) { return <AppLoading /> }
+
 
   /* ** FILL varState with default values ****************************************************** */
-  /* ** TODO - move to appLoad.js ************************************************************** */
 
-  let newVarsState = { ...varsState };
+  // update varsState and trigger render if needed
   let updatedVarsState = false;
-
-  // add locations (if needed)
-  if (Object.keys(varsState['locations']).length == 0) {
-    const locationIds = consFixed['locations']['locations'].map(loc => loc['locationId']);
-    const locationsIcon = settings['generalLocationIcon'];
-    newVarsState = varsStateLib.addLocations(locationIds, locationsIcon, true, newVarsState);
-    updatedVarsState = true
-  }
-
-  // set defalt context (if needed)
-  if (!newVarsState['context']['filterId']) {
-    newVarsState = varsStateLib.setContextFilterId(consFixed['region']['defaultFilter'],
-                                                   newVarsState)
-    newVarsState = varsStateLib.setContextIcons("uniform", {}, newVarsState)
-    updatedVarsState = true
-  }
-
-  // trigger render (if needed)
-  if (updatedVarsState) { setVarsState(newVarsState) }
+  if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true; }
+  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true; }
+  if (updatedVarsState) { setVarsState(varsState) }
+  
 
   /* ** MAIN RENDER **************************************************************************** */
 
@@ -151,7 +134,7 @@ const App = ({ settings }) => {
       <VarsState.Provider value={{ varsState, setVarsState }}>
         <MapContainer center={position} zoom={zoom} zoomControl={false}>
           <GetZoomLevel />
-          <MapControler settings={settings} consFixed={consFixed} />
+          <MapControler settings={settings} />
         </MapContainer>
       </VarsState.Provider>
     </MapContext.Provider>
@@ -169,7 +152,11 @@ const AppSettings = () => {
 
   if (dataSettings && !errorSettings) {
     for (const i in dataSettings) settingsData[i] = dataSettings[i];
-    return <App settings={settingsData} />;
+    return (
+      <ConsFixed.Provider value={ ConsFixed._currentValue } >
+        <App settings={settingsData} />
+      </ConsFixed.Provider>
+    )
   } else {
     return <div>Load basic settings...</div>;
   }

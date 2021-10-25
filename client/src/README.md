@@ -1,6 +1,10 @@
 # Frontend Client Code
 
-## "Global variables"
+## React Contexts | "Global variables"
+
+The project uses *React Contexts* to share data among components. They act as "Global variables" and a proper documentation on their structure is present to avoid duplication and inconsistencies.
+
+Only three contexts should be present in the final version of v1.0, as further explained in this document: ```ConsFixed```, ```ConsCache``` and ```VarsState```.
 
 Document pattern:
 
@@ -8,22 +12,31 @@ Document pattern:
 
 ```<a|b|c>```: variable that can hold values ```a```, ```b``` or ```c```.
 
+```(...)```: yet to be documented.
+
 ### ConsFixed | Constants - Load-on-startup
 
 These variables are loaded as the application starts and **don't change or expand** during the session.
 
-They should be hooked by ```useState``` **only** in *App.js* by the ```App``` and ```AppSettings``` components.
+They should:
 
-After loaded, they are propagated to other components vias ```React props```.
+- be hooked by ```useState``` **only** in the ```App``` component;
+- be changed **only** by ```appLoad.loadConsFixed()```;
+- be read only through the components using the ```ConsFixed``` context.
+
+Structure:
 
     region: {
-
+      systemInformation: {
+        name: $regionName$
+      },
+      (...)
     }
 
 -- 
 
     boundaries: {
-      
+      (...)
     }
 
 --
@@ -36,7 +49,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
     locations: {
       $locationId$: {
-
+        (...)
       }
     }
 
@@ -44,7 +57,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
     parameters: {
       $parameterId$: {
-
+        (...)
       }
     }
 
@@ -52,7 +65,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
     parameterGroups: {
       $parameterGroupId$: {
-
+        (...)
       }
     }
 
@@ -60,7 +73,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
     thresholdValueSets: {
       $thresholdValueSetId$: {
-
+        (...)
       }
     }
 
@@ -68,7 +81,7 @@ After loaded, they are propagated to other components vias ```React props```.
 
     thresholdGroup: {
       $thresholdGroupId$: {
-
+        (...)
       }
     }
 

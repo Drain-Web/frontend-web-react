@@ -5,10 +5,13 @@ import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
 
 // import custom components
-import FilterContext from "../contexts/FilterContext";
-import MapContext from "../contexts/MapContext";
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
+
+// import contexts
+import FilterContext from "../contexts/FilterContext";
+import MapContext from "../contexts/MapContext";
+import ConsFixed from "../contexts/ConsFixed";
 import VarsState from "../contexts/VarsState";
 import varsStateLib from "../contexts/varsStateLib";
 
@@ -23,10 +26,10 @@ import ownStyles from "../../style/MainMenuControl.module.css";
 
 export const MainMenuControl = ({
   settings,
-  consFixed,
   position
 }) => {
   /* ** SET HOOKS **************************************************************************** */
+  const { consFixed } = useContext(ConsFixed)
 
   // Retireves context data
   // TODO: move to varsState
@@ -36,7 +39,7 @@ export const MainMenuControl = ({
   // Get global states and set local states
   const { varsState, setVarsState } = useContext(VarsState)
   const [showMe, setShowMe] = useState(varsStateLib.getMainMenuControlShow(varsState))
-  
+
   const divRef = useRef(null);
 
   useEffect(() => {
@@ -83,7 +86,7 @@ export const MainMenuControl = ({
                   <p>Here comes some information about the app.</p>
                 </span>
               </Tab>
-              
+
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
                   filtersData={consFixed['filters']}

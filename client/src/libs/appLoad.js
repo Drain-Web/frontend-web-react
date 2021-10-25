@@ -1,28 +1,32 @@
-import { useState } from "react"
+import React, { useContext, useState } from "react"
 import axios from "axios"
 import useSWR from "swr"
 
+// import contexts
+import ConsFixed from '../components/contexts/ConsFixed.js'
+
 // import libs
-import { apiUrl } from "./api.js";
+import varsStateLib from "../components/contexts/varsStateLib.js"
+import { apiUrl } from "./api.js"
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
-//
-const dataOrNull = (data, error) => (data && !error) ? data : null
 
 const loadConsFixed = ( settings ) => {
   /* ** SET HOOKS ****************************************************************************** */
   
+  const { consFixed } = useContext(ConsFixed)
+
   // Fetched states
-  const regionData = useState({})[0]
-  const boundariesData = useState([])[0]
-  const filtersData = useState([])[0]
-  const locationsData = useState({})[0]
-  const parametersData = useState({})[0]
-  const parameterGroupsData = useState({})[0]
-  const threshValSetsData = useState({})[0]
-  const thresholdGroupsData = useState({})[0]
+  const regionData = consFixed['region']
+  const boundariesData = consFixed['boundaries']
+  const filtersData = consFixed['filters']
+  const locationsData = consFixed['locations']
+  const parametersData = consFixed['parameters']
+  const parameterGroupsData = consFixed['parameterGroups']
+  const threshValSetsData = consFixed['thresholdValueSets']
+  const thresholdGroupsData = consFixed['thresholdGroup']
 
   // load region data
   const { data: dataRegion, error: errorRegion } = useSWR(
@@ -113,17 +117,8 @@ const loadConsFixed = ( settings ) => {
   }
 
   // TODO: consider errorMessages
-  return {
-    region: dataOrNull(regionData, errorRegion),
-    boundaries: dataOrNull(boundariesData, errorBounds),
-    filters: dataOrNull(filtersData, errorFilters),
-    locations: dataOrNull(locationsData, errorLocations),
-    parameters: dataOrNull(parametersData, errorLocations),
-    parameterGroups: dataOrNull(parameterGroupsData, errorParameterGroups),
-    thresholdValueSets: dataOrNull(threshValSetsData, errorThreshValSets),
-    thresholdGroup: dataOrNull(thresholdGroupsData, errorThreshGroups)
-  }
 
+  return consFixed
 }
 
 
@@ -150,4 +145,31 @@ const isStillLoadingConsFixed = (consFixed) => {
   return !allLoaded
 }
 
-export { loadConsFixed, isStillLoadingConsFixed, isStillLoadingConsFixedValue }
+
+const setVarsStateLocations = (consFixed, settings, varsState) => {
+  if (Object.keys(varsState['locations']).length != 0) { return false }
+  
+  const locationIds = consFixed['locations']['locations'].map(loc => loc['locationId']);
+  varsStateLib.addLocations(locationIds, settings['generalLocationIcon'], true, varsState);
+  return true
+}
+
+
+const setVarsStateContext = (consFixed, settings, varsState) => {
+  if (varsState['context']['filterId']) { return false }
+  
+  varsStateLib.setContextFilterId(consFixed['region']['defaultFilter'], varsState)
+  varsStateLib.setContextIcons("uniform", {}, varsState)
+  return true
+}
+
+
+const appLoad = {
+  "isStillLoadingConsFixed": isStillLoadingConsFixed,
+  "isStillLoadingConsFixedValue": isStillLoadingConsFixedValue,
+  "loadConsFixed": loadConsFixed,
+  "setVarsStateLocations": setVarsStateLocations,
+  "setVarsStateContext": setVarsStateContext
+}
+
+export default appLoad

@@ -7,23 +7,19 @@
 import VarsState from "./VarsState"
 
 // Include a new location entry
-const addLocation = (locationId, icon, display, oldVarsState) => {
-  const newVarsState = { ...oldVarsState }
-  newVarsState['locations'][locationId] = {
+const addLocation = (locationId, icon, display, varsState) => {
+  varsState['locations'][locationId] = {
     icon: icon,
     display: display
   }
-  return (newVarsState)
 }
 
 
 // Include a set of new location entries
-const addLocations = (locationIds, iconDefault, displayDefault, oldVarsState) => {
-  let newVarsState = { ...oldVarsState };
+const addLocations = (locationIds, iconDefault, displayDefault, varsState) => {
   for (const locationId of locationIds) {
-    newVarsState = addLocation(locationId, iconDefault, displayDefault, newVarsState);
+    addLocation(locationId, iconDefault, displayDefault, varsState);
   };
-  return newVarsState;
 }
 
 
@@ -40,17 +36,13 @@ const hideMainMenuControl = (varsState) => {
 
 
 // Just changes the value of the variable
-const setContextFilterId = (filterId, oldVarsState) => {
-  const newVarsState = { ...oldVarsState }
-  newVarsState['context']['filterId'] = filterId
-  return newVarsState
+const setContextFilterId = (filterId, varsState) => {
+  varsState['context']['filterId'] = filterId
 }
 
 
-// Changes the type of the icons and fill its arguments
-const setContextIcons = (iconsType, args, oldVarsState) => {
-  const newVarsState = { ...oldVarsState }
-  const iconsDict = newVarsState['context']['icons']  // just to make the code readable
+// Changes the type of the icons and fill its respective arguments
+const setContextIcons = (iconsType, args, varsState) => {
   const argsKey = {
     'uniform': 'typeUniform',
     'alerts': 'typeAlert',
@@ -58,11 +50,8 @@ const setContextIcons = (iconsType, args, oldVarsState) => {
     'competition': 'typeCompetition',
     'comparison': 'typeComparison'
   }[iconsType]
-
-  iconsDict['iconType'] = iconsType
-  for (const k in args) { iconsDict[argsKey][k] = args[k]; }
-
-  return newVarsState
+  varsState['context']['icons']['iconType'] = iconsType
+  for (const k in args) { varsState['context']['icons'][argsKey][k] = args[k]; }
 }
 
 
