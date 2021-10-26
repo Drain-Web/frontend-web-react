@@ -1,5 +1,7 @@
 # React Contexts
 
+**IMPORTANT: THIS PART IS BEING REFACTORED TO REDUCE THE NUMBER OF COMPONENTS**
+
 Each ```Context``` object in this folder has a ```...Data``` dictionary and a ```set...Data``` function.
 
 Context can be seen as "*global variables*" through the application.

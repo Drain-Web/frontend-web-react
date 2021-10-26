@@ -14,6 +14,7 @@ import SearchField from "./GeoSearchBox";
 // import contexts
 import MapContext from "../contexts/MapContext";
 import FilterContext from "../contexts/FilterContext";
+import VarsState from "../contexts/VarsState";
 import ConsFixed from "../contexts/ConsFixed";
 
 // import assets
@@ -26,6 +27,9 @@ import { onChangeFilterContextData } from './mapControler/mapControlerLib.js'
 const MapControler = ({ settings }) => {
 
   // this specific component is needed to allow useMap()
+  const map = useMap();
+
+  // load old contexts (TODO: remove them)
   const {
     isHidden,
     setIsHidden,
@@ -36,16 +40,17 @@ const MapControler = ({ settings }) => {
     mapLocationsContextData,
     setMapLocationsContextData
   } = useContext(MapContext);
-  const map = useMap();
 
-  // const {varsState, setVarsState} = useContext(VarsState)
-  // console.log("varsState:-", varsState)
+  // load contexts
+  const { varsState } = useContext(VarsState)
   const { consFixed } = useContext(ConsFixed)
 
   // when filterContextData is changed, load new filter data and refresh map
   // useEffect(onChangeFilterContextData, [filterContextData]);
-  useEffect( () => { onChangeFilterContextData(map, filterContextData, mapLocationsContextData,
-    setMapLocationsContextData, consFixed, settings) }, [filterContextData])
+  useEffect( () => { 
+    onChangeFilterContextData(map, filterContextData, mapLocationsContextData,
+                              setMapLocationsContextData, varsState, consFixed, settings)
+  }, [filterContextData])
 
   return (
     <>

@@ -1,6 +1,9 @@
 import React, { Fragment, useContext } from 'react'
 import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
+
+// import contexts
 import FilterContext from '../contexts/FilterContext'
+import VarsState from '../contexts/VarsState'
 
 let polygon
 
@@ -14,6 +17,7 @@ const PolygonLayer = ({
 
   // retireves context data
   const { filterContextData } = useContext(FilterContext)
+  const { varsState } = useContext(VarsState)
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
@@ -33,7 +37,7 @@ const PolygonLayer = ({
 
               const displayPolygon = () => {
                 return ((filterContextData.geoFilterId === poly.id) ||
-                         filterContextData.inOverview) // false
+                         varsState.domObjects.mainMenuControl.activeTab == "tabOverview")
               }
 
               /* build polygons */

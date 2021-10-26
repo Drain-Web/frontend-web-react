@@ -32,8 +32,7 @@ export const MainMenuControl = ({
   const { consFixed } = useContext(ConsFixed)
 
   // Retireves context data
-  // TODO: move to varsState
-  const { filterContextData, setFilterContextData } = useContext(FilterContext);
+  // TODO: replace by varsState
   const { activeTab, setActiveTab } = useContext(MapContext);
 
   // Get global states and set local states
@@ -72,11 +71,9 @@ export const MainMenuControl = ({
           <Row>
             <Tabs
               className="mb-2"
-              defaultActiveKey={
-                filterContextData.inOverview ? "tabOverview" : "tabFilters"
-              }
+              defaultActiveKey={ varsState.domObjects.mainMenuControl.activeTab }
               activeKey={activeTab}
-              onSelect={(k) => setActiveTab(k)}
+              onSelect={(k) => { setActiveTab(k); varsStateLib.setMainMenuControlActiveTab(k, varsState); setVarsState(varsState) } }
             >
               <Tab eventKey="tabOverview" title="Overview">
                 <p>

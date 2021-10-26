@@ -10,6 +10,7 @@ import MapControler from "./components/others/MapControler";
 import GetZoomLevel from "./components/others/GetZoomLevel";
 
 // import contexts
+// TODO: use only the standard ones
 import MapContext from "./components/contexts/MapContext";
 import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";

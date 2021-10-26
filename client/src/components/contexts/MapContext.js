@@ -4,15 +4,14 @@ const MapContext = createContext({
   mapContextData: {
     position: null,
     zoom: null,
-    region: null,
     pointFeatures: null,
     activePointFeature: null,
-    setActivePointFeature: null,
+    setActivePointFeature: null,  
     isHidden: null,
     setIsHidden: null,
     timeSerieUrl: null,
     setTimeSerieUrl: null,
-    filterContextData: null,
+    filterContextData: null,      // TODO: move to 'varsState.context.filterId'
     setFilterContextData: null,
     activeTab: null,
     setActiveTab: null,

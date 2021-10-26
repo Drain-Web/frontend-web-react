@@ -1,19 +1,22 @@
 import React, { useContext } from "react";
 import { Col, Container, Form, Row } from "react-bootstrap";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
+import Spinner from "react-bootstrap/Spinner";
+import Button from "react-bootstrap/Button";
 
+// import contexts
+// TODO: use only the standard ones
 import MapLocationsContext from "../../contexts/MapLocationsContext";
 import FilterContext from "../../contexts/FilterContext";
 import MapContext from "../../contexts/MapContext";
 import { TabActiveFeatureInfoContext } from "../../contexts/TabActiveFeatureInfoContext";
-import ownStyles from "../../../style/MainMenuControl.module.css";
+import VarsState from "../../contexts/VarsState";
 
-import Spinner from "react-bootstrap/Spinner";
-import Button from "react-bootstrap/Button";
+// import CSS styles
+import ownStyles from "../../../style/MainMenuControl.module.css";
 
 export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
   // retireves context data
-  const { mapLocationsContextData } = useContext(MapLocationsContext);
   const { filterContextData } = useContext(FilterContext);
   const {
     activePointFeature,
@@ -21,6 +24,8 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
     setTimeSerieUrl,
     setIsHidden,
   } = useContext(MapContext);
+
+  const varsState = useContext(VarsState)[0]
 
   return (
     <>
@@ -41,7 +46,7 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
             <span className="popupsubtitle">Latitude: </span>
             <span className="popuptext">{activePointFeature.y}</span>
           </p>
-          {!filterContextData.inOverview ? (
+          { (varsState.domObjects.mainMenuControl.activeTab != 'tabOverview') ? (
             <Button
               variant="primary"
               onClick={() => {

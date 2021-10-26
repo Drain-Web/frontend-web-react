@@ -1,9 +1,11 @@
+import { useContext } from "react";
 import { apiUrl } from "../../../libs/api.js"
 import axios from "axios"
 
 import {
   constraintLocationsShownByParameters, showThresholdValueSetsBySelectedParameters
 } from '../../contexts/MapLocationsContext'
+import VarsState from "../../contexts/VarsState";
 
 // function 'fetcher' will do HTTP requests
 // TODO: find a public library to put it
@@ -122,9 +124,10 @@ const getThesholdValueSet = (threshLevelId, thresholdValueSets) => {
 
 // Updates mapLocationsContextData
 // public
-const onChangeFilterContextData = (map, filterContextData, mapLocationsContextData, setMapLocationsContextData, consFixed, settings) => {
+const onChangeFilterContextData = (map, filterContextData, mapLocationsContextData, 
+      setMapLocationsContextData, varsState, consFixed, settings) => {
     
-    if (filterContextData.inOverview) {
+    if (varsState.domObjects.mainMenuControl.activeTab != 'tabOverview') {
       // if it is overview, show all locations and all boundaries
 
       // move map to initial zoom

@@ -32,12 +32,39 @@ const getMainMenuControlShow = (varsState) => {
 // 
 const hideMainMenuControl = (varsState) => {
   varsState['domObjects']['mainMenuControl']['show'] = false
+  return
+}
+
+
+// 
+const inMainMenuControlActiveTabActiveFeatureInfo = (varsState) => {
+  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabActiveFeatureInfo")
+}
+
+
+// 
+const inMainMenuControlActiveTabFilters = (varsState) => {
+  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabFilters")
+}
+
+
+// 
+const inMainMenuControlActiveTabOverview = (varsState) => {
+  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabOverview")
+}
+
+
+// 
+const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
+  varsState['domObjects']['mainMenuControl']['activeTab'] = newActiveTabId
+  return
 }
 
 
 // Just changes the value of the variable
 const setContextFilterId = (filterId, varsState) => {
   varsState['context']['filterId'] = filterId
+  return
 }
 
 
@@ -52,18 +79,22 @@ const setContextIcons = (iconsType, args, varsState) => {
   }[iconsType]
   varsState['context']['icons']['iconType'] = iconsType
   for (const k in args) { varsState['context']['icons'][argsKey][k] = args[k]; }
+  return
 }
 
 
 // 
 const showMainMenuControl = (varsState) => {
   varsState['domObjects']['mainMenuControl']['show'] = true
+  return
 }
 
 
 // 
 const toggleMainMenuControl = (varsState) => {
-  varsState['domObjects']['mainMenuControl']['show'] = !varsState['domObjects']['mainMenuControl']['show']
+  const curValue = varsState['domObjects']['mainMenuControl']['show']
+  varsState['domObjects']['mainMenuControl']['show'] = !curValue
+  return
 }
 
 
@@ -73,8 +104,12 @@ const varsStateLib = {
   "addLocations": addLocations,
   "getMainMenuControlShow": getMainMenuControlShow,
   "hideMainMenuControl": hideMainMenuControl,
+  "inMainMenuControlActiveTabActiveFeatureInfo": inMainMenuControlActiveTabActiveFeatureInfo,
+  "inMainMenuControlActiveTabFilters": inMainMenuControlActiveTabFilters,
+  "inMainMenuControlActiveTabOverview": inMainMenuControlActiveTabOverview,
   "setContextFilterId": setContextFilterId,
   "setContextIcons": setContextIcons,
+  "setMainMenuControlActiveTab": setMainMenuControlActiveTab,
   "showMainMenuControl": showMainMenuControl,
   "toggleMainMenuControl": toggleMainMenuControl
 }

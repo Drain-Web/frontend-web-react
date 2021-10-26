@@ -1,6 +1,5 @@
-import React, { useState, useContext, Fragment } from "react";
+import React, { useContext, Fragment } from "react";
 import { Icon } from "leaflet";
-import DropDownTimeSeries from "../others/DropDownTimeSeries";
 import {
   Marker,
   Polygon,
@@ -8,12 +7,10 @@ import {
   LayersControl,
   LayerGroup,
 } from "react-leaflet";
+
+// import contexts
 import MapLocationsContext from "../contexts/MapLocationsContext";
-import FilterContext from "../contexts/FilterContext";
 import MapContext from "../contexts/MapContext";
-import TabActiveFeatureInfoContext from "../contexts/TabActiveFeatureInfoContext";
-import Spinner from "react-bootstrap/Spinner";
-import Button from "react-bootstrap/Button";
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
@@ -51,7 +48,7 @@ const PointsLayer = ({
 
   // retireves context data
   const { mapLocationsContextData } = useContext(MapLocationsContext);
-  const { filterContextData } = useContext(FilterContext);
+
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
