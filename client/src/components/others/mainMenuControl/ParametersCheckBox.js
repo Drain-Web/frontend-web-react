@@ -1,8 +1,11 @@
 import React, { useContext } from 'react'
 import { Form, FloatingLabel} from 'react-bootstrap'
 
+// import contexts
 import MapLocationsContext, { reviewMapLocationsContextData, 
   showThresholdValueSetsBySelectedParameters } from '../../contexts/MapLocationsContext'
+
+// import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
 
 /* Set of check boxes used to select to sub-filter out location icons

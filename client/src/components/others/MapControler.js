@@ -13,7 +13,7 @@ import SearchField from "./GeoSearchBox";
 
 // import contexts
 import MapContext from "../contexts/MapContext";
-import FilterContext from "../contexts/FilterContext";
+import varsStateLib from "../contexts/varsStateLib";
 import VarsState from "../contexts/VarsState";
 import ConsFixed from "../contexts/ConsFixed";
 
@@ -21,8 +21,8 @@ import ConsFixed from "../contexts/ConsFixed";
 import { baseLayersData } from "../../assets/MapBaseLayers";
 
 // import libs
-import { onChangeFilterContextData } from './mapControler/mapControlerLib.js'
-
+// import { onChangeFilterContextData } from './mapControler/mapControlerLib.js'
+import mapControlerLib from './mapControler/mapControlerLib.js'
 
 const MapControler = ({ settings }) => {
 
@@ -35,8 +35,6 @@ const MapControler = ({ settings }) => {
     setIsHidden,
     timeSerieUrl,
     setTimeSerieUrl,
-    filterContextData,
-    setFilterContextData,
     mapLocationsContextData,
     setMapLocationsContextData
   } = useContext(MapContext);
@@ -47,10 +45,21 @@ const MapControler = ({ settings }) => {
 
   // when filterContextData is changed, load new filter data and refresh map
   // useEffect(onChangeFilterContextData, [filterContextData]);
-  useEffect( () => { 
+  /*
+  useEffect( () => {
     onChangeFilterContextData(map, filterContextData, mapLocationsContextData,
                               setMapLocationsContextData, varsState, consFixed, settings)
   }, [filterContextData])
+  */
+
+  // when filterContextData is changed, load new filter data and refresh map
+  useEffect( () => {
+    mapControlerLib.onChangeContextFilter(map, varsState, consFixed, settings)
+  }, [varsState])
+
+  useEffect(() => {
+    varsStateLib.updateLocationIcons(varsState, consFixed, settings)
+  }, [varsState['context'], varsState['domObjects']['mainMenuControl']['activeTab']]) 
 
   return (
     <>
@@ -58,18 +67,14 @@ const MapControler = ({ settings }) => {
         {" "}
         {/* <FlexContainer> */}
         {/* add the main left menu */}
-        <FilterContext.Provider
-          value={{ filterContextData, setFilterContextData }}
+        <MapLocationsContext.Provider
+          value={{ mapLocationsContextData, setMapLocationsContextData }}
         >
-          <MapLocationsContext.Provider
-            value={{ mapLocationsContextData, setMapLocationsContextData }}
-          >
-            <MainMenuControl
-              settings={settings}
-              position="leaflet-right"
-            />
-          </MapLocationsContext.Provider>
-        </FilterContext.Provider>
+          <MainMenuControl
+            settings={settings}
+            position="leaflet-right"
+          />
+        </MapLocationsContext.Provider>
 
         {/* hyrographs panel */}
         <Panel
@@ -85,23 +90,19 @@ const MapControler = ({ settings }) => {
 
           {/* adds layer of points as a react component */}
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
-            <FilterContext.Provider value={{ filterContextData }}>
-              <PointsLayer
-                layerData={consFixed['locations']}
-                layerName="Locations"
-                iconUrl={settings.generalLocationIcon}
-              />
-            </FilterContext.Provider>
+            <PointsLayer
+              layerName="Locations"
+              iconUrl={settings.generalLocationIcon}
+              consFixed={consFixed}
+            />
           </MapLocationsContext.Provider>
 
-          {/* adds a polygon layer to the control and to the map as a component - boundaries */}
-          <FilterContext.Provider value={{ filterContextData }}>
-            <PolygonLayer
-              layerData={consFixed['boundaries']}
-              layerName="Boundaries"
-              reversePolygon
-            />
-          </FilterContext.Provider>
+          {/* adds a polygon layer to the control and to the map as a component - boundaries */}          
+          <PolygonLayer
+            layerData={consFixed['boundaries']}
+            layerName="Boundaries"
+            reversePolygon
+          />
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
           {settings.riverNetwork.fullRaw ? (

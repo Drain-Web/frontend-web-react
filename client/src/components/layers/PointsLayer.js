@@ -1,4 +1,4 @@
-import React, { useContext, Fragment } from "react";
+import React, { useContext, useEffect, Fragment } from "react";
 import { Icon } from "leaflet";
 import {
   Marker,
@@ -11,17 +11,28 @@ import {
 // import contexts
 import MapLocationsContext from "../contexts/MapLocationsContext";
 import MapContext from "../contexts/MapContext";
+import VarsState from "../contexts/VarsState";
+import consFixedLib from "../contexts/consFixedLib";
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
 const PointsLayer = ({
-  layerData,
   layerName,
   iconUrl,
-  iconSize = 22
+  iconSize = 22,
+  consFixed
 }) => {
+
+  // load contexts
+  const { varsState } = useContext(VarsState)
   const { activePointFeature, setActivePointFeature } = useContext(MapContext);
   const { activeTab, setActiveTab } = useContext(MapContext);
+  const layerData = varsState['locations']  // TODO: remove it. kept for fast 'bug fix'
+
+  // refresh icons whenever something in the varsState['locations'] changes
+  useEffect( () => {
+    console.log('Do I need to use it?')
+  }, [varsState['locations']])
 
   // regular location icon
   const icon = new Icon({
@@ -55,7 +66,27 @@ const PointsLayer = ({
     <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
-          {layerData.locations.map((layerDataPoint) => {
+          {
+            Object.keys(varsState['locations']).map(function(curLocationId, idx) {
+              const curLocationIcon = varsState['locations'][curLocationId]
+              const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
+              
+              if (!curLocationIcon.display) { return (null) }
+              
+              return (
+                <Fragment key={curLocationId}>
+                  <Marker
+                    position={[curLocationInfo.y, curLocationInfo.x]}
+                    icon={newIcon(curLocationIcon.icon)}
+                  >
+                  {/* TODO: add everything that was there */}
+                  </Marker>
+                </Fragment>
+              )
+            })
+          }
+
+          { /*layerData.locations.map((layerDataPoint) => {
             // maker will be displayed if its location Id is in the mapLocationsContextData
 
             // function that decides if a location will be shown
@@ -131,7 +162,7 @@ const PointsLayer = ({
                   </Tooltip>
                 </Marker>
                 {
-                  /* display location polygon if needed */
+                  // display location polygon if needed
                   layerDataPoint.polygon ? (
                     <Polygon
                       pathOptions={{
@@ -162,7 +193,7 @@ const PointsLayer = ({
                 }
               </Fragment>
             );
-          })}
+          }) */}
         </LayerGroup>
       </LayersControl.Overlay>
     </>

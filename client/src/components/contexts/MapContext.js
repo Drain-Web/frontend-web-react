@@ -11,8 +11,6 @@ const MapContext = createContext({
     setIsHidden: null,
     timeSerieUrl: null,
     setTimeSerieUrl: null,
-    filterContextData: null,      // TODO: move to 'varsState.context.filterId'
-    setFilterContextData: null,
     activeTab: null,
     setActiveTab: null,
     zoomLevel: null,

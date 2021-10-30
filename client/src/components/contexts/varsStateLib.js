@@ -4,7 +4,17 @@
  *   later used as argument for the function setVarsState().
  */
 
-import VarsState from "./VarsState"
+/* ** CONSTANTS ****************************************************************************** */
+
+const CONTEXT_ICONS_ARGS_KEYS = {
+  'uniform': 'typeUniform',
+  'alerts': 'typeAlert',
+  'evaluation': 'typeEvaluation',
+  'competition': 'typeCompetition',
+  'comparison': 'typeComparison'
+}
+
+/* ** FUNCTIONS ****************************************************************************** */
 
 // Include a new location entry
 const addLocation = (locationId, icon, display, varsState) => {
@@ -22,12 +32,42 @@ const addLocations = (locationIds, iconDefault, displayDefault, varsState) => {
   };
 }
 
+// 
+const getContextFilterId = (varsState) => {
+  return varsState['context']['filterId']
+}
+
+// 
+const getContextFilterEvtId = (varsState) => {
+  return varsState['context']['filterId'].split(".")[0]
+}
+
+// 
+const getContextFilterGeoId = (varsState) => {
+  return varsState['context']['filterId'].split(".")[1]
+}
+
+//
+const getContextIconsArgs = (iconsType, varsState) => {
+  let iconArgsKey
+  if (!iconsType) {
+    iconArgsKey = getContextIconsType(varsState)
+    iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconArgsKey]
+  } else {
+    iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
+  }
+  return varsState['context']['icons']['iconType']
+}
+
+//
+const getContextIconsType = (varsState) => {
+  return varsState['context']['icons']['iconType']
+}
 
 // 
 const getMainMenuControlShow = (varsState) => {
   return varsState['domObjects']['mainMenuControl']['show']
 }
-
 
 // 
 const hideMainMenuControl = (varsState) => {
@@ -61,22 +101,22 @@ const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
 }
 
 
+//
+const setMainMenuControlActiveTabAsOverview = (varsState) => {
+  varsState['domObjects']['mainMenuControl']['activeTab'] = "tabOverview"
+}
+
+
 // Just changes the value of the variable
-const setContextFilterId = (filterId, varsState) => {
-  varsState['context']['filterId'] = filterId
+const setContextFilterId = (newFilterId, varsState) => {
+  varsState['context']['filterId'] = newFilterId
   return
 }
 
 
 // Changes the type of the icons and fill its respective arguments
 const setContextIcons = (iconsType, args, varsState) => {
-  const argsKey = {
-    'uniform': 'typeUniform',
-    'alerts': 'typeAlert',
-    'evaluation': 'typeEvaluation',
-    'competition': 'typeCompetition',
-    'comparison': 'typeComparison'
-  }[iconsType]
+  const argsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
   varsState['context']['icons']['iconType'] = iconsType
   for (const k in args) { varsState['context']['icons'][argsKey][k] = args[k]; }
   return
@@ -98,10 +138,39 @@ const toggleMainMenuControl = (varsState) => {
 }
 
 
+// Updates the 'locations' content considering the rest of the object
+const updateLocationIcons = (varsState, consFixed, settings) => {
+  // TODO: implement
+  if (inMainMenuControlActiveTabOverview(varsState)) {
+    // if in overview shows all locations
+    console.log('Show all locations')
+    for (const locationId in varsState['locations']) {
+      varsState['locations'][locationId]['display'] = true
+    }
+  } else {
+    // if in a specific filter, decide location by location
+    // TODO: implement it correctly
+    console.log('Hide all locations')
+    for (const locationId in varsState['locations']) {
+      varsState['locations'][locationId]['display'] = false
+    }
+  }
+  // if in overview: 
+  // show all locations with default
+  // otherwise:
+  // make the judgment location by location
+}
+
+
 // aggregate all public functions into a single namespace
 const varsStateLib = {
   "addLocation": addLocation,
   "addLocations": addLocations,
+  "getContextFilterId": getContextFilterId,
+  "getContextFilterEvtId": getContextFilterEvtId,
+  "getContextFilterGeoId": getContextFilterGeoId,
+  "getContextIconsArgs": getContextIconsArgs,
+  "getContextIconsType": getContextIconsType,
   "getMainMenuControlShow": getMainMenuControlShow,
   "hideMainMenuControl": hideMainMenuControl,
   "inMainMenuControlActiveTabActiveFeatureInfo": inMainMenuControlActiveTabActiveFeatureInfo,
@@ -110,8 +179,10 @@ const varsStateLib = {
   "setContextFilterId": setContextFilterId,
   "setContextIcons": setContextIcons,
   "setMainMenuControlActiveTab": setMainMenuControlActiveTab,
+  "setMainMenuControlActiveTabAsOverview": setMainMenuControlActiveTabAsOverview,
   "showMainMenuControl": showMainMenuControl,
-  "toggleMainMenuControl": toggleMainMenuControl
+  "toggleMainMenuControl": toggleMainMenuControl,
+  "updateLocationIcons": updateLocationIcons
 }
 
 export default varsStateLib

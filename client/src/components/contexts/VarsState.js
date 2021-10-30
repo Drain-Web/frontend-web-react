@@ -50,8 +50,7 @@ const VarsState = createContext(
           activeTab: "tabFilters"                   // <tabOverview|tabFilters|tabActiveFeatureInfo>
         }
       }
-    },
-    setVarsState: (filter) => {}
+    }
   }
 )
 

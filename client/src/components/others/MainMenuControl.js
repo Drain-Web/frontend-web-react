@@ -9,7 +9,7 @@ import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
 
 // import contexts
-import FilterContext from "../contexts/FilterContext";
+// import FilterContext from "../contexts/FilterContext";
 import MapContext from "../contexts/MapContext";
 import ConsFixed from "../contexts/ConsFixed";
 import VarsState from "../contexts/VarsState";
@@ -36,7 +36,7 @@ export const MainMenuControl = ({
   const { activeTab, setActiveTab } = useContext(MapContext);
 
   // Get global states and set local states
-  const { varsState, setVarsState } = useContext(VarsState)
+  const { varsState } = useContext(VarsState)
   const [showMe, setShowMe] = useState(varsStateLib.getMainMenuControlShow(varsState))
 
   const divRef = useRef(null);
@@ -73,7 +73,10 @@ export const MainMenuControl = ({
               className="mb-2"
               defaultActiveKey={ varsState.domObjects.mainMenuControl.activeTab }
               activeKey={activeTab}
-              onSelect={(k) => { setActiveTab(k); varsStateLib.setMainMenuControlActiveTab(k, varsState); setVarsState(varsState) } }
+              onSelect={(k) => {
+                varsStateLib.setMainMenuControlActiveTab(k, varsState);
+                setActiveTab(k);
+              }}
             >
               <Tab eventKey="tabOverview" title="Overview">
                 <p>
@@ -90,7 +93,7 @@ export const MainMenuControl = ({
                   locationsData={consFixed['locations']}
                   thresholdValueSets={consFixed['thresholdValueSets']}
                   thresholdGroups={consFixed['thresholdGroup']}
-                  overviewFilter={settings.overviewFilter}
+                  settings={settings}
                 />
               </Tab>
 
@@ -109,11 +112,10 @@ export const MainMenuControl = ({
         className={ownStyles.buttonSlide}
         onClick={() => {
           varsStateLib.toggleMainMenuControl(varsState)
-          setVarsState(varsState)
           setShowMe(varsStateLib.getMainMenuControlShow(varsState))
         }}
       >
-        {varsState['domObjects']['mainMenuControl']['show'] ? "◀" : "▶"}
+        {varsStateLib.getMainMenuControlShow(varsState) ? "◀" : "▶"}
       </div>
     </>
   );

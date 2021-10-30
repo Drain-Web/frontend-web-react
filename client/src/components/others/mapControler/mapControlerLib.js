@@ -2,10 +2,11 @@ import { useContext } from "react";
 import { apiUrl } from "../../../libs/api.js"
 import axios from "axios"
 
+// import contexts
 import {
   constraintLocationsShownByParameters, showThresholdValueSetsBySelectedParameters
 } from '../../contexts/MapLocationsContext'
-import VarsState from "../../contexts/VarsState";
+import varsStateLib from "../../contexts/varsStateLib";
 
 // function 'fetcher' will do HTTP requests
 // TODO: find a public library to put it
@@ -124,6 +125,7 @@ const getThesholdValueSet = (threshLevelId, thresholdValueSets) => {
 
 // Updates mapLocationsContextData
 // public
+// TODO: remove it and replace by TODO
 const onChangeFilterContextData = (map, filterContextData, mapLocationsContextData, 
       setMapLocationsContextData, varsState, consFixed, settings) => {
     
@@ -193,6 +195,81 @@ const onChangeFilterContextData = (map, filterContextData, mapLocationsContextDa
       return null
     }
   }
+
+
+// 
+const onChangeContextFilter = (map, varsState, consFixed, settings) => {
+  /*
+   * Return: True if varsState was changed, False otherwise
+   */
+
+
+  if (!varsStateLib.inMainMenuControlActiveTabOverview(varsState)) {
+    
+    // move map to initial zoom
+    const defaultExt = consFixed['region'].map.defaultExtent;
+    map.flyToBounds([
+      [defaultExt.bottom, defaultExt.left],
+      [defaultExt.top, defaultExt.right],
+    ]);
+
+    // show all locations
+    // updateLocationsToOverview(mapLocationsContextData, setMapLocationsContextData);
+    varsStateLib.setMainMenuControlActiveTabAsOverview(varsState)
+    return true;
+
+  } else {
+    
+    // 
+    if (!varsStateLib.getContextFilterId(varsState)) return null;
+
+    // define URLs
+    const urlFilterRequest = apiUrl(
+      settings.apiBaseUrl,
+      "v1",
+      "filter",
+      varsStateLib.getContextFilterId(varsState)
+    );
+    const urlTimeseriesRequest = apiUrl(
+      settings.apiBaseUrl,
+      "v1",
+      "timeseries",
+      {
+        filter: varsStateLib.getContextFilterId(varsState),
+        showStatistics: true,
+        onlyHeaders: true
+      }
+    );
+
+    // move map view to fit the map extent
+    fetcher(urlFilterRequest).then((jsonData) => {
+      const newMapExtent = jsonData.map.defaultExtent;
+      map.flyToBounds([
+        [newMapExtent.bottom, newMapExtent.left],
+        [newMapExtent.top, newMapExtent.right],
+      ]);
+    });
+
+    // only show locations with timeseries in the filter
+    fetcher(urlTimeseriesRequest).then((jsonData) => {
+      /*
+      updateLocationsByFilter(
+        jsonData,
+        mapLocationsContextData,
+        setMapLocationsContextData,
+        consFixed['thresholdValueSets'],
+        consFixed['thresholdGroup'],
+        consFixed['parameters'],
+        consFixed['parameterGroups'],
+        filterContextData.filterId
+      );
+      */
+      console.log("TODO: uncomment 'updateLocationsByFilter()'.");
+    });
+
+    return null
+  }
+}
 
 
 // Updates the locations' icons when the tab is changed to 'Filter'
@@ -333,5 +410,11 @@ const updateLocationsToOverview = (
   });
 }
 
-export {onChangeFilterContextData}
 
+const mapControlerLib = {
+  "onChangeContextFilter": onChangeContextFilter
+}
+
+
+// export {onChangeFilterContextData}
+export default mapControlerLib

@@ -14,6 +14,7 @@ import GetZoomLevel from "./components/others/GetZoomLevel";
 import MapContext from "./components/contexts/MapContext";
 import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";
+import varsStateLib from "./components/contexts/varsStateLib";
 
 // import libs
 import appLoad from './libs/appLoad.js'
@@ -28,27 +29,6 @@ import "./App.css";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
-
-// function used to fill the filterContext dictionary
-const fillFilterContextData = (filterId, filterContextData) => {
-
-  if (!filterId) return {};
-
-  const curFilterIdSplit = filterId.split(".");
-
-  // TODO - make it more general
-  if (curFilterIdSplit.length !== 2) {
-    console.log("Unable to parse filter ID: ", filterId);
-    return null;
-  }
-
-  // set attributes
-  filterContextData.evtFilterId = curFilterIdSplit[0];
-  filterContextData.geoFilterId = curFilterIdSplit[1];
-  filterContextData.filterId = filterId;
-
-  return null;
-};
 
 //
 const getMapCenter = (mapExtent) => {
@@ -71,7 +51,6 @@ const App = ({ settings }) => {
   const [activePointFeature, setActivePointFeature] = useState(null);
 
   // Context states
-  const [filterContextData, setFilterContextData] = useState({});
   const [mapLocationsContextData, setMapLocationsContextData] = useState({});
   const [activeTab, setActiveTab] = useState("tabFilters");
   const [zoomLevel, setZoomLevel] = useState(9);
@@ -90,15 +69,13 @@ const App = ({ settings }) => {
   let updatedVarsState = false;
   if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true; }
   if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true; }
+  if (!varsStateLib.getContextFilterId(varsState)) {
+    varsStateLib.setContextFilterId(consFixed['region'].defaultFilter, varsState);
+    updatedVarsState = true;
+  }
   if (updatedVarsState) { setVarsState(varsState) }
-  
 
   /* ** MAIN RENDER **************************************************************************** */
-
-  // currently active filter
-  if (!("filterId" in filterContextData)) {
-    fillFilterContextData(consFixed['region'].defaultFilter, filterContextData);
-  }
 
   // gets the central coordinates of the map into const 'position'
   const posXY = getMapCenter(consFixed['region'].map.defaultExtent);
@@ -122,8 +99,6 @@ const App = ({ settings }) => {
         setIsHidden,
         timeSerieUrl,
         setTimeSerieUrl,
-        filterContextData,
-        setFilterContextData,
         mapLocationsContextData,
         setMapLocationsContextData,
         activeTab,

@@ -6,10 +6,9 @@ import Button from "react-bootstrap/Button";
 
 // import contexts
 // TODO: use only the standard ones
-import MapLocationsContext from "../../contexts/MapLocationsContext";
-import FilterContext from "../../contexts/FilterContext";
 import MapContext from "../../contexts/MapContext";
 import { TabActiveFeatureInfoContext } from "../../contexts/TabActiveFeatureInfoContext";
+import varsStateLib from "../../contexts/varsStateLib";
 import VarsState from "../../contexts/VarsState";
 
 // import CSS styles
@@ -17,7 +16,8 @@ import ownStyles from "../../../style/MainMenuControl.module.css";
 
 export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
   // retireves context data
-  const { filterContextData } = useContext(FilterContext);
+  // const { filterContextData } = useContext(FilterContext);
+
   const {
     activePointFeature,
     setActivePointFeature,
@@ -46,12 +46,17 @@ export const TabActiveFeatureInfo = ({ filtersData, overviewFilter }) => {
             <span className="popupsubtitle">Latitude: </span>
             <span className="popuptext">{activePointFeature.y}</span>
           </p>
-          { (varsState.domObjects.mainMenuControl.activeTab != 'tabOverview') ? (
+          { (!varsStateLib.inMainMenuControlActiveTabOverview(varsState)) ? (
             <Button
               variant="primary"
               onClick={() => {
+                /*
                 setTimeSerieUrl(
                   `https://hydro-web.herokuapp.com/v1/timeseries/?filter=${filterContextData.filterId}&location=${activePointFeature.locationId}`
+                );
+                */
+                setTimeSerieUrl(
+                  `https://hydro-web.herokuapp.com/v1/timeseries/?filter=${varsStateLib.getContextFilterId(varsState)}&location=${activePointFeature.locationId}`
                 );
                 setIsHidden(false);
               }}

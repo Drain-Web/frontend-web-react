@@ -1,15 +1,25 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { Col, Container, Form, Row } from 'react-bootstrap'
-import FloatingLabel from 'react-bootstrap/FloatingLabel'
 
-import MapLocationsContext from '../../contexts/MapLocationsContext'
-import FilterContext from '../../contexts/FilterContext'
-import ownStyles from '../../../style/MainMenuControl.module.css'
-
+// import custom components
+import IconsAlertsSubform from './IconsAlertsSubform'
+import IconsModelEvaluationSubform from './IconsModelEvaluationSubform'
+import IconsModelsComparisonSubform from './IconsModelsComparisonSubform'
+import IconsModelsCompetitionSubform from './IconsModelsCompetitionSubform'
+import IconsUniformSubform from './IconsUniformSubform'
+import IconsViewSelectBox from './IconsViewSelectBox'
 import { ParametersCheckBox } from './ParametersCheckBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
-import { ThresholdValueSetCheckBox } from './ThresholdValueSetCheckBox'
 import { ThresholdGroupSelectBox } from './ThresholdGroupSelectBox'
+
+// import contexts
+import MapLocationsContext from '../../contexts/MapLocationsContext'
+import VarsState from "../../contexts/VarsState";
+import varsStateLib from "../../contexts/varsStateLib";
+
+// import CSS styles
+import ownStyles from '../../../style/MainMenuControl.module.css'
+
 
 /* ** AUX FUNCS ****************************************************************************** */
 
@@ -46,7 +56,7 @@ const identifyGeoEvents = (filtersData) => {
 
 const isLocationAttribute = (valueFunction) => {
   const firstLetter = valueFunction.charAt(0)
-  const lastLetter = valueFunction.charAt(valueFunction.length-1)
+  const lastLetter = valueFunction.charAt(valueFunction.length - 1)
   return ((firstLetter === '@') && (lastLetter == '@'))
 }
 
@@ -71,7 +81,7 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
   // get selected parameter id
   const selectedParamIds = mapLocationsContextData.showParametersLocations
   let selectedParamId = null
-  if ((selectedParamIds) && (selectedParamIds.size == 1)){
+  if ((selectedParamIds) && (selectedParamIds.size == 1)) {
     selectedParamId = selectedParamIds.values().next().value
   } else {
     console.log("No selectedParamId from", selectedParamIds)
@@ -103,7 +113,7 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
 
           // get location attributes
           let locationAttributes = null
-          for (const curLocationStatIdx in locationsData.locations){
+          for (const curLocationStatIdx in locationsData.locations) {
             const curSubLocation = locationsData.locations[curLocationStatIdx]
             if (curSubLocation.locationId == curLocationId) {
               locationAttributes = curSubLocation.attributes
@@ -111,11 +121,11 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
             }
           }
           // console.log("locationAttributes:", locationAttributes)
-          
+
           let [anyThreshFound, lastWarningOverpast] = [false, null]
 
           // get the first limit extrapolated
-          for (const curLevelThreshIdx in threshGroup){
+          for (const curLevelThreshIdx in threshGroup) {
             // get this location value if available
             const curLevelThresh = threshGroup[curLevelThreshIdx]
             const curValueFunction = curLevelThresh.valueFunction
@@ -123,7 +133,7 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
 
             //
             if (isLocationAttribute(curValueFunction)) {
-              const locAttrId = curValueFunction.substr(1, curValueFunction.length-2)
+              const locAttrId = curValueFunction.substr(1, curValueFunction.length - 2)
               // console.log("Loc Attr:", curValueFunction, '->', locAttrId)
               const locAttrDict = getByIdFromList(locationAttributes, locAttrId)
               // console.log('     got:', locAttrDict)
@@ -167,30 +177,34 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
 
 
 export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thresholdGroups,
-  overviewFilter }) => {
+  settings }) => {
   /* ** SET HOOKS **************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
-  const { filterContextData, setFilterContextData } = useContext(FilterContext)
+
+  // Get global states and set local states
+  const { varsState } = useContext(VarsState)
+  const [stateFilterId, setStateFilterId] = useState(varsStateLib.getContextFilterId(varsState))
+  const setStateIconType = useState(varsStateLib.getContextIconsType(varsState))[1]
 
   /* ** DEFS ********************************************************************************* */
 
-  const functionOnChangeGeoSubFilter = (event) => {
+  const changeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
     const newGeoFilterId = event.target.value
-    const newFilterId = filterContextData.evtFilterId.concat('.').concat(newGeoFilterId)
-    setFilterContextData({
-      ...filterContextData, filterId: newFilterId, geoFilterId: newGeoFilterId
-    })
+    const curEvtFilterId = stateFilterId.split(".")[0]
+    const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
+    varsStateLib.setContextFilterId(newFilterId, varsState)
+    setStateFilterId(newFilterId)
   }
 
-  const functionOnChangeEventSubFilter = (event) => {
+  const changeEventSubFilter = (event) => {
     // Triggered when the event selectbox is changed
+    const curGeoFilterId = stateFilterId.split(".")[1]
     const newEvtFilterId = event.target.value
-    const newFilterId = newEvtFilterId.concat('.').concat(filterContextData.geoFilterId)
-    setFilterContextData({
-      ...filterContextData, filterId: newFilterId, evtFilterId: newEvtFilterId
-    })
+    const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
+    varsStateLib.setContextFilterId(newFilterId, varsState)
+    setStateFilterId(newFilterId)
   }
 
   const functionOnChangeIconsThreshGroup = (event, filterId) => {
@@ -198,6 +212,19 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     const newEvtThreshGroupId = event.target.value
     setMapLocationsContextData(updateLocationIcons(mapLocationsContextData, newEvtThreshGroupId,
       locationsData, filterId))
+  }
+
+  const updateIconType = (event) => {
+    // Triggered when the icon type select box is changed
+    const newIconView = event.target.value
+    varsStateLib.setContextIcons(newIconView, {}, varsState)
+    setStateIconType(newIconView)
+  }
+
+  const updateUniformFilter = (event) => {
+    // 
+    const newIconUniformFilter = event.target.value
+    console.log("Update uniform filter:", newIconUniformFilter)
   }
 
   /* ** MAIN RENDER ************************************************************************** */
@@ -212,28 +239,45 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <Row><Col>
             <SubFilterSelectBox
               idTitleList={retGeo}
-              selectedId={filterContextData.geoFilterId}
-              onChangeFunction={(changeGeoFilterEvt) => {
-                functionOnChangeGeoSubFilter(changeGeoFilterEvt)
-              }}
-              addOverviewOption={overviewFilter}
+              selectedId={varsStateLib.getContextFilterGeoId(varsState)}
+              onChangeFunction={changeGeoSubFilter}
+              addOverviewOption={settings.overviewFilter}
               label='Sub-Area'
             />
           </Col></Row>
           <Row className={ownStyles['row-padding-top']}><Col>
             <SubFilterSelectBox
               idTitleList={retEvt}
-              selectedId={filterContextData.evtFilterId}
-              onChangeFunction={(changeEvtFilterEvt) => {
-                functionOnChangeEventSubFilter(changeEvtFilterEvt)
-              }}
-              addOverviewOption={overviewFilter}
+              selectedId={varsStateLib.getContextFilterEvtId(varsState)}
+              onChangeFunction={changeEventSubFilter}
+              addOverviewOption={settings.overviewFilter}
               label='Event'
             />
           </Col></Row>
           <Row className={ownStyles['row-padding-top']}><Col>
+            {/* TODO: move default icon view to settings file */}
+            <IconsViewSelectBox onChange={updateIconType} label="Location icons" />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <IconsUniformSubform onChangeFilter={updateUniformFilter} settings={settings} />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <IconsAlertsSubform />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <IconsModelEvaluationSubform />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <IconsModelsComparisonSubform />
+          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}><Col>
+            <IconsModelsCompetitionSubform />
+          </Col></Row>
+          {/*
+          <Row className={ownStyles['row-padding-top']}><Col>
             <ParametersCheckBox />
           </Col></Row>
+          */}
           {/*
           <Row className={ownStyles['row-padding-top']}><Col>
             <ThresholdValueSetCheckBox thresholdValueSets={thresholdValueSets} />
@@ -243,7 +287,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
             <ThresholdGroupSelectBox
               thresholdGroups={thresholdGroups}
               onChangeFunction={(changeThresholdGroupEvt) => {
-                functionOnChangeIconsThreshGroup(changeThresholdGroupEvt, filterContextData.filterId)
+                functionOnChangeIconsThreshGroup(changeThresholdGroupEvt, varsStateLib.getContextFilterId(varsState))
               }}
             />
           </Col></Row>
