@@ -1,10 +1,10 @@
-import React from "react";
-import GeoJsonVtLayer from "./GeoJsonVtLayer";
+import React, { Fragment, useContext } from "react";
 import axios from "axios";
 import useSWR from "swr";
 import { LayersControl } from "react-leaflet";
+
+import GeoJsonVtLayer from "./GeoJsonVtLayer";
 import MapContext from "../contexts/MapContext";
-import { useContext } from "react";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
@@ -64,9 +64,8 @@ function GeoJsonLayer({ layerSettings }) {
     // 5 -> 8
     // 6 -> 7
     // 7 -> 6
-
     return (
-      <>
+      <Fragment key={horton}>
         <LayersControl.Overlay
           checked={checkHorton}
           name={layerSettings.layerName + " Horton order " + horton}
@@ -90,7 +89,7 @@ function GeoJsonLayer({ layerSettings }) {
           />
           ;
         </LayersControl.Overlay>
-      </>
+      </Fragment>
     );
   });
 }

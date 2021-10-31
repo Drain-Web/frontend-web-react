@@ -46,7 +46,7 @@ const PolygonLayer = ({
                   ? <Polygon
                       pathOptions={{
                         color: color,
-                        fillColor: null
+                        // fillColor: null
                       }}
                       positions={polygon}
                       key={poly.id}

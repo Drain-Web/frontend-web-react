@@ -48,15 +48,14 @@ const App = ({ settings }) => {
 
   // Panel state - show or hide
   const [isHidden, setIsHidden] = useState(false);
-  const [activePointFeature, setActivePointFeature] = useState(null);
 
   // Context states
   const [mapLocationsContextData, setMapLocationsContextData] = useState({});
-  const [activeTab, setActiveTab] = useState("tabFilters");
   const [zoomLevel, setZoomLevel] = useState(9);
 
   // TODO: make these the only states
   const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
+  const [varState, setVarState] = useState(null)
   const consFixed = useState(appLoad.loadConsFixed(settings))[0]
 
   // check if still loading
@@ -93,21 +92,17 @@ const App = ({ settings }) => {
   return (
     <MapContext.Provider
       value={{
-        activePointFeature,
-        setActivePointFeature,
         isHidden,
         setIsHidden,
         timeSerieUrl,
         setTimeSerieUrl,
         mapLocationsContextData,
         setMapLocationsContextData,
-        activeTab,
-        setActiveTab,
         zoomLevel,
         setZoomLevel
       }}
     >
-      <VarsState.Provider value={{ varsState, setVarsState }}>
+      <VarsState.Provider value={{ varsState, setVarState }}>
         <MapContainer center={position} zoom={zoom} zoomControl={false}>
           <GetZoomLevel />
           <MapControler settings={settings} />

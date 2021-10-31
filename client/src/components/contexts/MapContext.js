@@ -1,18 +1,16 @@
 import { createContext } from "react";
 
+// should be removed
+
 const MapContext = createContext({
   mapContextData: {
     position: null,
     zoom: null,
     pointFeatures: null,
-    activePointFeature: null,
-    setActivePointFeature: null,  
     isHidden: null,
     setIsHidden: null,
     timeSerieUrl: null,
     setTimeSerieUrl: null,
-    activeTab: null,
-    setActiveTab: null,
     zoomLevel: null,
     setZoomLevel: null,
 

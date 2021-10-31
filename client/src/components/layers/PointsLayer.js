@@ -10,56 +10,121 @@ import {
 
 // import contexts
 import MapLocationsContext from "../contexts/MapLocationsContext";
-import MapContext from "../contexts/MapContext";
 import VarsState from "../contexts/VarsState";
 import consFixedLib from "../contexts/consFixedLib";
+import varsStateLib from "../contexts/varsStateLib";
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
-const PointsLayer = ({
-  layerName,
-  iconUrl,
-  iconSize = 22,
-  consFixed
-}) => {
+/* ** SUB COMPONENTS ************************************************************************* */
+
+const createMarkerPolygon = (locationInfo, activeLocation) => {
+  if (!locationInfo.polygon) return (<></>)
+  
+  return (
+    <Polygon
+      pathOptions={{
+        color: "#0000AA",
+        fillColor: "#7777FF",
+        fill:
+          activeLocation &&
+          (activeLocation.locationId === locationInfo.locationId),
+        opacity:
+          activeLocation &&
+          (activeLocation.locationId === locationInfo.locationId)
+            ? 0.5
+            : 0,
+      }}
+      positions={JSON.parse(locationInfo.polygon).map(
+        (pol) => {
+          return [pol[1], pol[0]];
+        }
+      )}
+      display="none"
+      filter={false}
+    />
+  )
+}
+
+const createTooltip = (locationInfo) => {
+  return (
+    <Tooltip className="toolTipClass">
+      <div>
+        <h5>
+          <span className="popuptitle">
+            {locationInfo.shortName}
+          </span>
+        </h5>
+        <p>
+          <span className="popupsubtitle">Id: </span>
+          <span className="popuptext">
+            {locationInfo.locationId}
+          </span>
+        </p>
+        <p>
+          <span className="popupsubtitle">Longitude: </span>
+          <span className="popuptext">{locationInfo.x}</span>
+        </p>
+        <p>
+          <span className="popupsubtitle">Latitude: </span>
+          <span className="popuptext">{locationInfo.y}</span>
+        </p>
+      </div>
+    </Tooltip>
+  )
+}
+
+const createMarker = (locationId, locationInfo,
+                      locationIcon, iconSize,
+                      varsState, setVarState) => {
+  return (
+    <Fragment key={locationId}>
+      <Marker
+        position={[locationInfo.y, locationInfo.x]}
+        icon={newIcon(locationIcon.icon, iconSize)}
+        eventHandlers={{
+          click: () => {
+            if (varsStateLib.getActiveLocation(varsState) === null) {
+              varsStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(varsState)
+              varsStateLib.setActiveLocation(locationInfo, varsState)
+            } else {
+              varsStateLib.setActiveLocation((previousValue) => {
+                return (previousValue === locationInfo) ? null : locationInfo
+              }, varsState);
+            }
+            setVarState(Math.random())
+          },
+        }}
+      >
+        { createTooltip(locationInfo) }
+      </Marker>
+      { createMarkerPolygon(locationInfo, varsStateLib.getActiveLocation(varsState)) }
+    </Fragment>
+  )
+}
+
+// regular location icon
+const newIcon = (newIconUrl, iconSize) => {
+  return new Icon({
+    iconUrl: newIconUrl,
+    iconSize: [iconSize, iconSize],
+    popupAnchor: [0, -15],
+  });
+};
+
+/* ** COMPONENT ****************************************************************************** */
+
+const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
+
+  /* ** SET HOOKS **************************************************************************** */
 
   // load contexts
-  const { varsState } = useContext(VarsState)
-  const { activePointFeature, setActivePointFeature } = useContext(MapContext);
-  const { activeTab, setActiveTab } = useContext(MapContext);
-  const layerData = varsState['locations']  // TODO: remove it. kept for fast 'bug fix'
-
+  const { varsState, setVarState } = useContext(VarsState);
+  
   // refresh icons whenever something in the varsState['locations'] changes
   useEffect( () => {
     console.log('Do I need to use it?')
   }, [varsState['locations']])
-
-  // regular location icon
-  const icon = new Icon({
-    iconUrl: iconUrl,
-    iconSize: [iconSize, iconSize],
-    popupAnchor: [0, -15],
-  });
-
-  const newIcon = (newIconUrl) => {
-    return new Icon({
-      iconUrl: newIconUrl,
-      iconSize: [iconSize, iconSize],
-      popupAnchor: [0, -15],
-    });
-  };
-
-  // mock location icon for a place not-to-be-shown
-  const noIcon = new Icon({
-    iconUrl: iconUrl,
-    iconSize: [0, 0],
-  });
-
-  /* ** SET HOOKS ****************************************************************************** */
-
-  // retireves context data
-  const { mapLocationsContextData } = useContext(MapLocationsContext);
-
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
@@ -67,133 +132,16 @@ const PointsLayer = ({
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {
-            Object.keys(varsState['locations']).map(function(curLocationId, idx) {
+            Object.keys(varsState['locations']).map((curLocationId, idx) => {
               const curLocationIcon = varsState['locations'][curLocationId]
               const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
               
               if (!curLocationIcon.display) { return (null) }
               
-              return (
-                <Fragment key={curLocationId}>
-                  <Marker
-                    position={[curLocationInfo.y, curLocationInfo.x]}
-                    icon={newIcon(curLocationIcon.icon)}
-                  >
-                  {/* TODO: add everything that was there */}
-                  </Marker>
-                </Fragment>
-              )
+              return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
+                varsState, setVarState ))
             })
           }
-
-          { /*layerData.locations.map((layerDataPoint) => {
-            // maker will be displayed if its location Id is in the mapLocationsContextData
-
-            // function that decides if a location will be shown
-            const displayMarker = () => {
-              if (
-                mapLocationsContextData.byLocations &&
-                layerDataPoint.locationId in
-                  mapLocationsContextData.byLocations &&
-                mapLocationsContextData.byLocations[layerDataPoint.locationId]
-                  .show
-              ) {
-                return true;
-              }
-              return false;
-            };
-
-            // function that defines the iconUrl
-            const getIconUrl = () => {
-              const mapLoc =
-                mapLocationsContextData.byLocations[layerDataPoint.locationId];
-              if (!mapLoc.warning) {
-                return iconUrl; // TODO: make if accept undefined location
-              } else {
-                return mapLoc.warning.iconName;
-              }
-            };
-
-            return (
-              <Fragment key={layerDataPoint.locationId}>
-                <Marker
-                  position={[layerDataPoint.y, layerDataPoint.x]}
-                  eventHandlers={{
-                    click: () => {
-                      if (activePointFeature === null) {
-                        setActiveTab("tabActiveFeatureInfo");
-                        setActivePointFeature(layerDataPoint);
-                      } else {
-                        setActiveTab(activeTab);
-                        setActivePointFeature((previousValue) => {
-                          if (previousValue === layerDataPoint) {
-                            return null;
-                          } else {
-                            return layerDataPoint;
-                          }
-                        });
-                      }
-                    },
-                  }}
-                  icon={displayMarker() ? newIcon(getIconUrl()) : noIcon}
-                >
-                  <Tooltip className="toolTipClass">
-                    <div>
-                      <h5>
-                        <span className="popuptitle">
-                          {layerDataPoint.shortName}
-                        </span>
-                      </h5>
-                      <p>
-                        <span className="popupsubtitle">Id: </span>
-                        <span className="popuptext">
-                          {layerDataPoint.locationId}
-                        </span>
-                      </p>
-                      <p>
-                        <span className="popupsubtitle">Longitude: </span>
-                        <span className="popuptext">{layerDataPoint.x}</span>
-                      </p>
-                      <p>
-                        <span className="popupsubtitle">Latitude: </span>
-                        <span className="popuptext">{layerDataPoint.y}</span>
-                      </p>
-                    </div>
-                  </Tooltip>
-                </Marker>
-                {
-                  // display location polygon if needed
-                  layerDataPoint.polygon ? (
-                    <Polygon
-                      pathOptions={{
-                        color: "#0000AA",
-                        fillColor: "#7777FF",
-                        fill:
-                          activePointFeature &&
-                          activePointFeature.locationId ===
-                            layerDataPoint.locationId,
-                        opacity:
-                          activePointFeature &&
-                          activePointFeature.locationId ===
-                            layerDataPoint.locationId
-                            ? 0.5
-                            : 0,
-                      }}
-                      positions={JSON.parse(layerDataPoint.polygon).map(
-                        (pol) => {
-                          return [pol[1], pol[0]];
-                        }
-                      )}
-                      display="none"
-                      filter={false}
-                    />
-                  ) : (
-                    <></>
-                  )
-                }
-              </Fragment>
-            );
-          }) */}
         </LayerGroup>
       </LayersControl.Overlay>
     </>

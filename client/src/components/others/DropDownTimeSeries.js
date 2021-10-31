@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 import FormControl from 'react-bootstrap/FormControl'
+
+import { apiUrl, fetcher } from "../../../libs/api.js"
+
+// import CSS styles
 import '../../style/Panel.css'
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -48,15 +52,18 @@ const CustomMenu = React.forwardRef(
 
 const DropDownTimeSeries = ({
   ids,
-  locationid,
+  locationId,
   timeSerieUrl,
   setTimeSerieUrl,
-  setIsHidden
+  setIsHidden,
+  settings
 }) => {
   const dateSelectHandler = (value) => {
     setTimeSerieUrl(value)
     setIsHidden(false)
   }
+
+  console.log('From DropDownTimeSeries...')
 
   return (
     <div>
@@ -67,12 +74,20 @@ const DropDownTimeSeries = ({
 
         <Dropdown.Menu as={CustomMenu}>
           {ids.map((id) => {
-            const endpoint = `https://hydro-web.herokuapp.com/v1/timeseries/?filter=${id}&location=${locationid}`
+            const endpointUrl = apiUrl(
+              settings.apiBaseUrl,
+              "v1",
+              "timeseries",
+              {
+                filter: id,
+                location: locationId
+              }
+            );
             return (
               <Dropdown.Item
-                eventKey={endpoint}
+                eventKey={endpointUrl}
                 key={id}
-                onClick={() => dateSelectHandler(endpoint)}
+                onClick={() => dateSelectHandler(endpointUrl)}
               >
                 {id.slice(1, 80)}
               </Dropdown.Item>

@@ -3,7 +3,7 @@ import React, { useEffect, useContext } from "react";
 
 // import components
 import MapLocationsContext from '../contexts/MapLocationsContext'
-import { MainMenuControl } from "./MainMenuControl";
+import MainMenuControl from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
@@ -40,7 +40,7 @@ const MapControler = ({ settings }) => {
   } = useContext(MapContext);
 
   // load contexts
-  const { varsState } = useContext(VarsState)
+  const { varsState, setVarState } = useContext(VarsState)
   const { consFixed } = useContext(ConsFixed)
 
   // when filterContextData is changed, load new filter data and refresh map
@@ -53,12 +53,15 @@ const MapControler = ({ settings }) => {
   */
 
   // when filterContextData is changed, load new filter data and refresh map
+  /*
   useEffect( () => {
     mapControlerLib.onChangeContextFilter(map, varsState, consFixed, settings)
   }, [varsState])
+  */
 
   useEffect(() => {
     varsStateLib.updateLocationIcons(varsState, consFixed, settings)
+    setVarState(Math.random())
   }, [varsState['context'], varsState['domObjects']['mainMenuControl']['activeTab']]) 
 
   return (
@@ -67,14 +70,8 @@ const MapControler = ({ settings }) => {
         {" "}
         {/* <FlexContainer> */}
         {/* add the main left menu */}
-        <MapLocationsContext.Provider
-          value={{ mapLocationsContextData, setMapLocationsContextData }}
-        >
-          <MainMenuControl
-            settings={settings}
-            position="leaflet-right"
-          />
-        </MapLocationsContext.Provider>
+        
+        <MainMenuControl settings={settings} position="leaflet-right" />
 
         {/* hyrographs panel */}
         <Panel
@@ -89,13 +86,7 @@ const MapControler = ({ settings }) => {
           <BaseLayers baseLayerData={baseLayersData} />
 
           {/* adds layer of points as a react component */}
-          <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
-            <PointsLayer
-              layerName="Locations"
-              iconUrl={settings.generalLocationIcon}
-              consFixed={consFixed}
-            />
-          </MapLocationsContext.Provider>
+          <PointsLayer layerName="Locations" consFixed={consFixed} />
 
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}          
           <PolygonLayer
@@ -106,9 +97,7 @@ const MapControler = ({ settings }) => {
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
           {settings.riverNetwork.fullRaw ? (
-            <GeoJsonLayerRiverNetwork
-              layerSettings={settings.riverNetwork.fullRaw}
-            />
+            <GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />
           ) : (
             <></>
           )}

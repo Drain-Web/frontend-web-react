@@ -33,6 +33,11 @@ const addLocations = (locationIds, iconDefault, displayDefault, varsState) => {
 }
 
 // 
+const getActiveLocation = (varsState) => {
+  return varsState['activeLocation']
+}
+
+// 
 const getContextFilterId = (varsState) => {
   return varsState['context']['filterId']
 }
@@ -62,6 +67,11 @@ const getContextIconsArgs = (iconsType, varsState) => {
 //
 const getContextIconsType = (varsState) => {
   return varsState['context']['icons']['iconType']
+}
+
+//
+const getMainMenuControlActiveTab = (varsState) => {
+  return varsState['domObjects']['mainMenuControl']['activeTab']
 }
 
 // 
@@ -94,10 +104,21 @@ const inMainMenuControlActiveTabOverview = (varsState) => {
 }
 
 
+//
+const setActiveLocation = (activeLocation, varState) => {
+  varState['activeLocation'] = activeLocation
+}
+
+
 // 
 const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
   varsState['domObjects']['mainMenuControl']['activeTab'] = newActiveTabId
-  return
+}
+
+
+//
+const setMainMenuControlActiveTabAsActiveFeatureInfo = (varsState) => {
+  varsState['domObjects']['mainMenuControl']['activeTab'] = "tabActiveFeatureInfo"
 }
 
 
@@ -143,18 +164,21 @@ const updateLocationIcons = (varsState, consFixed, settings) => {
   // TODO: implement
   if (inMainMenuControlActiveTabOverview(varsState)) {
     // if in overview shows all locations
-    console.log('Show all locations')
+    console.log('In overview: show all locations')
     for (const locationId in varsState['locations']) {
       varsState['locations'][locationId]['display'] = true
     }
-  } else {
+  } else if (inMainMenuControlActiveTabFilters(varsState) ) {
     // if in a specific filter, decide location by location
     // TODO: implement it correctly
-    console.log('Hide all locations')
+    console.log('In Filters tab. Selective locations show.')
     for (const locationId in varsState['locations']) {
       varsState['locations'][locationId]['display'] = false
     }
+  } else if (inMainMenuControlActiveTabActiveFeatureInfo(varsState)) {
+    console.log("In features info. Single show.")
   }
+  
   // if in overview: 
   // show all locations with default
   // otherwise:
@@ -166,19 +190,23 @@ const updateLocationIcons = (varsState, consFixed, settings) => {
 const varsStateLib = {
   "addLocation": addLocation,
   "addLocations": addLocations,
+  "getActiveLocation": getActiveLocation,
   "getContextFilterId": getContextFilterId,
   "getContextFilterEvtId": getContextFilterEvtId,
   "getContextFilterGeoId": getContextFilterGeoId,
   "getContextIconsArgs": getContextIconsArgs,
   "getContextIconsType": getContextIconsType,
+  "getMainMenuControlActiveTab": getMainMenuControlActiveTab,
   "getMainMenuControlShow": getMainMenuControlShow,
   "hideMainMenuControl": hideMainMenuControl,
   "inMainMenuControlActiveTabActiveFeatureInfo": inMainMenuControlActiveTabActiveFeatureInfo,
   "inMainMenuControlActiveTabFilters": inMainMenuControlActiveTabFilters,
   "inMainMenuControlActiveTabOverview": inMainMenuControlActiveTabOverview,
+  "setActiveLocation": setActiveLocation,
   "setContextFilterId": setContextFilterId,
   "setContextIcons": setContextIcons,
   "setMainMenuControlActiveTab": setMainMenuControlActiveTab,
+  "setMainMenuControlActiveTabAsActiveFeatureInfo": setMainMenuControlActiveTabAsActiveFeatureInfo,
   "setMainMenuControlActiveTabAsOverview": setMainMenuControlActiveTabAsOverview,
   "showMainMenuControl": showMainMenuControl,
   "toggleMainMenuControl": toggleMainMenuControl,

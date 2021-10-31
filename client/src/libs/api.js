@@ -1,3 +1,5 @@
+import axios from "axios"
+
 
 const apiUrl = (baseUrl, vPath, entryPoint, parameters) => {
   /* Centralized function to build URLs for the API.
@@ -27,4 +29,9 @@ const apiUrl = (baseUrl, vPath, entryPoint, parameters) => {
   return baseUrl.concat(vPath, '/', entryPoint, params)
 }
 
-export { apiUrl }
+
+/* Performs asynch HTTP requests using axios */
+const fetcher = (url) => { axios.get(url).then((res) => res.data) }
+
+
+export { apiUrl, fetcher }

@@ -9,8 +9,6 @@ import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
 
 // import contexts
-// import FilterContext from "../contexts/FilterContext";
-import MapContext from "../contexts/MapContext";
 import ConsFixed from "../contexts/ConsFixed";
 import VarsState from "../contexts/VarsState";
 import varsStateLib from "../contexts/varsStateLib";
@@ -24,19 +22,13 @@ import ownStyles from "../../style/MainMenuControl.module.css";
 
 /* ** OBJ - Bootstrap div ******************************************************************** */
 
-export const MainMenuControl = ({
-  settings,
-  position
-}) => {
+const MainMenuControl = ({ settings, position }) => {
+  
   /* ** SET HOOKS **************************************************************************** */
   const { consFixed } = useContext(ConsFixed)
 
-  // Retireves context data
-  // TODO: replace by varsState
-  const { activeTab, setActiveTab } = useContext(MapContext);
-
   // Get global states and set local states
-  const { varsState } = useContext(VarsState)
+  const { varsState, setVarState } = useContext(VarsState)
   const [showMe, setShowMe] = useState(varsStateLib.getMainMenuControlShow(varsState))
 
   const divRef = useRef(null);
@@ -44,6 +36,10 @@ export const MainMenuControl = ({
   useEffect(() => {
     DomEvent.disableClickPropagation(divRef.current);
   });
+
+  useEffect(() => {
+    console.log("Should update.")
+  }, [varsState['context'], varsState['domObjects']['mainMenuControl']['activeTab']]) 
 
   const remValue = useRemValue();
 
@@ -71,11 +67,11 @@ export const MainMenuControl = ({
           <Row>
             <Tabs
               className="mb-2"
-              defaultActiveKey={ varsState.domObjects.mainMenuControl.activeTab }
-              activeKey={activeTab}
-              onSelect={(k) => {
-                varsStateLib.setMainMenuControlActiveTab(k, varsState);
-                setActiveTab(k);
+              defaultActiveKey={ varsStateLib.getMainMenuControlActiveTab(varsState) }
+              activeKey={ varsStateLib.getMainMenuControlActiveTab(varsState) }
+              onSelect={(selectedTab) => {
+                varsStateLib.setMainMenuControlActiveTab(selectedTab, varsState);
+                setVarState(Math.random())
               }}
             >
               <Tab eventKey="tabOverview" title="Overview">
@@ -129,3 +125,5 @@ export const MainMenuControl = ({
     </div>
   );
 };
+
+export default MainMenuControl

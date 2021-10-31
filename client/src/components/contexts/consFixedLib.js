@@ -4,7 +4,6 @@
  */
 
 const getLocationData = (locationId, consFixed) => {
-  console.log("Iterating over:", consFixed['locations']['locations'])
   for (const curLocation of consFixed['locations']['locations']) {
     if (curLocation['locationId'] === locationId) { return (curLocation); }
   }

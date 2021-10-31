@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import axios from "axios"
 import { apiUrl } from "../../../libs/api.js"
+import axios from "axios"
 
 // import contexts
 import VarsState from "../../contexts/VarsState";
@@ -11,6 +11,7 @@ import varsStateLib from "../../contexts/varsStateLib";
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
+
 const IconsUniformSubform = ({ onChangeFilter, settings }) => {
   /* ** SET HOOKS **************************************************************************** */
 
@@ -18,40 +19,44 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
   const { varsState } = useContext(VarsState)
   const [filterOptions, setFilterOptions] = useState(null)
 
-  /* ** SET HOOKS **************************************************************************** */
-
   // react on change
   useEffect(() => {
-    console.log('Changed IconType to:', varsState['context']['icons']['iconType'], '(get)')
-  }, [varsStateLib.getContextIconsType(varsState)])
 
-  /* ** SET HOOKS **************************************************************************** */
+    // only triggers when "uniform" is selected
+    if (varsStateLib.getContextIconsType(varsState) != "uniform") { return (null) }
+    
+    // define url to be called and skip call if this was the last URL called
+    const urlTimeseriesRequest = apiUrl(
+      settings.apiBaseUrl, "v1", "timeseries",
+      {
+        filter: varsStateLib.getContextFilterId(varsState),
+        showStatistics: true,
+        onlyHeaders: true
+      }
+    )
+    if (filterOptions && (filterOptions['lastUrl'] === urlTimeseriesRequest)) {return (null)}
 
-  const urlTimeseriesRequest = apiUrl(
-    settings.apiBaseUrl,
-    "v1",
-    "timeseries",
-    {
-      filter: varsStateLib.getContextFilterId(varsState),
-      showStatistics: true,
-      onlyHeaders: true
-    }
-  );
+    // so we request URL and update state
+    fetcher(urlTimeseriesRequest).then((jsonData) => {
+      const filteredTimeseries = jsonData
+      const filterOptions = {
+        "lastUrl": urlTimeseriesRequest,
+        "parameters": new Set(),
+        "parameterGroups": new Set(),
+        "modelInstances": new Set()
+      }
+      for (const curFilteredTimeseries of filteredTimeseries) {
+        // console.log('Location:', curFilteredTimeseries.header.location_id)
+        filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
+      }
+      setFilterOptions(filterOptions)
+    })
 
-  // get the options for parameters, parameter groups or module instance ids
-  fetcher(urlTimeseriesRequest).then((jsonData) => {
-    const filteredTimeseries = jsonData
-    const filterOptions = {
-      "parameters": new Set(),
-      "parameterGroups": new Set(),
-      "modelInstances": new Set()
-    }
-    for (const curFilteredTimeseries of filteredTimeseries) {
-      // console.log('Location:', curFilteredTimeseries.header.location_id)
-      filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
-    }
-    setFilterOptions(filterOptions)
-  })
+    // TODO: update ConsCache
+    
+    console.log('Requested URL.')
+  }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState)])
+
 
   /* ** BUILD COMPONENT ********************************************************************** */
 
