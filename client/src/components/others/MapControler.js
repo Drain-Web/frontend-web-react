@@ -2,7 +2,6 @@ import { LayersControl, ZoomControl, useMap } from "react-leaflet";
 import React, { useEffect, useContext } from "react";
 
 // import components
-import MapLocationsContext from '../contexts/MapLocationsContext'
 import MainMenuControl from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
@@ -13,9 +12,11 @@ import SearchField from "./GeoSearchBox";
 
 // import contexts
 import MapContext from "../contexts/MapContext";
-import varsStateLib from "../contexts/varsStateLib";
-import VarsState from "../contexts/VarsState";
+import ConsCache from "../contexts/ConsCache";
+import consCacheLib from "../contexts/consCacheLib";
 import ConsFixed from "../contexts/ConsFixed";
+import VarsState from "../contexts/VarsState";
+import varsStateLib from "../contexts/varsStateLib";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -40,8 +41,9 @@ const MapControler = ({ settings }) => {
   } = useContext(MapContext);
 
   // load contexts
-  const { varsState, setVarState } = useContext(VarsState)
+  const { consCache } = useContext(ConsCache)
   const { consFixed } = useContext(ConsFixed)
+  const { varsState, setVarState } = useContext(VarsState)
 
   // when filterContextData is changed, load new filter data and refresh map
   // useEffect(onChangeFilterContextData, [filterContextData]);
@@ -58,11 +60,11 @@ const MapControler = ({ settings }) => {
     mapControlerLib.onChangeContextFilter(map, varsState, consFixed, settings)
   }, [varsState])
   */
-
+  
   useEffect(() => {
-    varsStateLib.updateLocationIcons(varsState, consFixed, settings)
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
     setVarState(Math.random())
-  }, [varsState['context'], varsState['domObjects']['mainMenuControl']['activeTab']]) 
+  }, [varsState['context'], varsStateLib.getMainMenuControlActiveTab(varsState)]) 
 
   return (
     <>

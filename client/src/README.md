@@ -96,34 +96,44 @@ Structure:
 
 These variables start empty (or with default values) and are filled during the session to avoid re-requests. Thus, the values set **don't change, but expand** during the session, acting like a "cache".
 
-Before doing a, HTTP request for data, *ConsCache* should be consulted. If data is available, return the data without proceeding with the request. If data is ```null```, interpret as "the data is not available in the database" and avoid performing the request. If the desired entry is not found, perform the request and fill the entry during callback.
+Before doing a, HTTP request for data, *ConsCache* should be consulted (```requestedUrls``` entry). If the URL was already requested, retrieve the data from cache. Otherwise, perform request, store in cache and then retrieve data from cache.
 
-They should **not** be hooked by ```useState```.
+They should **not** be hooked by ```useState``` and **only** be accessed/manipulated through ```consCacheLib```.
 
-
+The entry ```requestedUrls``` stores all URL already requested and stored.
 
 --
 
-    filters: {
-      $filterId$: {
-        hasTimeseries: {
-          $timeseriesId$
-        }
+    requestedUrls: set($apiURL$)
+
+--
+
+The entry ```indexes``` only store relationships of ids for fast querying.
+
+--
+
+    indexes: {
+      timeseriesIdsByFilterIds: {
+        $filterId$: set($timeseriesId$)
+      },
+      timeseriesIdsByLocationIds: {
+        $locationId: set($timeseriesId$)
+      },
+      timeseriesIdsByParameterIds: {
+        $parameterId$: set($timeseriesId$)
       }
+      (...)
     }
 
 --
 
-    locations: {
-      $locationId$: {
-        inFilters: {
-          $filterId$: {
-            hasTimeseries: {
-              $timeseriesId$
-            }
-          },
-          $filterId$: null
-        }
+The entry ```timeseries``` stores as much information as possible (header and/or data) of already requested timeseries.
+
+--
+
+    data: {
+      timeseries: {
+        $timeseriesId$: (...)
       }
     }
 

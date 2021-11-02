@@ -14,7 +14,7 @@ const CONTEXT_ICONS_ARGS_KEYS = {
   'comparison': 'typeComparison'
 }
 
-/* ** FUNCTIONS ****************************************************************************** */
+/* ** PUBLIC FUNCTIONS *********************************************************************** */
 
 // Include a new location entry
 const addLocation = (locationId, icon, display, varsState) => {
@@ -185,6 +185,7 @@ const updateLocationIcons = (varsState, consFixed, settings) => {
   // make the judgment location by location
 }
 
+/* ** NAMESPACE ****************************************************************************** */
 
 // aggregate all public functions into a single namespace
 const varsStateLib = {

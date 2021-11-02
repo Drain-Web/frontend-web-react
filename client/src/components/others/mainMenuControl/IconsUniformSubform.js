@@ -5,17 +5,28 @@ import { apiUrl } from "../../../libs/api.js"
 import axios from "axios"
 
 // import contexts
+import ConsCache from '../../contexts/ConsCache.js'
+import consCacheLib from "../../contexts/consCacheLib";
+import ConsFixed from '../../contexts/ConsFixed.js'
 import VarsState from "../../contexts/VarsState";
 import varsStateLib from "../../contexts/varsStateLib";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
+// same as 'fetcher', but includes extra info in response
+async function fetcherWith(url, extra) {
+  const jsonData = await fetcher(url)
+  console.log("Got", jsonData, "with", extra);
+  return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
+}
 
 const IconsUniformSubform = ({ onChangeFilter, settings }) => {
   /* ** SET HOOKS **************************************************************************** */
 
   // Get global states and set local states
+  const { consCache } = useContext(ConsCache)
+  const { consFixed } = useContext(ConsFixed)
   const { varsState } = useContext(VarsState)
   const [filterOptions, setFilterOptions] = useState(null)
 
@@ -27,8 +38,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
     
     // define url to be called and skip call if this was the last URL called
     const urlTimeseriesRequest = apiUrl(
-      settings.apiBaseUrl, "v1", "timeseries",
-      {
+      settings.apiBaseUrl, "v1", "timeseries", {
         filter: varsStateLib.getContextFilterId(varsState),
         showStatistics: true,
         onlyHeaders: true
@@ -36,25 +46,49 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
     )
     if (filterOptions && (filterOptions['lastUrl'] === urlTimeseriesRequest)) {return (null)}
 
-    // so we request URL and update state
-    fetcher(urlTimeseriesRequest).then((jsonData) => {
-      const filteredTimeseries = jsonData
+    // final response function: get data from consCache and update varsState
+    const callbackFunc = (lastUrlRequest) => {
       const filterOptions = {
-        "lastUrl": urlTimeseriesRequest,
+        "lastUrl": lastUrlRequest,
         "parameters": new Set(),
         "parameterGroups": new Set(),
         "modelInstances": new Set()
       }
-      for (const curFilteredTimeseries of filteredTimeseries) {
-        // console.log('Location:', curFilteredTimeseries.header.location_id)
-        filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
-      }
-      setFilterOptions(filterOptions)
-    })
 
-    // TODO: update ConsCache
-    
-    console.log('Requested URL.')
+      const filterId = varsStateLib.getContextFilterId(varsState)
+      const timeseriesIds = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+      const timeseriesData = []; 
+      console.log("TODO: get timeseriesData from consCache / timeseriesIds")
+      const filteredTimeseries = timeseriesData
+      for (const curFilteredTimeseries of filteredTimeseries) {
+        filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
+        // TODO: add parameterGroups and modelInstances
+      }
+      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
+      setFilterOptions(filterOptions)
+    }
+
+    // call function after URL request, if needed
+
+    if (!consCacheLib.wasUrlRequested(urlTimeseriesRequest, consCache)) {
+      // request URL, update local states, update cache, access cache
+      const extraArgs = {
+        "filterId": varsStateLib.getContextFilterId(varsState),
+        "url": urlTimeseriesRequest
+      }
+      fetcherWith(urlTimeseriesRequest, extraArgs).then(([jsonData, extras]) => {
+        consCacheLib.addUrlRequested(extras.url, consCache)
+        jsonData.map((curTimeseries) => { 
+          consCacheLib.associateTimeseriesIdAndFilterId(curTimeseries.id, extras.filterId, consCache)
+          consCacheLib.storeTimeseriesData(curTimeseries, consCache)
+        })
+        callbackFunc(extras.url)
+      })
+      
+    } else {
+      callbackFunc(urlTimeseriesRequest)
+    }
+
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState)])
 
 
