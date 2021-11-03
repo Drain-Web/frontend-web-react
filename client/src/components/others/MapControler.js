@@ -2,14 +2,15 @@ import { LayersControl, ZoomControl, useMap } from "react-leaflet";
 import React, { useEffect, useContext } from "react";
 
 // import components
-import MapLocationsContext from '../contexts/MapLocationsContext'
+import MapLocationsContext from "../contexts/MapLocationsContext";
 import { MainMenuControl } from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
-import Panel from "./Panel";
+import Panel from "./PanelTabs";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
+import LoadTimeSeriesData from "./plots/LoadTimeSeriesData";
 
 // import contexts
 import MapContext from "../contexts/MapContext";
@@ -20,11 +21,9 @@ import ConsFixed from "../contexts/ConsFixed";
 import { baseLayersData } from "../../assets/MapBaseLayers";
 
 // import libs
-import { onChangeFilterContextData } from './mapControler/mapControlerLib.js'
-
+import { onChangeFilterContextData } from "./mapControler/mapControlerLib.js";
 
 const MapControler = ({ settings }) => {
-
   // this specific component is needed to allow useMap()
   const {
     isHidden,
@@ -34,18 +33,26 @@ const MapControler = ({ settings }) => {
     filterContextData,
     setFilterContextData,
     mapLocationsContextData,
-    setMapLocationsContextData
+    setMapLocationsContextData,
   } = useContext(MapContext);
   const map = useMap();
 
   // const {varsState, setVarsState} = useContext(VarsState)
   // console.log("varsState:-", varsState)
-  const { consFixed } = useContext(ConsFixed)
+  const { consFixed } = useContext(ConsFixed);
 
   // when filterContextData is changed, load new filter data and refresh map
   // useEffect(onChangeFilterContextData, [filterContextData]);
-  useEffect( () => { onChangeFilterContextData(map, filterContextData, mapLocationsContextData,
-    setMapLocationsContextData, consFixed, settings) }, [filterContextData])
+  useEffect(() => {
+    onChangeFilterContextData(
+      map,
+      filterContextData,
+      mapLocationsContextData,
+      setMapLocationsContextData,
+      consFixed,
+      settings
+    );
+  }, [filterContextData]);
 
   return (
     <>
@@ -59,13 +66,9 @@ const MapControler = ({ settings }) => {
           <MapLocationsContext.Provider
             value={{ mapLocationsContextData, setMapLocationsContextData }}
           >
-            <MainMenuControl
-              settings={settings}
-              position="leaflet-right"
-            />
+            <MainMenuControl settings={settings} position="leaflet-right" />
           </MapLocationsContext.Provider>
         </FilterContext.Provider>
-
         {/* hyrographs panel */}
         <Panel
           hideAll={timeSerieUrl}
@@ -74,7 +77,6 @@ const MapControler = ({ settings }) => {
           timeSerieUrl={timeSerieUrl}
           position="leaflet-right"
         />
-
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -82,7 +84,7 @@ const MapControler = ({ settings }) => {
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
             <FilterContext.Provider value={{ filterContextData }}>
               <PointsLayer
-                layerData={consFixed['locations']}
+                layerData={consFixed["locations"]}
                 layerName="Locations"
                 iconUrl={settings.generalLocationIcon}
               />
@@ -92,7 +94,7 @@ const MapControler = ({ settings }) => {
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <FilterContext.Provider value={{ filterContextData }}>
             <PolygonLayer
-              layerData={consFixed['boundaries']}
+              layerData={consFixed["boundaries"]}
               layerName="Boundaries"
               reversePolygon
             />
@@ -107,9 +109,7 @@ const MapControler = ({ settings }) => {
             <></>
           )}
         </LayersControl>
-
         <SearchField />
-
         <ZoomControl position="bottomright" />
       </div>{" "}
       {/* </FlexContainer> */}

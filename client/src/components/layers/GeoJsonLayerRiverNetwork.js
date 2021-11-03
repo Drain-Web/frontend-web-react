@@ -84,7 +84,8 @@ function GeoJsonLayer({ layerSettings }) {
               style: {
                 color: layerSettings.lineColor,
                 weight:
-                  layerSettings.lineWeight + ((0.5 * zoomLevel) / 12) * horton,
+                  layerSettings.lineWeight * 1.4 ** horton +
+                  (0 * zoomLevel) / 12,
               },
             }}
           />

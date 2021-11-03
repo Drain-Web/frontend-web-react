@@ -71,13 +71,14 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
           y: serie.value,
           type: "scatter",
           mode: "lines",
-          name: serie.properties.parameterId,
+          name:
+            serie.properties.parameterId +
+            " " +
+            serie.properties.moduleInstanceId,
           yaxis: "y" + countVariables.toString(),
           units: serie.properties.units,
         };
       });
-
-    console.log(plotArrayAux);
 
     setAvailableVariables(
       plotArrayAux

@@ -16,7 +16,7 @@
   "riverNetwork": {
     "fullRaw": {
       "lineColor": "#4488FF",
-      "lineWeight": 0.5,
+      "lineWeight": 0.4,
       "url": "./geo/river_network_rounded.json",
       "layerName": "River network"
     }
