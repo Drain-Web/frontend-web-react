@@ -1,3 +1,5 @@
+import consCacheLib from "./consCacheLib";
+
 /*
  * Functions here are used to change VarsState consistently.
  * All the public functions output a consistent content of varsState that should be
@@ -160,29 +162,51 @@ const toggleMainMenuControl = (varsState) => {
 
 
 // Updates the 'locations' content considering the rest of the object
-const updateLocationIcons = (varsState, consFixed, settings) => {
+const updateLocationIcons = (varsState, consCache) => {
   // TODO: implement
   if (inMainMenuControlActiveTabOverview(varsState)) {
     // if in overview shows all locations
-    console.log('In overview: show all locations')
-    for (const locationId in varsState['locations']) {
-      varsState['locations'][locationId]['display'] = true
-    }
+    _showAllLocationIcons(varsState)
   } else if (inMainMenuControlActiveTabFilters(varsState) ) {
     // if in a specific filter, decide location by location
-    // TODO: implement it correctly
-    console.log('In Filters tab. Selective locations show.')
-    for (const locationId in varsState['locations']) {
-      varsState['locations'][locationId]['display'] = false
+    if (getContextIconsType(varsState) == 'uniform') {
+      _updateLocationIconsUniform(varsState, consCache)
+    } else {
+      _hideAllLocationIcons(varsState)
     }
   } else if (inMainMenuControlActiveTabActiveFeatureInfo(varsState)) {
     console.log("In features info. Single show.")
   }
-  
-  // if in overview: 
-  // show all locations with default
-  // otherwise:
-  // make the judgment location by location
+}
+
+/* ** PRIVATE FUNCTIONS ********************************************************************** */
+
+const _hideAllLocationIcons = (varsState) => {
+  for (const locId in varsState['locations']) { varsState['locations'][locId]['display'] = false }
+}
+
+const _showAllLocationIcons = (varsState) => {
+  for (const lcId in varsState['locations']) { varsState['locations'][lcId]['display'] = true }
+}
+
+const _updateLocationIconsUniform = (varsState, consCache) => {
+  // get all timeseries of filterId
+  const filterId = getContextFilterId(varsState)
+  const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!timeseriesIdsByFilter) {
+    _hideAllLocationIcons(varsState)
+    return
+  }
+
+  // get locations of the selected timeseries
+  const locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
+    return(consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
+  }))
+
+  // TODO: check why varsState failed to be updated
+  for (const locationId in varsState['locations']) {
+    varsState['locations'][locationId]['display'] = locationIdsByFilter.has(locationId)
+  }
 }
 
 /* ** NAMESPACE ****************************************************************************** */

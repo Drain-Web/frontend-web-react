@@ -5,14 +5,17 @@ import { createContext } from 'react'
  */
 
 const ConsCache = createContext({
-  requestedUrls: new Set(),
-  indexes: {
-    timeseriesIdsByFilterIds: {},
-    timeseriesIdsByLocationIds: {},
-    timeseriesIdsByParameterIds: {}
-  },
-  data: {
-    timeseries: {}
+  consCache: {
+    requestedUrls: new Set(),
+    indexes: {
+      locationIdByTimeseriesId: {},
+      timeseriesIdsByFilterId: {},
+      timeseriesIdsByLocationId: {},
+      timeseriesIdsByParameterId: {}
+    },
+    data: {
+      timeseries: {}
+    }
   }
 })
 

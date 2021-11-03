@@ -113,13 +113,16 @@ The entry ```indexes``` only store relationships of ids for fast querying.
 --
 
     indexes: {
-      timeseriesIdsByFilterIds: {
+      locationIdByTimeseriesId: {
+        $timeseriesId$: $locationId$
+      },
+      timeseriesIdsByFilterId: {
         $filterId$: set($timeseriesId$)
       },
-      timeseriesIdsByLocationIds: {
+      timeseriesIdsByLocationId: {
         $locationId: set($timeseriesId$)
       },
-      timeseriesIdsByParameterIds: {
+      timeseriesIdsByParameterId: {
         $parameterId$: set($timeseriesId$)
       }
       (...)

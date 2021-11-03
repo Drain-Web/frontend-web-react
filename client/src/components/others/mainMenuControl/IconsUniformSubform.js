@@ -17,7 +17,6 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 // same as 'fetcher', but includes extra info in response
 async function fetcherWith(url, extra) {
   const jsonData = await fetcher(url)
-  console.log("Got", jsonData, "with", extra);
   return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
 }
 
@@ -27,7 +26,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
   const { consFixed } = useContext(ConsFixed)
-  const { varsState } = useContext(VarsState)
+  const { varsState, setVarState } = useContext(VarsState)
   const [filterOptions, setFilterOptions] = useState(null)
 
   // react on change
@@ -57,15 +56,17 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
 
       const filterId = varsStateLib.getContextFilterId(varsState)
       const timeseriesIds = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
-      const timeseriesData = []; 
-      console.log("TODO: get timeseriesData from consCache / timeseriesIds")
-      const filteredTimeseries = timeseriesData
+      const filteredTimeseries = Array.from(timeseriesIds).map((id) => {
+        return consCacheLib.getTimeseriesData(id, consCache)
+      })
       for (const curFilteredTimeseries of filteredTimeseries) {
         filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
-        // TODO: add parameterGroups and modelInstances
+        // TODO: add parameterGroups
+        // TODO: add modelInstances
       }
-      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
+      varsStateLib.updateLocationIcons(varsState, consCache)
       setFilterOptions(filterOptions)
+      setVarState(Math.random())
     }
 
     // call function after URL request, if needed

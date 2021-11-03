@@ -13,7 +13,6 @@ import GetZoomLevel from "./components/others/GetZoomLevel";
 // TODO: use only the standard ones
 import MapContext from "./components/contexts/MapContext";
 import ConsCache from "./components/contexts/ConsCache";
-import consCacheLib from "./components/contexts/consCacheLib";
 import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";
 import varsStateLib from "./components/contexts/varsStateLib";
@@ -57,7 +56,9 @@ const App = ({ settings }) => {
   const [zoomLevel, setZoomLevel] = useState(9);  // TODO: make it a function of the map extents
 
   // Contexts
-  const consCache = consCacheLib.getEmptyStructure()
+  // const consCache = consCacheLib.getEmptyStructure()
+  // const consCache = ConsCache._currentValue.consCache
+  const consCache = useState(ConsCache._currentValue.consCache)[0]
   const consFixed = useState(appLoad.loadConsFixed(settings))[0]
   const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
   const setVarState = useState(null)[1]

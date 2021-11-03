@@ -11,34 +11,30 @@ const addUrlRequested = (url, consCache) => {
 
 // 
 const associateTimeseriesIdAndFilterId = (timeseriesId, filterId, consCache) => {
-  _addToIndex('timeseriesIdsByFilterIds', filterId, timeseriesId, consCache)
+  _addToIndex('timeseriesIdsByFilterId', filterId, timeseriesId, consCache)
 }
 
 // 
-const getEmptyStructure = () => {
-  return {
-    requestedUrls: new Set(),
-    indexes: {
-      timeseriesIdsByFilterIds: {},
-      timeseriesIdsByLocationIds: {},
-      timeseriesIdsByParameterIds: {}
-    },
-    data: {
-      timeseries: {}
-    }
-  }
+const getTimeseriesData = (timeseriesId, consCache) => {
+  return consCache['data']['timeseries'][timeseriesId]
 }
 
 // 
 const getTimeseriesIdsInFilterId = (filterId, consCache) => {
-  return consCache['indexes']['timeseriesIdsByFilterIds'][filterId]
+  return consCache['indexes']['timeseriesIdsByFilterId'][filterId]
+}
+
+// 
+const getLocationIdOfTimeseriesId = (timeseriesId, consCache) => {
+  return consCache['indexes']['locationIdByTimeseriesId'][timeseriesId]
 }
 
 // 
 const storeTimeseriesData = (tsData, consCache) => {
   // add indexes
-  _addToIndex('timeseriesIdsByLocationIds', tsData.header.location_id, tsData.id, consCache)
-  _addToIndex('timeseriesIdsByParameterIds', tsData.header.parameterId, tsData.id, consCache)
+  _addToIndex('timeseriesIdsByLocationId', tsData.header.location_id, tsData.id, consCache)
+  _addToIndex('timeseriesIdsByParameterId', tsData.header.parameterId, tsData.id, consCache)
+  _setToIndex('locationIdByTimeseriesId', tsData.id, tsData.header.location_id, consCache)
 
   // add data
   if (!consCache['data']['timeseries'][tsData.id]) {
@@ -61,6 +57,11 @@ const _addToIndex = (idx, key, val, consCache) => {
   if (key in idxs) { idxs[key].add(val) } else { idxs[key] = new Set([val]) }
 }
 
+// 
+const _setToIndex = (idx, key, val, consCache) => {
+  consCache['indexes'][idx][key] = val
+}
+
 // Copy all the content in fD (fromDictionary) to tD (toDictionary)
 const _dictToDict = (fD, tD) => { for (const key in fD) { tD[key] = fD[key] } }
 
@@ -70,7 +71,8 @@ const _dictToDict = (fD, tD) => { for (const key in fD) { tD[key] = fD[key] } }
 const consCacheLib = {
   "addUrlRequested": addUrlRequested,
   "associateTimeseriesIdAndFilterId": associateTimeseriesIdAndFilterId,
-  "getEmptyStructure": getEmptyStructure,
+  "getLocationIdOfTimeseriesId": getLocationIdOfTimeseriesId,
+  "getTimeseriesData": getTimeseriesData,
   "getTimeseriesIdsInFilterId": getTimeseriesIdsInFilterId,
   "storeTimeseriesData": storeTimeseriesData,
   "wasUrlRequested": wasUrlRequested
