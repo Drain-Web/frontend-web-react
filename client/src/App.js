@@ -29,31 +29,25 @@ import "./App.css";
 /* ** FUNCTIONS ******************************************************************************** */
 
 // function 'fetcher' will do HTTP requests
-const fetcher = (url) => axios.get(url).then((res) => res.data);
+const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 //
 const getMapCenter = (mapExtent) => {
   return {
     x: (mapExtent.right + mapExtent.left) / 2,
-    y: (mapExtent.top + mapExtent.bottom) / 2,
-  };
-};
+    y: (mapExtent.top + mapExtent.bottom) / 2
+  }
+}
 
 /* ** REACT COMPONENTS ************************************************************************* */
 
 const App = ({ settings }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
-  // Estado - enpoint para series de tiempo
-  const [timeSerieUrl, setTimeSerieUrl] = useState(null);
-
-  // Panel state - show or hide
-  const [isHidden, setIsHidden] = useState(false);
-
   // Context states
   // TODO: move them to the consCache, consFixed or varsState contexts
-  const [mapLocationsContextData, setMapLocationsContextData] = useState({});
-  const [zoomLevel, setZoomLevel] = useState(9);  // TODO: make it a function of the map extents
+  const [mapLocationsContextData, setMapLocationsContextData] = useState({})
+  const [zoomLevel, setZoomLevel] = useState(9)  // TODO: make it a function of the map extents
 
   // Contexts
   // const consCache = consCacheLib.getEmptyStructure()
@@ -71,27 +65,23 @@ const App = ({ settings }) => {
 
   // update varsState and trigger render if needed
   let updatedVarsState = false;
-  if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true; }
-  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true; }
+  if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true }
+  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true }
   if (!varsStateLib.getContextFilterId(varsState)) {
-    varsStateLib.setContextFilterId(consFixed['region'].defaultFilter, varsState);
-    updatedVarsState = true;
+    varsStateLib.setContextFilterId(consFixed['region'].defaultFilter, varsState)
+    updatedVarsState = true
   }
   if (updatedVarsState) { setVarsState(varsState) }
 
   /* ** MAIN RENDER **************************************************************************** */
 
   // gets the central coordinates of the map into const 'position'
-  const posXY = getMapCenter(consFixed['region'].map.defaultExtent);
-  const position = [posXY.y, posXY.x];
+  const posXY = getMapCenter(consFixed['region'].map.defaultExtent)
+  const position = [posXY.y, posXY.x]
 
   return (
     <MapContext.Provider
       value={{
-        isHidden,
-        setIsHidden,
-        timeSerieUrl,
-        setTimeSerieUrl,
         mapLocationsContextData,
         setMapLocationsContextData,
         zoomLevel,
@@ -99,7 +89,7 @@ const App = ({ settings }) => {
       }}
     >
       <VarsState.Provider value={{ varsState, setVarState }}>
-        <ConsCache.Provider value={{ consCache }} >
+        <ConsCache.Provider value={{ consCache }}>
           <MapContainer center={position} zoom={zoomLevel} zoomControl={false}>
             <GetZoomLevel />
             <MapControler settings={settings} />
@@ -107,28 +97,28 @@ const App = ({ settings }) => {
         </ConsCache.Provider>
       </VarsState.Provider>
     </MapContext.Provider>
-  );
-};
+  )
+}
 
 const AppSettings = () => {
   /* ** SET HOOKS ****************************************************************************** */
 
   // read app settings
   const settingsData = useState({})[0];
-  const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher);
+  const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher)
 
   /* ** MAIN RENDER  *************************************************************************** */
 
   if (dataSettings && !errorSettings) {
-    for (const i in dataSettings) settingsData[i] = dataSettings[i];
+    for (const i in dataSettings) settingsData[i] = dataSettings[i]
     return (
-      <ConsFixed.Provider value={ ConsFixed._currentValue } >
+      <ConsFixed.Provider value={ ConsFixed._currentValue }>
         <App settings={settingsData} />
       </ConsFixed.Provider>
     )
   } else {
-    return <div>Load basic settings...</div>;
+    return <div>Load basic settings...</div>
   }
-};
+}
 
-export default AppSettings;
+export default AppSettings

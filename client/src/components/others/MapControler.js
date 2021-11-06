@@ -6,39 +6,22 @@ import MainMenuControl from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
-import Panel from "./Panel";
+import PanelTabs from "./PanelTabs";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
 
 // import contexts
-import MapContext from "../contexts/MapContext";
-import ConsCache from "../contexts/ConsCache";
-import consCacheLib from "../contexts/consCacheLib";
-import ConsFixed from "../contexts/ConsFixed";
-import VarsState from "../contexts/VarsState";
-import varsStateLib from "../contexts/varsStateLib";
+import ConsCache from "../contexts/ConsCache"
+import ConsFixed from "../contexts/ConsFixed"
+import VarsState from "../contexts/VarsState"
+import varsStateLib from "../contexts/varsStateLib"
 
 // import assets
-import { baseLayersData } from "../../assets/MapBaseLayers";
-
-// import libs
-// import { onChangeFilterContextData } from './mapControler/mapControlerLib.js'
-import mapControlerLib from './mapControler/mapControlerLib.js'
+import { baseLayersData } from "../../assets/MapBaseLayers"
 
 const MapControler = ({ settings }) => {
-
   // this specific component is needed to allow useMap()
-  const map = useMap();
-
-  // load old contexts (TODO: remove them)
-  const {
-    isHidden,
-    setIsHidden,
-    timeSerieUrl,
-    setTimeSerieUrl,
-    mapLocationsContextData,
-    setMapLocationsContextData
-  } = useContext(MapContext);
+  const map = useMap()
 
   // load contexts
   const { consCache } = useContext(ConsCache)
@@ -60,29 +43,23 @@ const MapControler = ({ settings }) => {
     mapControlerLib.onChangeContextFilter(map, varsState, consFixed, settings)
   }, [varsState])
   */
-  
+
   useEffect(() => {
     varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
     setVarState(Math.random())
-  }, [varsState['context'], varsStateLib.getMainMenuControlActiveTab(varsState)]) 
+  }, [varsState['context'], varsStateLib.getMainMenuControlActiveTab(varsState)])
 
   return (
     <>
       <div>
-        {" "}
+        {' '}
         {/* <FlexContainer> */}
         {/* add the main left menu */}
-        
+
         <MainMenuControl settings={settings} position="leaflet-right" />
 
-        {/* hyrographs panel */}
-        <Panel
-          hideAll={timeSerieUrl}
-          isHidden={isHidden}
-          setIsHidden={setIsHidden}
-          timeSerieUrl={timeSerieUrl}
-          position="leaflet-right"
-        />
+        {/* timeseries panel */}
+        <PanelTabs position='leaflet-right' />
 
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
@@ -90,7 +67,7 @@ const MapControler = ({ settings }) => {
           {/* adds layer of points as a react component */}
           <PointsLayer layerName="Locations" consFixed={consFixed} />
 
-          {/* adds a polygon layer to the control and to the map as a component - boundaries */}          
+          {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <PolygonLayer
             layerData={consFixed['boundaries']}
             layerName="Boundaries"
@@ -98,11 +75,13 @@ const MapControler = ({ settings }) => {
           />
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
-          {settings.riverNetwork.fullRaw ? (
-            <GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />
-          ) : (
-            <></>
-          )}
+          {
+          settings.riverNetwork.fullRaw
+            ?
+              (<GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />)
+            :
+              (<></>)
+            }
         </LayersControl>
 
         <SearchField />

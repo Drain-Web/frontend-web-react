@@ -20,7 +20,7 @@ import varsStateLib from "../contexts/varsStateLib";
 
 const createMarkerPolygon = (locationInfo, activeLocation) => {
   if (!locationInfo.polygon) return (<></>)
-  
+
   return (
     <Polygon
       pathOptions={{
@@ -74,9 +74,8 @@ const createTooltip = (locationInfo) => {
   )
 }
 
-const createMarker = (locationId, locationInfo,
-                      locationIcon, iconSize,
-                      varsState, setVarState) => {
+const createMarker = (locationId, locationInfo, locationIcon, iconSize,
+  varsState, setVarState) => {
   return (
     <Fragment key={locationId}>
       <Marker
@@ -84,21 +83,20 @@ const createMarker = (locationId, locationInfo,
         icon={newIcon(locationIcon.icon, iconSize)}
         eventHandlers={{
           click: () => {
-            if (varsStateLib.getActiveLocation(varsState) === null) {
+            const previousLocation = varsStateLib.getActiveLocation(varsState)
+            if ((!previousLocation) || (previousLocation.locationId !== locationId)) {
               varsStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(varsState)
               varsStateLib.setActiveLocation(locationInfo, varsState)
             } else {
-              varsStateLib.setActiveLocation((previousValue) => {
-                return (previousValue === locationInfo) ? null : locationInfo
-              }, varsState);
+              varsStateLib.setActiveLocation(null, varsState)
             }
             setVarState(Math.random())
-          },
+          }
         }}
       >
-        { createTooltip(locationInfo) }
+        {createTooltip(locationInfo)}
       </Marker>
-      { createMarkerPolygon(locationInfo, varsStateLib.getActiveLocation(varsState)) }
+      {createMarkerPolygon(locationInfo, varsStateLib.getActiveLocation(varsState))}
     </Fragment>
   )
 }
@@ -122,7 +120,7 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
   const { varsState, setVarState } = useContext(VarsState);
   
   // refresh icons whenever something in the varsState['locations'] changes
-  useEffect( () => {
+  useEffect(() => {
     console.log('Do I need to use it?')
   }, [varsState['locations']])
 

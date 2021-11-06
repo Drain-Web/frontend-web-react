@@ -7,8 +7,6 @@ const MapContext = createContext({
     position: null,
     zoom: null,
     pointFeatures: null,
-    isHidden: null,
-    setIsHidden: null,
     timeSerieUrl: null,
     setTimeSerieUrl: null,
     zoomLevel: null,

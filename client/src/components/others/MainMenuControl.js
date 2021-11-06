@@ -93,10 +93,11 @@ const MainMenuControl = ({ settings, position }) => {
                 />
               </Tab>
 
-              <Tab eventKey="tabActiveFeatureInfo" title="Info">
+              <Tab eventKey='tabActiveFeatureInfo' title='Info'>
                 <TabActiveFeatureInfo
-                  filtersData={consFixed['filters']}
-                  overviewFilter={settings.overviewFilter}
+                  settings={settings}
+                  // filtersData={consFixed['filters']}
+                  // overviewFilter={settings.overviewFilter}
                 />
               </Tab>
 
@@ -111,7 +112,7 @@ const MainMenuControl = ({ settings, position }) => {
           setShowMe(varsStateLib.getMainMenuControlShow(varsState))
         }}
       >
-        {varsStateLib.getMainMenuControlShow(varsState) ? "◀" : "▶"}
+        {varsStateLib.getMainMenuControlShow(varsState) ? '◀' : '▶'}
       </div>
     </>
   );
