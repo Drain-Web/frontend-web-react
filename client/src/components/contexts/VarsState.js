@@ -37,13 +37,6 @@ const VarsState = createContext({
           moduleInstanceIds: new Set(), // moduleInstanceIds
         },
       },
-      timeSeriesData: {
-        timeSerieUrl: null,
-        plotData: null,
-        plotArrays: null,
-        availableVariables: null,
-        unitsVariables: null,
-      },
     },
 
     // 'locations' stores what expected to be shown in the map with respect to location icons
@@ -54,6 +47,13 @@ const VarsState = createContext({
       mainMenuControl: {
         show: true,
         activeTab: "tabFilters", // <tabOverview|tabFilters|tabActiveFeatureInfo>
+      },
+      timeSeriesData: {
+        timeSerieUrl: null,
+        plotData: null,
+        plotArrays: null,
+        availableVariables: null,
+        unitsVariables: null,
       },
     },
   },

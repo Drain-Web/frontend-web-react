@@ -151,7 +151,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     setPlotData(timeSeriesPlotDataAux);
 
     timeSeriesPlotArrayAux = await getPlotArrays(
-      varsState.context.timeSeriesData.plotData
+      varsState.domObjects.timeSeriesData.plotData
     );
 
     setPlotArray(timeSeriesPlotArrayAux);
@@ -173,7 +173,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   varsStateLib.setTimeSeriesPlotAvailableVariables(unitsVariables, varsState);
   setVarsState(varsState);
 
-  console.log(varsState.context.timeSeriesData);
+  console.log(varsState.domObjects.timeSeriesData);
 
   return null;
 };

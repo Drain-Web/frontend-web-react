@@ -68,25 +68,25 @@ const toggleMainMenuControl = (varsState) => {
 
 // Set the time series url to fetch data
 const setTimeSerieUrl = (timeSerieUrl, varsState) => {
-  varsState["context"]["timeSeriesData"]["timeSerieUrl"] = timeSerieUrl;
+  varsState["domObjects"]["timeSeriesData"]["timeSerieUrl"] = timeSerieUrl;
 };
 
 // Set the data to be used for plots
 const setTimeSeriesPlotData = (plotData, varsState) => {
-  varsState["context"]["timeSeriesData"]["plotData"] = plotData;
+  varsState["domObjects"]["timeSeriesData"]["plotData"] = plotData;
 };
 
 const setTimeSeriesPlotArrays = (plotArrays, varsState) => {
-  varsState["context"]["timeSeriesData"]["plotArrays"] = plotArrays;
+  varsState["domObjects"]["timeSeriesData"]["plotArrays"] = plotArrays;
 };
 
 const setTimeSeriesPlotAvailableVariables = (availableVariables, varsState) => {
-  varsState["context"]["timeSeriesData"]["availableVariables"] =
+  varsState["domObjects"]["timeSeriesData"]["availableVariables"] =
     availableVariables;
 };
 
 const setTimeSeriesPlotUnitsVariables = (unitsVariables, varsState) => {
-  varsState["context"]["timeSeriesData"]["unitsVariables"] = unitsVariables;
+  varsState["domObjects"]["timeSeriesData"]["unitsVariables"] = unitsVariables;
 };
 
 // aggregate all public functions into a single namespace
