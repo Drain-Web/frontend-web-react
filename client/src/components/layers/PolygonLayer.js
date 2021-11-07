@@ -35,7 +35,6 @@ const PolygonLayer = ({
               }
 
               const displayPolygon = () => {
-                
                 return ((varsStateLib.getContextFilterGeoId(varsState) === poly.id) ||
                         varsStateLib.inMainMenuControlActiveTabOverview(varsState))
               }

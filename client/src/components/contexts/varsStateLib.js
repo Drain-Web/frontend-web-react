@@ -20,7 +20,7 @@ const CONTEXT_ICONS_ARGS_KEYS = {
 
 // Include a new location entry
 const addLocation = (locationId, icon, display, varsState) => {
-  varsState['locations'][locationId] = {
+  varsState.locations[locationId] = {
     icon: icon,
     display: display
   }
@@ -35,12 +35,12 @@ const addLocations = (locationIds, iconDefault, displayDefault, varsState) => {
 
 //
 const getActiveLocation = (varsState) => {
-  return varsState['activeLocation']
+  return varsState.activeLocation
 }
 
 //
 const getContextFilterId = (varsState) => {
-  return varsState['context']['filterId']
+  return varsState.context.filterId
 }
 
 //
@@ -62,7 +62,7 @@ const getContextIconsArgs = (iconsType, varsState) => {
   } else {
     iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
   }
-  return varsState['context']['icons']['iconType']
+  return varsState.context.icons[iconArgsKey]
 }
 
 //
@@ -101,17 +101,17 @@ const hidePanelTabs = (varsState) => {
 
 //
 const inMainMenuControlActiveTabActiveFeatureInfo = (varsState) => {
-  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabActiveFeatureInfo")
+  return (varsState['domObjects']['mainMenuControl']['activeTab'] === "tabActiveFeatureInfo")
 }
 
 //
 const inMainMenuControlActiveTabFilters = (varsState) => {
-  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabFilters")
+  return (varsState['domObjects']['mainMenuControl']['activeTab'] === "tabFilters")
 }
 
 //
 const inMainMenuControlActiveTabOverview = (varsState) => {
-  return (varsState['domObjects']['mainMenuControl']['activeTab'] == "tabOverview")
+  return (varsState.domObjects.mainMenuControl.activeTab === 'tabOverview')
 }
 
 //
@@ -132,12 +132,15 @@ const setContextFilterId = (newFilterId, varsState) => {
 const setContextIcons = (iconsType, args, varsState) => {
   const argsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
   varsState.context.icons.iconType = iconsType
-  for (const k in args) { varsState.context.icons[argsKey][k] = args[k] }
+  for (const k in args) {
+    console.log('Setting "%s.%s" as "%s"', argsKey, k, args[k])
+    varsState.context.icons[argsKey][k] = args[k]
+  }
 }
 
 //
 const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
-  varsState['domObjects']['mainMenuControl']['activeTab'] = newActiveTabId
+  varsState.domObjects.mainMenuControl.activeTab = newActiveTabId
 }
 
 //
@@ -177,7 +180,7 @@ const setTimeSeriesPlotAvailableVariables = (availableVariables, varsState) => {
 
 //
 const setTimeSeriesPlotUnitsVariables = (unitsVariables, varsState) => {
-  varsState["context"]["timeSeriesData"]["unitsVariables"] = unitsVariables
+  varsState.context.timeSeriesData.unitsVariables = unitsVariables
 }
 
 //
@@ -187,7 +190,7 @@ const showMainMenuControl = (varsState) => {
 
 //
 const showPanelTabs = (varsState) => {
-  varsState['domObjects']['timeseriesPanel']['show'] = true
+  varsState.domObjects.timeseriesPanel.show = true
 }
 
 //
@@ -197,7 +200,7 @@ const toggleMainMenuControl = (varsState) => {
 }
 
 // Updates the 'locations' content considering the rest of the object
-const updateLocationIcons = (varsState, consCache) => {
+const updateLocationIcons = (varsState, consCache, settings) => {
   // TODO: implement
   if (inMainMenuControlActiveTabOverview(varsState)) {
     // if in overview shows all locations
@@ -206,8 +209,14 @@ const updateLocationIcons = (varsState, consCache) => {
     // if in a specific filter, decide location by location
     if (getContextIconsType(varsState) === 'uniform') {
       _updateLocationIconsUniform(varsState, consCache)
+      console.log('Should have updated by Uniform')
+    } else if (getContextIconsType(varsState) === 'evaluation') {
+      _updateLocationIconsEvaluation(varsState, consCache, settings)
+      _randomHideShowAllLocationIcons(varsState)
+      console.log('Lazy randomize')
     } else {
       _hideAllLocationIcons(varsState)
+      console.log('Hide icons because update icon time for "%s" was not implemented yet.')
     }
   } else if (inMainMenuControlActiveTabActiveFeatureInfo(varsState)) {
     console.log('In features info. Single show.')
@@ -235,7 +244,13 @@ const updateTimeSerieUrlByLocationId = (locationId, varsState) => {
 /* ** PRIVATE FUNCTIONS ********************************************************************** */
 
 const _hideAllLocationIcons = (varsState) => {
-  for (const locId in varsState['locations']) { varsState['locations'][locId]['display'] = false }
+  for (const locId in varsState.locations) { varsState.locations[locId].display = false }
+}
+
+const _randomHideShowAllLocationIcons = (varsState) => {
+  for (const locId in varsState.locations) {
+    varsState.locations[locId].display = !!Math.round(Math.random())
+  }
 }
 
 const _replaceUrlParam = (url, paramName, paramValue) => {
@@ -250,9 +265,10 @@ const _replaceUrlParam = (url, paramName, paramValue) => {
 }
 
 const _showAllLocationIcons = (varsState) => {
-  for (const lcId in varsState['locations']) { varsState['locations'][lcId]['display'] = true }
+  for (const lcId in varsState.locations) { varsState.locations[lcId].display = true }
 }
 
+// changes all locations' icons and display flags according to the selescted filter Id
 const _updateLocationIconsUniform = (varsState, consCache) => {
   // get all timeseries of filterId
   const filterId = getContextFilterId(varsState)
@@ -267,9 +283,31 @@ const _updateLocationIconsUniform = (varsState, consCache) => {
     return (consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
   }))
 
-  // TODO: check why varsState failed to be updated
-  for (const locationId in varsState['locations']) {
-    varsState['locations'][locationId]['display'] = locationIdsByFilter.has(locationId)
+  // update varsState location by location
+  for (const locationId in varsState.locations) {
+    varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
+  }
+}
+
+//
+const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
+  // get all timeseries of filterId
+  // TODO - adapt it, it was just copied from _updateLocationIconsUniform()
+  const filterId = getContextFilterId(varsState)
+  const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!timeseriesIdsByFilter) {
+    _hideAllLocationIcons(varsState)
+    return
+  }
+
+  // get locations of the selected timeseries
+  const locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
+    return (consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
+  }))
+
+  // update varsState location by location
+  for (const locationId in varsState.locations) {
+    varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
 }
 

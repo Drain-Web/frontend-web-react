@@ -24,12 +24,12 @@ const getTimeseriesIdsInFilterId = (filterId, consCache) => {
   return consCache['indexes']['timeseriesIdsByFilterId'][filterId]
 }
 
-// 
+//
 const getLocationIdOfTimeseriesId = (timeseriesId, consCache) => {
   return consCache['indexes']['locationIdByTimeseriesId'][timeseriesId]
 }
 
-// 
+//
 const storeTimeseriesData = (tsData, consCache) => {
   // add indexes
   _addToIndex('timeseriesIdsByLocationId', tsData.header.location_id, tsData.id, consCache)
@@ -37,17 +37,15 @@ const storeTimeseriesData = (tsData, consCache) => {
   _setToIndex('locationIdByTimeseriesId', tsData.id, tsData.header.location_id, consCache)
 
   // add data
-  if (!consCache['data']['timeseries'][tsData.id]) {
-    consCache['data']['timeseries'][tsData.id] = tsData
+  if (!consCache.data.timeseries[tsData.id]) {
+    consCache.data.timeseries[tsData.id] = tsData
   } else {
-    _dictToDict(tsData, consCache['data']['timeseries'][tsData.id])
+    _dictToDict(tsData, consCache.data.timeseries[tsData.id])
   }
 }
 
 // only checks if a given URL was already requested
-const wasUrlRequested = (url, consCache) => {
-  return (url in consCache['requestedUrls'])
-}
+const wasUrlRequested = (url, consCache) => { return consCache.requestedUrls.has(url) }
 
 /* ** PRIVATE FUNCTIONS ********************************************************************** */
 
@@ -57,7 +55,7 @@ const _addToIndex = (idx, key, val, consCache) => {
   if (key in idxs) { idxs[key].add(val) } else { idxs[key] = new Set([val]) }
 }
 
-// 
+//
 const _setToIndex = (idx, key, val, consCache) => {
   consCache['indexes'][idx][key] = val
 }

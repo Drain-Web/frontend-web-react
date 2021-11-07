@@ -3,6 +3,31 @@
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop.svg",
+  "locationIconsOptions": {
+    "default": {
+      "available": true
+    },
+    "state": {
+      "available": true
+    },
+    "evaluation": {
+      "available": true,
+      "options": {
+        "kge": {
+          "colors": {
+            "ranges": [null,   0.0,       0.2,       0.4,       0.6,       0.8,        0.9,    null],
+            "colors": ["#770000", "#BB5555", "#FFAAAA", "#777777", "#AAAAFF", "#55555BB", "#000077"]
+          }
+        },
+        "rmse": {
+          "colors": {
+            "ranges": [null,   0.1,       0.2,       0.4,       0.6,       0.8,        0.9,    null],
+            "colors": ["#AAAAFF", "#55555BB", "#000077", "#777777", "#770000", "#BB5555", "#FFAAAA"]
+          }
+        }
+      }
+    }
+  },
   "thresholdGroups": {
     "peakQ": {
       "function": "ts.maxValue",

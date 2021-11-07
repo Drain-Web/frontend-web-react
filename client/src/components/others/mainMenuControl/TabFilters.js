@@ -76,7 +76,7 @@ const getByFilterIdFromDict = (dict, filterId) => {
 
 
 const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, locationsData, filterId) => {
-  // changes 
+  // changes
 
   // get selected parameter id
   const selectedParamIds = mapLocationsContextData.showParametersLocations
@@ -115,7 +115,7 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
           let locationAttributes = null
           for (const curLocationStatIdx in locationsData.locations) {
             const curSubLocation = locationsData.locations[curLocationStatIdx]
-            if (curSubLocation.locationId == curLocationId) {
+            if (curSubLocation.locationId === curLocationId) {
               locationAttributes = curSubLocation.attributes
               break
             }
@@ -142,7 +142,6 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
                 if (levelValue <= locAttrDict.number) { break }
                 lastWarningOverpast = curWarningLevel
               }
-
             } else {
               console.warn("IGNORED: Not a Loc Attr:", curValueFunction)
               console.warn("TODO: Implement this case.")
@@ -175,9 +174,8 @@ const updateLocationIcons = (mapLocationsContextData, selectedThreshGroupId, loc
   return { ...mapLocationsContextData }
 }
 
-
 export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thresholdGroups,
-  settings }) => {
+  settings}) => {
   /* ** SET HOOKS **************************************************************************** */
 
   const { mapLocationsContextData, setMapLocationsContextData } = useContext(MapLocationsContext)
@@ -192,7 +190,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
   const changeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
     const newGeoFilterId = event.target.value
-    const curEvtFilterId = stateFilterId.split(".")[0]
+    const curEvtFilterId = stateFilterId.split('.')[0]
     const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
     varsStateLib.setContextFilterId(newFilterId, varsState)
     setStateFilterId(newFilterId)
@@ -200,7 +198,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
 
   const changeEventSubFilter = (event) => {
     // Triggered when the event selectbox is changed
-    const curGeoFilterId = stateFilterId.split(".")[1]
+    const curGeoFilterId = stateFilterId.split('.')[1]
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
     varsStateLib.setContextFilterId(newFilterId, varsState)
@@ -216,13 +214,14 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
 
   const updateIconType = (event) => {
     // Triggered when the icon type select box is changed
+    console.log('Updated icon type')
     const newIconView = event.target.value
     varsStateLib.setContextIcons(newIconView, {}, varsState)
     setStateIconType(newIconView)
   }
 
   const updateUniformFilter = (event) => {
-    // 
+    //
     const newIconUniformFilter = event.target.value
     console.log("Update uniform filter:", newIconUniformFilter)
   }
@@ -236,15 +235,17 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     >
       <Form>
         <Container className='p-0'>
-          <Row><Col>
-            <SubFilterSelectBox
-              idTitleList={retGeo}
-              selectedId={varsStateLib.getContextFilterGeoId(varsState)}
-              onChangeFunction={changeGeoSubFilter}
-              addOverviewOption={settings.overviewFilter}
-              label='Sub-Area'
-            />
-          </Col></Row>
+          <Row>
+            <Col>
+              <SubFilterSelectBox
+                idTitleList={retGeo}
+                selectedId={varsStateLib.getContextFilterGeoId(varsState)}
+                onChangeFunction={changeGeoSubFilter}
+                addOverviewOption={settings.overviewFilter}
+                label='Sub-Area'
+              />
+            </Col>
+          </Row>
           <Row className={ownStyles['row-padding-top']}><Col>
             <SubFilterSelectBox
               idTitleList={retEvt}
@@ -264,9 +265,11 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <Row className={ownStyles['row-padding-top']}><Col>
             <IconsAlertsSubform />
           </Col></Row>
-          <Row className={ownStyles['row-padding-top']}><Col>
-            <IconsModelEvaluationSubform />
-          </Col></Row>
+          <Row className={ownStyles['row-padding-top']}>
+            <Col>
+              <IconsModelEvaluationSubform settings={settings} />
+            </Col>
+          </Row>
           <Row className={ownStyles['row-padding-top']}><Col>
             <IconsModelsComparisonSubform />
           </Col></Row>

@@ -9,7 +9,6 @@ import {
 } from "react-leaflet";
 
 // import contexts
-import MapLocationsContext from "../contexts/MapLocationsContext";
 import VarsState from "../contexts/VarsState";
 import consFixedLib from "../contexts/consFixedLib";
 import varsStateLib from "../contexts/varsStateLib";
@@ -106,23 +105,22 @@ const newIcon = (newIconUrl, iconSize) => {
   return new Icon({
     iconUrl: newIconUrl,
     iconSize: [iconSize, iconSize],
-    popupAnchor: [0, -15],
-  });
-};
+    popupAnchor: [0, -15]
+  })
+}
 
 /* ** COMPONENT ****************************************************************************** */
 
 const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
-
   /* ** SET HOOKS **************************************************************************** */
 
   // load contexts
-  const { varsState, setVarState } = useContext(VarsState);
-  
+  const { varsState, setVarState } = useContext(VarsState)
+
   // refresh icons whenever something in the varsState['locations'] changes
   useEffect(() => {
     console.log('Do I need to use it?')
-  }, [varsState['locations']])
+  }, [varsState.locations])
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
@@ -130,20 +128,20 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {
-            Object.keys(varsState['locations']).map((curLocationId, idx) => {
-              const curLocationIcon = varsState['locations'][curLocationId]
+            Object.keys(varsState.locations).map((curLocationId, idx) => {
+              const curLocationIcon = varsState.locations[curLocationId]
               const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
-              
+
               if (!curLocationIcon.display) { return (null) }
-              
+
               return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
-                varsState, setVarState ))
+                varsState, setVarState))
             })
           }
         </LayerGroup>
       </LayersControl.Overlay>
     </>
-  );
-};
+  )
+}
 
-export default PointsLayer;
+export default PointsLayer

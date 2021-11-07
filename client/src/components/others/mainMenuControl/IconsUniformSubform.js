@@ -31,10 +31,10 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
 
   // react on change
   useEffect(() => {
-
     // only triggers when "uniform" is selected
-    if (varsStateLib.getContextIconsType(varsState) != "uniform") { return (null) }
-    
+
+    if (varsStateLib.getContextIconsType(varsState) !== 'uniform') { return (null) }
+
     // define url to be called and skip call if this was the last URL called
     const urlTimeseriesRequest = apiUrl(
       settings.apiBaseUrl, "v1", "timeseries", {
@@ -43,7 +43,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         onlyHeaders: true
       }
     )
-    if (filterOptions && (filterOptions['lastUrl'] === urlTimeseriesRequest)) {return (null)}
+    // if (filterOptions && (filterOptions.lastUrl === urlTimeseriesRequest)) { return (null) }
 
     // final response function: get data from consCache and update varsState
     const callbackFunc = (lastUrlRequest) => {
@@ -64,7 +64,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         // TODO: add parameterGroups
         // TODO: add modelInstances
       }
-      varsStateLib.updateLocationIcons(varsState, consCache)
+      varsStateLib.updateLocationIcons(varsState, consCache, settings)
       setFilterOptions(filterOptions)
       setVarState(Math.random())
     }
@@ -72,59 +72,57 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
     // call function after URL request, if needed
 
     if (!consCacheLib.wasUrlRequested(urlTimeseriesRequest, consCache)) {
+      console.log('URL %s was not requested yet:', urlTimeseriesRequest, consCache)
       // request URL, update local states, update cache, access cache
       const extraArgs = {
-        "filterId": varsStateLib.getContextFilterId(varsState),
-        "url": urlTimeseriesRequest
+        filterId: varsStateLib.getContextFilterId(varsState),
+        url: urlTimeseriesRequest
       }
       fetcherWith(urlTimeseriesRequest, extraArgs).then(([jsonData, extras]) => {
         consCacheLib.addUrlRequested(extras.url, consCache)
-        jsonData.map((curTimeseries) => { 
+        jsonData.map((curTimeseries) => {
           consCacheLib.associateTimeseriesIdAndFilterId(curTimeseries.id, extras.filterId, consCache)
           consCacheLib.storeTimeseriesData(curTimeseries, consCache)
+          return null
         })
         callbackFunc(extras.url)
       })
-      
     } else {
       callbackFunc(urlTimeseriesRequest)
     }
-
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState)])
-
 
   /* ** BUILD COMPONENT ********************************************************************** */
 
-  if (varsStateLib.getContextIconsType(varsState) != "uniform") { return (null) }
+  if (varsStateLib.getContextIconsType(varsState) !== 'uniform') { return (null) }
 
   if (!filterOptions) { return (<p>Loading...</p>) }
 
   // build options
   const allOptions = [(<option value={null} key='null'>No filter</option>)]
-  allOptions.push.apply(allOptions, Array.from(filterOptions["parameters"]).map(
+  allOptions.push.apply(allOptions, Array.from(filterOptions.parameters).map(
     (parameterId) => {
-      const optValue = "parameter.".concat(parameterId)
+      const optValue = 'parameter.'.concat(parameterId)
       return (<option value={optValue} key={optValue}>{parameterId}</option>)
     }
   ))
 
-  return (<>
-    <Row><Col>
-      <FloatingLabel label='Filter by'>
-        <Form.Control
-          as='select'
-          onChange={onChangeFilter}
-          className='rounded-1'
-          label='Filter by'
-        >
-          {allOptions}
-        </Form.Control>
-      </FloatingLabel>
-    </Col></Row>
-    <Row><Col>
-
-    </Col></Row>
-  </>)
+  return (
+    <Row>
+      <Col>
+        <FloatingLabel label='Filter by'>
+          <Form.Control
+            as='select'
+            onChange={onChangeFilter}
+            className='rounded-1'
+            label='Filter by'
+          >
+            {allOptions}
+          </Form.Control>
+        </FloatingLabel>
+      </Col>
+    </Row>
+  )
 }
 
 export default IconsUniformSubform
