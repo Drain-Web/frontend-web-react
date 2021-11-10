@@ -42,39 +42,48 @@ const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
               <div>
                 <LoadTimeSeriesData timeSerieUrl={timeSerieUrl} />
 
-                {varsState.context.timeSeriesData.availableVariables && (
+                {varsState.domObjects.timeSeriesData.availableVariables && (
                   <Tabs
                     defaultActiveKey={
-                      varsState.context.timeSeriesData.availableVariables[0]
+                      varsState.domObjects.timeSeriesData.availableVariables[0]
                     }
                     id="uncontrolled-tab-example"
                     className="mb-3"
                   >
+                    {console.log(
+                      varsState.domObjects.timeSeriesData.plotData["Q"][0]
+                        .thresholdValueSets
+                    )}
                     {Object.keys(
-                      varsState.context.timeSeriesData.availableVariables
+                      varsState.domObjects.timeSeriesData.availableVariables
                     ).map((variable) => {
                       return (
-                        <Tab eventKey={variable} title={variable}>
+                        <Tab
+                          eventKey={variable}
+                          title={
+                            { Q: "Streamflow", H: "Stream Level" }[variable]
+                          }
+                        >
                           <TimeSeriesPlot
                             plotData={
-                              varsState.context.timeSeriesData.plotData[
+                              varsState.domObjects.timeSeriesData.plotData[
                                 variable
                               ]
                             }
                             plotArray={
-                              varsState.context.timeSeriesData.plotArrays[
+                              varsState.domObjects.timeSeriesData.plotArrays[
                                 variable
                               ]
                             }
                             availableVariables={
-                              varsState.context.timeSeriesData
+                              varsState.domObjects.timeSeriesData
                                 .availableVariables[variable]
                             }
                             unitsVariables={
-                              varsState.context.timeSeriesData.unitsVariables[
-                                variable
-                              ]
+                              varsState.domObjects.timeSeriesData
+                                .unitsVariables[variable]
                             }
+                            thresholdsArray={null}
                           />
                         </Tab>
                       );

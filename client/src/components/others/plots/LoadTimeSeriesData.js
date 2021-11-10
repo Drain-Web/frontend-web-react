@@ -3,14 +3,17 @@ import useSWR from "swr";
 import axios from "axios";
 import varsStateLib from "../../contexts/varsStateLib";
 import VarsState from "../../contexts/VarsState";
+import ConsFixed from "../../contexts/ConsFixed";
 
 const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   // Get global states and set local states
   const { varsState, setVarsState } = useContext(VarsState);
+
   const [plotData, setPlotData] = useState(null);
   const [plotArray, setPlotArray] = useState(null);
   const [availableVariables, setAvailableVariables] = useState(null);
   const [unitsVariables, setUnitsVariables] = useState(null);
+  const [thresholdsArray, setThresholdsArray] = useState(null);
 
   varsStateLib.setTimeSerieUrl(timeSerieUrl, varsState);
   setVarsState(varsState);
@@ -26,6 +29,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   // Aux variables to set data used for plots
   let timeSeriesPlotDataAux;
   let timeSeriesPlotArrayAux;
+  let timeSeriesThresholdsArrayAux;
 
   const rearrangeSeries = (series) => {
     const objData = {};
@@ -73,6 +77,10 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
       }, {});
   };
 
+  let opacity = 1;
+  let dash = "solid";
+  let width = 3;
+
   const getPlotArrays = (plotData) => {
     let variables = Object.keys(plotData);
 
@@ -84,20 +92,67 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     for (let variable of variables) {
       for (let entry of plotData[variable]) {
         if (entry.properties.parameterId.split(".")[0] == variable) {
+          if (entry.properties.parameterId.toLowerCase().includes("obs")) {
+            opacity = 1;
+            dash = "solid";
+            width = 3;
+          } else {
+            opacity = 0.8;
+            dash = "solid";
+            width = 1;
+          }
+
           obj[variable].push({
             x: entry.datetime,
             y: entry.value,
             type: "scatter",
             mode: "lines",
+            line: { dash: dash, width: width },
             name: entry.properties.moduleInstanceId,
             yaxis: "y",
             units: entry.properties.units,
             variable: entry.properties.parameterId,
+            opacity: opacity,
+            legendgroup: "group1",
           });
         }
       }
     }
 
+    return obj;
+  };
+
+  const getPlotThresholdsArrays = (plotData) => {
+    let variables = Object.keys(plotData);
+
+    let obj = {};
+    for (let variable of variables) {
+      obj[variable] = [];
+    }
+
+    for (let variable of variables) {
+      for (let entry of plotData[variable]) {
+        console.log(entry);
+        if (entry.properties.parameterId.split(".")[0] == variable) {
+          console.log(entry.thresholdValueSets[0]);
+          for (let threshold of entry.thresholdValueSets[0]
+            .levelThresholdValues) {
+            console.log(entry);
+            obj[variable].push({
+              x: [entry[0].datetime[0], entry[0].datetime.slice(-1)[0]],
+              y: [80, 80],
+              legendgroup: "group2",
+              type: "scatter",
+              mode: "lines",
+              yaxis: "y",
+              name: threshold.levelThresholdId,
+              line: { dash: "dot", color: "red" },
+            });
+          }
+        }
+      }
+    }
+    console.log(obj);
     return obj;
   };
 
@@ -157,6 +212,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     setPlotArray(timeSeriesPlotArrayAux);
     setAvailableVariables(getUnitsVariables(timeSeriesPlotDataAux));
     setUnitsVariables(getAvailableVariables(timeSeriesPlotDataAux));
+    // setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
   };
 
   useEffect(() => getTimeSeriesData(), [timeSerieUrl]);
@@ -173,7 +229,8 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   varsStateLib.setTimeSeriesPlotAvailableVariables(unitsVariables, varsState);
   setVarsState(varsState);
 
-  console.log(varsState.domObjects.timeSeriesData);
+  // varsStateLib.setTimeSeriesPlotThresholdsArray(thresholdsArray, varsState);
+  // setVarsState(varsState);
 
   return null;
 };

@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext } from "react";
 
 /*
  * ConsFixed should only be changed by appLoad. All other locations should only read it.
@@ -13,8 +13,8 @@ const ConsFixed = createContext({
     parameters: {},
     parameterGroups: {},
     thresholdValueSets: {},
-    thresholdGroup: {}
-  }
-})
+    thresholdGroup: {},
+  },
+});
 
-export default ConsFixed
+export default ConsFixed;

@@ -15,12 +15,11 @@ import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";
 
 // import libs
-import appLoad from './libs/appLoad.js'
+import appLoad from "./libs/appLoad.js";
 
 // import CSS styles
 import "style/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
-import "style/GeoSearchBox.css";
 import "./App.css";
 
 /* ** FUNCTIONS ******************************************************************************** */
@@ -30,7 +29,6 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 // function used to fill the filterContext dictionary
 const fillFilterContextData = (filterId, filterContextData) => {
-
   if (!filterId) return {};
 
   const curFilterIdSplit = filterId.split(".");
@@ -76,31 +74,37 @@ const App = ({ settings }) => {
   const [zoomLevel, setZoomLevel] = useState(9);
 
   // TODO: make these the only states
-  const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
-  const consFixed = useState(appLoad.loadConsFixed(settings))[0]
+  const [varsState, setVarsState] = useState(VarsState._currentValue.varsState);
+  const consFixed = useState(appLoad.loadConsFixed(settings))[0];
 
   // check if still loading
-  if (appLoad.isStillLoadingConsFixed(consFixed)) { return <AppLoading /> }
-
+  if (appLoad.isStillLoadingConsFixed(consFixed)) {
+    return <AppLoading />;
+  }
 
   /* ** FILL varState with default values ****************************************************** */
 
   // update varsState and trigger render if needed
   let updatedVarsState = false;
-  if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true; }
-  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true; }
-  if (updatedVarsState) { setVarsState(varsState) }
-  
+  if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) {
+    updatedVarsState = true;
+  }
+  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) {
+    updatedVarsState = true;
+  }
+  if (updatedVarsState) {
+    setVarsState(varsState);
+  }
 
   /* ** MAIN RENDER **************************************************************************** */
 
   // currently active filter
   if (!("filterId" in filterContextData)) {
-    fillFilterContextData(consFixed['region'].defaultFilter, filterContextData);
+    fillFilterContextData(consFixed["region"].defaultFilter, filterContextData);
   }
 
   // gets the central coordinates of the map into const 'position'
-  const posXY = getMapCenter(consFixed['region'].map.defaultExtent);
+  const posXY = getMapCenter(consFixed["region"].map.defaultExtent);
   const position = [posXY.y, posXY.x];
 
   // defines zoom level
@@ -109,8 +113,8 @@ const App = ({ settings }) => {
 
   const consCache = {
     filters: {},
-    location: {}
-  }
+    location: {},
+  };
 
   return (
     <MapContext.Provider
@@ -128,7 +132,7 @@ const App = ({ settings }) => {
         activeTab,
         setActiveTab,
         zoomLevel,
-        setZoomLevel
+        setZoomLevel,
       }}
     >
       <VarsState.Provider value={{ varsState, setVarsState }}>
@@ -146,17 +150,20 @@ const AppSettings = () => {
 
   // read app settings
   const settingsData = useState({})[0];
-  const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher);
+  const { data: dataSettings, error: errorSettings } = useSWR(
+    "settings.json",
+    fetcher
+  );
 
   /* ** MAIN RENDER  *************************************************************************** */
 
   if (dataSettings && !errorSettings) {
     for (const i in dataSettings) settingsData[i] = dataSettings[i];
     return (
-      <ConsFixed.Provider value={ ConsFixed._currentValue } >
+      <ConsFixed.Provider value={ConsFixed._currentValue}>
         <App settings={settingsData} />
       </ConsFixed.Provider>
-    )
+    );
   } else {
     return <div>Load basic settings...</div>;
   }

@@ -7,6 +7,7 @@ const TimeSeriesPlot = ({
   plotArray,
   availableVariables,
   unitsVariables,
+  thresholdsArray,
 }) => {
   return (
     <>
@@ -17,6 +18,7 @@ const TimeSeriesPlot = ({
             plotData={plotData}
             availableVariables={availableVariables}
             unitsVariables={unitsVariables}
+            thresholdsArray={thresholdsArray}
           />
         </div>
       )}

@@ -54,6 +54,7 @@ const VarsState = createContext({
         plotArrays: null,
         availableVariables: null,
         unitsVariables: null,
+        thresholdsArray: null,
       },
     },
   },

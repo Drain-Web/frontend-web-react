@@ -10,7 +10,6 @@ import BaseLayers from "../layers/BaseLayers";
 import Panel from "./PanelTabs";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
-import LoadTimeSeriesData from "./plots/LoadTimeSeriesData";
 
 // import contexts
 import MapContext from "../contexts/MapContext";

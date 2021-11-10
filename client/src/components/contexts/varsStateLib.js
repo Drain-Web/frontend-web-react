@@ -89,6 +89,11 @@ const setTimeSeriesPlotUnitsVariables = (unitsVariables, varsState) => {
   varsState["domObjects"]["timeSeriesData"]["unitsVariables"] = unitsVariables;
 };
 
+const setTimeSeriesPlotThresholdsArray = (thresholdsArray, varsState) => {
+  varsState["domObjects"]["timeSeriesData"]["thresholdsArray"] =
+    thresholdsArray;
+};
+
 // aggregate all public functions into a single namespace
 const varsStateLib = {
   addLocation: addLocation,
@@ -104,6 +109,7 @@ const varsStateLib = {
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
   setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
+  setTimeSeriesPlotThresholdsArray: setTimeSeriesPlotThresholdsArray,
 };
 
 export default varsStateLib;

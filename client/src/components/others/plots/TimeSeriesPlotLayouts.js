@@ -6,6 +6,7 @@ const TimeSeriesPlotLayouts = ({
   plotData,
   availableVariables,
   unitsVariables,
+  thresholdsArray,
 }) => {
   const updatemenus = [
     {
@@ -40,7 +41,13 @@ const TimeSeriesPlotLayouts = ({
         size: 16,
       },
       showlegend: true,
-      legend: { x: 1.05, y: 1 },
+      legend: {
+        x: 1.05,
+        y: 1,
+        font: {
+          size: 12,
+        },
+      },
       // updatemenus: updatemenus,
     };
   } else if (availableVariables.length == 2) {
@@ -51,7 +58,13 @@ const TimeSeriesPlotLayouts = ({
         size: 16,
       },
       showlegend: true,
-      legend: { x: 1.2, y: 1 },
+      legend: {
+        x: 1.2,
+        y: 1,
+        font: {
+          size: 12,
+        },
+      },
       yaxis: {
         title: availableVariables[0] + "[" + unitsVariables[0] + "]",
       },
@@ -63,11 +76,33 @@ const TimeSeriesPlotLayouts = ({
     };
   }
 
-  return (
-    <>
-      <Plot data={plotArray} layout={layouts} />
-    </>
-  );
+  if (true) {
+    return (
+      <>
+        <Plot
+          data={plotArray.concat([
+            {
+              x: [plotArray[0].x[0], plotArray[0].x.slice(-1)[0]],
+              y: [80, 80],
+              legendgroup: "group2",
+              type: "scatter",
+              mode: "lines",
+              yaxis: "y",
+              name: "Threshold",
+              line: { dash: "dot", color: "red" },
+            },
+          ])}
+          layout={layouts}
+        />
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Plot data={plotArray} layout={layouts} />
+      </>
+    );
+  }
 };
 
 export default TimeSeriesPlotLayouts;
