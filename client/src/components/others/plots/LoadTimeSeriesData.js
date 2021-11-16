@@ -5,15 +5,26 @@ import varsStateLib from "../../contexts/varsStateLib";
 import VarsState from "../../contexts/VarsState";
 import ConsFixed from "../../contexts/ConsFixed";
 
+function filterByValue(array, string) {
+  return array.filter((o) =>
+    Object.keys(o).some((k) =>
+      o[k].toLowerCase().includes(string.toLowerCase())
+    )
+  );
+}
+
 const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   // Get global states and set local states
   const { varsState, setVarsState } = useContext(VarsState);
+  const { consFixed } = useContext(ConsFixed);
 
   const [plotData, setPlotData] = useState(null);
   const [plotArray, setPlotArray] = useState(null);
   const [availableVariables, setAvailableVariables] = useState(null);
   const [unitsVariables, setUnitsVariables] = useState(null);
   const [thresholdsArray, setThresholdsArray] = useState(null);
+
+  console.log(consFixed.locations);
 
   varsStateLib.setTimeSerieUrl(timeSerieUrl, varsState);
   setVarsState(varsState);
@@ -105,7 +116,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
           obj[variable].push({
             x: entry.datetime,
             y: entry.value,
-            type: "scatter",
+            type: "scattergl",
             mode: "lines",
             line: { dash: dash, width: width },
             name: entry.properties.moduleInstanceId,
@@ -124,6 +135,8 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
 
   const getPlotThresholdsArrays = (plotData) => {
     let variables = Object.keys(plotData);
+    let thresholds;
+    let locationId;
 
     let obj = {};
     for (let variable of variables) {
@@ -131,22 +144,31 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     }
 
     for (let variable of variables) {
-      for (let entry of plotData[variable]) {
-        console.log(entry);
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          console.log(entry.thresholdValueSets[0]);
-          for (let threshold of entry.thresholdValueSets[0]
-            .levelThresholdValues) {
-            console.log(entry);
+      locationId = plotData[variable][0].properties.location_id;
+
+      thresholds = consFixed.locations.locations.filter((obj) => {
+        return obj.locationId === locationId;
+      });
+
+      if (
+        plotData[variable][0].properties.parameterId.split(".")[0] == variable
+      ) {
+        if (thresholds[0].attributes != null) {
+          for (let threshold of thresholds[0].attributes.filter((obj) => {
+            return obj.id.includes(variable + "raw");
+          })) {
             obj[variable].push({
-              x: [entry[0].datetime[0], entry[0].datetime.slice(-1)[0]],
-              y: [80, 80],
+              x: [
+                plotData[variable][0].datetime[0],
+                plotData[variable][0].datetime.slice(-1)[0],
+              ],
+              y: [parseFloat(threshold.number), parseFloat(threshold.number)],
               legendgroup: "group2",
-              type: "scatter",
+              type: "scattergl",
               mode: "lines",
               yaxis: "y",
-              name: threshold.levelThresholdId,
-              line: { dash: "dot", color: "red" },
+              name: threshold.name,
+              line: { dash: "dot", color: "black" },
             });
           }
         }
@@ -212,7 +234,7 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     setPlotArray(timeSeriesPlotArrayAux);
     setAvailableVariables(getUnitsVariables(timeSeriesPlotDataAux));
     setUnitsVariables(getAvailableVariables(timeSeriesPlotDataAux));
-    // setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
+    setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
   };
 
   useEffect(() => getTimeSeriesData(), [timeSerieUrl]);
@@ -229,8 +251,8 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   varsStateLib.setTimeSeriesPlotAvailableVariables(unitsVariables, varsState);
   setVarsState(varsState);
 
-  // varsStateLib.setTimeSeriesPlotThresholdsArray(thresholdsArray, varsState);
-  // setVarsState(varsState);
+  varsStateLib.setTimeSeriesPlotThresholdsArray(thresholdsArray, varsState);
+  setVarsState(varsState);
 
   return null;
 };

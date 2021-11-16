@@ -76,24 +76,11 @@ const TimeSeriesPlotLayouts = ({
     };
   }
 
-  if (true) {
+  console.log(thresholdsArray);
+  if (thresholdsArray != null) {
     return (
       <>
-        <Plot
-          data={plotArray.concat([
-            {
-              x: [plotArray[0].x[0], plotArray[0].x.slice(-1)[0]],
-              y: [80, 80],
-              legendgroup: "group2",
-              type: "scatter",
-              mode: "lines",
-              yaxis: "y",
-              name: "Threshold",
-              line: { dash: "dot", color: "red" },
-            },
-          ])}
-          layout={layouts}
-        />
+        <Plot data={plotArray.concat(thresholdsArray)} layout={layouts} />
       </>
     );
   } else {

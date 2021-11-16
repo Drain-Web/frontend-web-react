@@ -83,7 +83,10 @@ const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
                               varsState.domObjects.timeSeriesData
                                 .unitsVariables[variable]
                             }
-                            thresholdsArray={null}
+                            thresholdsArray={
+                              varsState.domObjects.timeSeriesData
+                                .thresholdsArray[variable]
+                            }
                           />
                         </Tab>
                       );
