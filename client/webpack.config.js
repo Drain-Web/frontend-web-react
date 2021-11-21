@@ -65,7 +65,7 @@ module.exports = {
     contentBase: path.join(__dirname, 'build'),
     host: '0.0.0.0', // defines the local IP access
     port: 8080, // listening requests from this port
-    sockPort: 8081, // the external port binded to 8080
+    sockPort: 8080, // the external port binded to 8080
     hot: true, // activates hot module replacement
     open: true, // automatically opens the web browser after lunches
     useLocalIp: false, // just ensures that the server does not start at 172.17.0.2

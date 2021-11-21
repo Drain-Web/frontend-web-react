@@ -4,29 +4,53 @@
 
 /* ** PUBLIC FUNCTIONS *********************************************************************** */
 
-// 
+//
 const addUrlRequested = (url, consCache) => {
-  consCache['requestedUrls'].add(url)
+  consCache.requestedUrls.add(url)
 }
 
-// 
+//
 const associateTimeseriesIdAndFilterId = (timeseriesId, filterId, consCache) => {
   _addToIndex('timeseriesIdsByFilterId', filterId, timeseriesId, consCache)
 }
 
-// 
-const getTimeseriesData = (timeseriesId, consCache) => {
-  return consCache['data']['timeseries'][timeseriesId]
+//
+const getEvaluationLastRequestUrl = (consCache) => {
+  return consCache.indexes.evaluationResponseData._lastUrlRequested_
 }
 
-// 
-const getTimeseriesIdsInFilterId = (filterId, consCache) => {
-  return consCache['indexes']['timeseriesIdsByFilterId'][filterId]
+//
+const getEvaluationLastResponseData = (consCache) => {
+  const lastUrl = getEvaluationLastRequestUrl(consCache)
+  return getEvaluationResponseData(lastUrl, consCache)
+}
+
+//
+const getEvaluationResponseData = (requestUrl, consCache) => {
+  return consCache.indexes.evaluationResponseData[requestUrl]
 }
 
 //
 const getLocationIdOfTimeseriesId = (timeseriesId, consCache) => {
-  return consCache['indexes']['locationIdByTimeseriesId'][timeseriesId]
+  return consCache.indexes.locationIdByTimeseriesId[timeseriesId]
+}
+
+//
+const getTimeseriesData = (timeseriesId, consCache) => {
+  return consCache.data.timeseries[timeseriesId]
+}
+
+//
+const getTimeseriesIdsInFilterId = (filterId, consCache) => {
+  return consCache.indexes.timeseriesIdsByFilterId[filterId]
+}
+
+// Just saves the return from API as-is
+// TODO: make a more decent processing
+// TODO: document ''
+const storeEvaluationResponseData = (requestUrl, responseData, consCache) => {
+  _setToIndex('evaluationResponseData', requestUrl, responseData, consCache)
+  _setToIndex('evaluationResponseData', '_lastUrlRequested_', requestUrl, consCache)
 }
 
 //
@@ -51,13 +75,13 @@ const wasUrlRequested = (url, consCache) => { return consCache.requestedUrls.has
 
 // Adds val (value) to an index (idx) key, creating such index if needed
 const _addToIndex = (idx, key, val, consCache) => {
-  const idxs = consCache['indexes'][idx]
+  const idxs = consCache.indexes[idx]
   if (key in idxs) { idxs[key].add(val) } else { idxs[key] = new Set([val]) }
 }
 
 //
 const _setToIndex = (idx, key, val, consCache) => {
-  consCache['indexes'][idx][key] = val
+  consCache.indexes[idx][key] = val
 }
 
 // Copy all the content in fD (fromDictionary) to tD (toDictionary)
@@ -67,13 +91,17 @@ const _dictToDict = (fD, tD) => { for (const key in fD) { tD[key] = fD[key] } }
 
 // aggregate all public functions into a single namespace
 const consCacheLib = {
-  "addUrlRequested": addUrlRequested,
-  "associateTimeseriesIdAndFilterId": associateTimeseriesIdAndFilterId,
-  "getLocationIdOfTimeseriesId": getLocationIdOfTimeseriesId,
-  "getTimeseriesData": getTimeseriesData,
-  "getTimeseriesIdsInFilterId": getTimeseriesIdsInFilterId,
-  "storeTimeseriesData": storeTimeseriesData,
-  "wasUrlRequested": wasUrlRequested
+  addUrlRequested: addUrlRequested,
+  associateTimeseriesIdAndFilterId: associateTimeseriesIdAndFilterId,
+  getEvaluationLastRequestUrl: getEvaluationLastRequestUrl,
+  getEvaluationLastResponseData: getEvaluationLastResponseData,
+  getEvaluationResponseData: getEvaluationResponseData,
+  getLocationIdOfTimeseriesId: getLocationIdOfTimeseriesId,
+  getTimeseriesData: getTimeseriesData,
+  getTimeseriesIdsInFilterId: getTimeseriesIdsInFilterId,
+  storeEvaluationResponseData: storeEvaluationResponseData,
+  storeTimeseriesData: storeTimeseriesData,
+  wasUrlRequested: wasUrlRequested
 }
 
 export default consCacheLib

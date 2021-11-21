@@ -90,6 +90,10 @@ const getTimeSerieUrl = (varsState) => {
   return varsState["context"]["timeSeriesData"]["timeSerieUrl"]
 }
 
+const hideAllLocationIcons = (varsState) => {
+  _hideAllLocationIcons(varsState)
+}
+
 //
 const hideMainMenuControl = (varsState) => {
   varsState['domObjects']['mainMenuControl']['show'] = false
@@ -212,8 +216,8 @@ const updateLocationIcons = (varsState, consCache, settings) => {
       console.log('Should have updated by Uniform')
     } else if (getContextIconsType(varsState) === 'evaluation') {
       _updateLocationIconsEvaluation(varsState, consCache, settings)
-      _randomHideShowAllLocationIcons(varsState)
-      console.log('Lazy randomize')
+      // _randomHideShowAllLocationIcons(varsState)
+      console.log('Should have updated by Evaluation')
     } else {
       _hideAllLocationIcons(varsState)
       console.log('Hide icons because update icon time for "%s" was not implemented yet.')
@@ -291,23 +295,35 @@ const _updateLocationIconsUniform = (varsState, consCache) => {
 
 //
 const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
-  // get all timeseries of filterId
-  // TODO - adapt it, it was just copied from _updateLocationIconsUniform()
-  const filterId = getContextFilterId(varsState)
-  const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
-  if (!timeseriesIdsByFilter) {
-    _hideAllLocationIcons(varsState)
-    return
-  }
+  // get last response
+  const lastUrlResponseData = consCacheLib.getEvaluationLastResponseData(consCache)
+  if (!lastUrlResponseData) { return }
 
-  // get locations of the selected timeseries
-  const locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
-    return (consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
-  }))
+  // get basic icons info
+  const iconOptions = settings.locationIconsOptions.evaluation.options[lastUrlResponseData.metric].parameterGroups['Discharge']  // TODO: make it flexible
 
-  // update varsState location by location
+  // iterate location by location, showing/hiding icons
   for (const locationId in varsState.locations) {
-    varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
+    // hide if not available in response
+    if (!lastUrlResponseData.locations[locationId]) {
+      varsState.locations[locationId].display = false
+      continue
+    } else {
+      varsState.locations[locationId].display = true
+
+      // define de evaluation icon
+      let iconUrl = null
+      let rangeTopIdx = 1
+      while (rangeTopIdx < iconOptions.ranges.length) {
+        const curTopVal = iconOptions.ranges[rangeTopIdx]
+        if ((!curTopVal) || (lastUrlResponseData.locations[locationId].value <= curTopVal)) {
+          iconUrl = iconOptions.icons[rangeTopIdx - 1]
+          break
+        }
+        rangeTopIdx += 1
+      }
+      varsState.locations[locationId].icon = iconUrl
+    }
   }
 }
 
@@ -327,6 +343,7 @@ const varsStateLib = {
   getMainMenuControlShow: getMainMenuControlShow,
   getPanelTabsShow: getPanelTabsShow,
   getTimeSerieUrl: getTimeSerieUrl,
+  hideAllLocationIcons: hideAllLocationIcons,
   hideMainMenuControl: hideMainMenuControl,
   hidePanelTabs: hidePanelTabs,
   inMainMenuControlActiveTabActiveFeatureInfo: inMainMenuControlActiveTabActiveFeatureInfo,

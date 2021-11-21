@@ -1,21 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import { apiUrl } from "../../../libs/api.js"
-import axios from "axios"
+import { apiUrl } from '../../../libs/api.js'
+import axios from 'axios'
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache.js'
-import consCacheLib from "../../contexts/consCacheLib";
+import consCacheLib from '../../contexts/consCacheLib'
 import ConsFixed from '../../contexts/ConsFixed.js'
-import VarsState from "../../contexts/VarsState";
-import varsStateLib from "../../contexts/varsStateLib";
+import VarsState from '../../contexts/VarsState'
+import varsStateLib from '../../contexts/varsStateLib'
 
 // function 'fetcher' will do HTTP requests
-const fetcher = (url) => axios.get(url).then((res) => res.data);
+const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 // same as 'fetcher', but includes extra info in response
-async function fetcherWith(url, extra) {
+async function fetcherWith (url, extra) {
   const jsonData = await fetcher(url)
   return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
 }
@@ -37,7 +37,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
 
     // define url to be called and skip call if this was the last URL called
     const urlTimeseriesRequest = apiUrl(
-      settings.apiBaseUrl, "v1", "timeseries", {
+      settings.apiBaseUrl, 'v1', 'timeseries', {
         filter: varsStateLib.getContextFilterId(varsState),
         showStatistics: true,
         onlyHeaders: true
@@ -48,10 +48,10 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
     // final response function: get data from consCache and update varsState
     const callbackFunc = (lastUrlRequest) => {
       const filterOptions = {
-        "lastUrl": lastUrlRequest,
-        "parameters": new Set(),
-        "parameterGroups": new Set(),
-        "modelInstances": new Set()
+        lastUrl: lastUrlRequest,
+        parameters: new Set(),
+        parameterGroups: new Set(),
+        modelInstances: new Set()
       }
 
       const filterId = varsStateLib.getContextFilterId(varsState)
@@ -60,7 +60,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         return consCacheLib.getTimeseriesData(id, consCache)
       })
       for (const curFilteredTimeseries of filteredTimeseries) {
-        filterOptions["parameters"].add(curFilteredTimeseries.header.parameterId)
+        filterOptions.parameters.add(curFilteredTimeseries.header.parameterId)
         // TODO: add parameterGroups
         // TODO: add modelInstances
       }

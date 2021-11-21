@@ -13,16 +13,51 @@
     "evaluation": {
       "available": true,
       "options": {
-        "kge": {
-          "colors": {
-            "ranges": [null,   0.0,       0.2,       0.4,       0.6,       0.8,        0.9,    null],
-            "colors": ["#770000", "#BB5555", "#FFAAAA", "#777777", "#AAAAFF", "#55555BB", "#000077"]
+        "KGE": {
+          "noValueIcon": null,
+          "parameterGroups": {
+            "Discharge": {
+              "parameters": {
+                "obs": "Q.obs",
+                "sim": "Q.sim"
+              },
+              "ranges": [null,   0.2,       0.4,       0.6,       0.8,     null],
+              "colors": ["#770000", "#FFAAAA", "#777777", "#AAAAFF",  "#000077"],
+              "icons": ["./img/location_icons/evaluation_paultols_5lvls/05_worst.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/01_best.svg"]
+            }
           }
         },
-        "rmse": {
-          "colors": {
-            "ranges": [null,   0.1,       0.2,       0.4,       0.6,       0.8,        0.9,    null],
-            "colors": ["#AAAAFF", "#55555BB", "#000077", "#777777", "#770000", "#BB5555", "#FFAAAA"]
+        "RMSE": {
+          "noValueIcon": null,
+          "parameterGroups": {
+            "Discharge": {
+			  "parameters": {
+                "obs": "Q.obs",
+                "sim": "Q.sim"
+              },
+              "ranges": [null,   0.1,       0.2,       0.4,       0.6,    null],
+              "colors": ["#AAAAFF", "#000077", "#777777", "#770000", "#FFAAAA"],
+              "icons": ["./img/location_icons/evaluation_paultols_5lvls/01_best.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
+                        "./img/location_icons/evaluation_paultols_5lvls/05_worst.svg"]
+            }
+          }
+        },
+        "_metric_": {
+          "_parameterGroupId_": {
+            "parameters": {
+              "obs": "_parameterId_",
+              "sim": "_parameterId_"
+            },
+            "ranges": [],
+            "colors": [],
+            "icons": []
           }
         }
       }
