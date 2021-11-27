@@ -1,3 +1,5 @@
+import consFixedLib from './consFixedLib'
+
 /*
  * Functions here are used to read/write the content of consCache.
  */
@@ -36,6 +38,16 @@ const getLocationIdOfTimeseriesId = (timeseriesId, consCache) => {
 }
 
 //
+const getModuleInstancesOfThreshouldGroup = (threshouldGroupId, consCache) => {
+  return consCache.indexes.moduleInstanceIdsByThresholdGroupId[threshouldGroupId]
+}
+
+// 
+const getParameterIdsByThresholdGroupId = (threshouldGroupId, consCache) => {
+  return consCache.indexes.parameterIdsByThresholdGroupId[threshouldGroupId]
+}
+
+//
 const getTimeseriesData = (timeseriesId, consCache) => {
   return consCache.data.timeseries[timeseriesId]
 }
@@ -54,11 +66,26 @@ const storeEvaluationResponseData = (requestUrl, responseData, consCache) => {
 }
 
 //
-const storeTimeseriesData = (tsData, consCache) => {
+const storeTimeseriesData = (tsData, consCache, consFixed) => {
   // add indexes
   _addToIndex('timeseriesIdsByLocationId', tsData.header.location_id, tsData.id, consCache)
   _addToIndex('timeseriesIdsByParameterId', tsData.header.parameterId, tsData.id, consCache)
   _setToIndex('locationIdByTimeseriesId', tsData.id, tsData.header.location_id, consCache)
+  
+  // get threshold levels out of the timeseries
+  const threshLevelIds = _getThresholdLevelsFromTimeseries(tsData)
+
+  // find the threshold groups of the thresh levels
+  const threshGroups = consFixedLib.getThresholdGroupsOfLevelThresholds(threshLevelIds, 
+                                                                        consFixed)
+
+  // save the pairs ThreshGroup -> set(parameterGroup)
+  for (const curThreshGroup of Array.from(threshGroups)) {
+    _addToIndex('moduleInstanceIdsByThresholdGroupId', curThreshGroup, 
+                tsData.header.moduleInstanceId, consCache)
+    _addToIndex('parameterIdsByThresholdGroupId', curThreshGroup,
+                tsData.header.parameterId, consCache)
+  }
 
   // add data
   if (!consCache.data.timeseries[tsData.id]) {
@@ -79,6 +106,18 @@ const _addToIndex = (idx, key, val, consCache) => {
   if (key in idxs) { idxs[key].add(val) } else { idxs[key] = new Set([val]) }
 }
 
+// Just get all levelThresholdValues of a timeseries (ts) in a Set
+const _getThresholdLevelsFromTimeseries = (ts) => {
+  const threshSets = ts.thresholdValueSets
+  const threshSetIds = new Set()
+  for (const curThreshSet of threshSets) {
+    for (const curLevelThreshVal of curThreshSet.levelThresholdValues) {
+      threshSetIds.add(curLevelThreshVal.levelThresholdId)
+    }
+  }
+  return threshSetIds
+}
+
 //
 const _setToIndex = (idx, key, val, consCache) => {
   consCache.indexes[idx][key] = val
@@ -97,6 +136,8 @@ const consCacheLib = {
   getEvaluationLastResponseData: getEvaluationLastResponseData,
   getEvaluationResponseData: getEvaluationResponseData,
   getLocationIdOfTimeseriesId: getLocationIdOfTimeseriesId,
+  getModuleInstancesOfThreshouldGroup: getModuleInstancesOfThreshouldGroup,
+  getParameterIdsByThresholdGroupId: getParameterIdsByThresholdGroupId,
   getTimeseriesData: getTimeseriesData,
   getTimeseriesIdsInFilterId: getTimeseriesIdsInFilterId,
   storeEvaluationResponseData: storeEvaluationResponseData,

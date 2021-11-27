@@ -113,8 +113,17 @@ The entry ```indexes``` only store relationships of ids for fast querying.
 --
 
     indexes: {
+      evaluationResponseData: {
+        $requestURL$: $rawApiResponse$
+      },
       locationIdByTimeseriesId: {
         $timeseriesId$: $locationId$
+      },
+      moduleInstanceIdsByThresholdGroupId: {
+        $thresholdGroupId$: set($moduleInstanceIds$)
+      },
+      parameterIdsByThresholdGroupId: {
+        $thresholdGroupId$: set($parameterIds$)
       },
       timeseriesIdsByFilterId: {
         $filterId$: set($timeseriesId$)
@@ -156,7 +165,7 @@ They are **expected** to be hooked by ```useState```.
           filterValues: set(<parameterIds|parameterGroupIds|moduleInstanceIds>)
         },
         typeAlert: {
-          threshold_TODO_Id: $threshold_TODO_Id$,
+          thresholdGroupId: $thresholdGroupId$,
           moduleInstanceId: <observations|simulations|$moduleInstanceId$>
         },
         typeEvaluation: {

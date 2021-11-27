@@ -16,7 +16,7 @@ const VarsState = createContext({
           filterValues: new Set()                 // <parameterIds|parameterGroupIds|moduleInstanceIds>
         },
         typeAlert: {
-          threshold_TODO_Id: null,                // threshold_TODO_Id
+          thresholdGroupId: null,                // thresholdGroupId
           moduleInstanceId: null                  // <observations|simulations|$moduleInstanceId$>
         },
         typeEvaluation: {

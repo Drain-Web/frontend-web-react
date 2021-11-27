@@ -1,4 +1,5 @@
 import consCacheLib from './consCacheLib'
+import consFixedLib from './consFixedLib'
 
 /*
  * Functions here are used to change VarsState consistently.
@@ -218,6 +219,9 @@ const updateLocationIcons = (varsState, consCache, settings) => {
       _updateLocationIconsEvaluation(varsState, consCache, settings)
       // _randomHideShowAllLocationIcons(varsState)
       console.log('Should have updated by Evaluation')
+    } else if (getContextIconsType(varsState) === 'alerts') {
+      _updateLocationIconsAlerts(varsState, consCache, settings)
+      console.log('Should have updated by Alerts')
     } else {
       _hideAllLocationIcons(varsState)
       console.log('Hide icons because update icon time for "%s" was not implemented yet.')
@@ -272,6 +276,46 @@ const _showAllLocationIcons = (varsState) => {
   for (const lcId in varsState.locations) { varsState.locations[lcId].display = true }
 }
 
+// 
+const _updateLocationIconsAlerts = (varsState, consCache, settings) => {
+  // get all timeseries of filterId of selected ParameterGroup and ModuleInstanceId
+  const filterId = getContextFilterId(varsState)
+  const moduleInstanceId = getContextIconsArgs('alerts', varsState).moduleInstanceId
+  const thresholdGroupId = getContextIconsArgs('alerts', varsState).thresholdGroupId
+
+  // get all possible parameters
+  const allParameterIds = consCacheLib.getParameterIdsByThresholdGroupId(thresholdGroupId, consCache)
+
+  // define icons to be updated
+  const locationIdsIcons = {}
+  for (const curTimeseriesId of consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)) {
+    const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
+    if (allParameterIds.has(curTimeseriesData.header.parameterId) && true) {
+      // TODO also check by module id
+      // (moduleInstanceId == curTimeseriesData.header.moduleInstanceId)
+
+      // TODO - replace this by a valid one
+      const randomIconUrl = ["./img/location_icons/alerts/warning_Halert.svg", 
+                             "./img/location_icons/alerts/warning_Hflood.svg",
+                             "./img/location_icons/alerts/warning_Hmajorflood.svg",
+                             "./img/location_icons/alerts/warning_Hnowarning.svg",
+                             "./img/location_icons/alerts/warning_unknown.svg"][Math.floor(Math.random() * 5)]
+      locationIdsIcons[curTimeseriesData.header.location_id] = randomIconUrl
+      varsState.locations[curTimeseriesData.header.location_id].icon = randomIconUrl
+    }
+    else
+    {
+      console.log("NOT", allParameterIds, "=", curTimeseriesData.header.parameterId, "OR", moduleInstanceId, "=", curTimeseriesData.header.moduleInstanceId)
+    }
+  }
+
+  // update varsState location by location
+  for (const locationId in varsState.locations) {
+    const willDisplay = locationId in locationIdsIcons
+    varsState.locations[locationId].display = locationId in locationIdsIcons
+  }
+}
+
 // changes all locations' icons and display flags according to the selescted filter Id
 const _updateLocationIconsUniform = (varsState, consCache) => {
   // get all timeseries of filterId
@@ -289,6 +333,7 @@ const _updateLocationIconsUniform = (varsState, consCache) => {
 
   // update varsState location by location
   for (const locationId in varsState.locations) {
+    varsState.locations[locationId].icon = "./img/drop.svg"  // TODO: get this URL from settings
     varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
 }
