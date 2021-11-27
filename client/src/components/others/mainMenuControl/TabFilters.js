@@ -263,16 +263,9 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
             <IconsUniformSubform onChangeFilter={updateUniformFilter} settings={settings} />
           </Col></Row>
           <Row className={ownStyles['row-padding-top']}><Col>
-            <IconsAlertsSubform />
+            <IconsAlertsSubform settings={settings} />
           </Col></Row>
           <IconsModelEvaluationSubform settings={settings} />
-          {/*
-          <Row className={ownStyles['row-padding-top']}>
-            <Col>
-              
-            </Col>
-          </Row>
-          */}
           <Row className={ownStyles['row-padding-top']}><Col>
             <IconsModelsComparisonSubform />
           </Col></Row>

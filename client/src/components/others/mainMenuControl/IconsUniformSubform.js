@@ -82,7 +82,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         consCacheLib.addUrlRequested(extras.url, consCache)
         jsonData.map((curTimeseries) => {
           consCacheLib.associateTimeseriesIdAndFilterId(curTimeseries.id, extras.filterId, consCache)
-          consCacheLib.storeTimeseriesData(curTimeseries, consCache)
+          consCacheLib.storeTimeseriesData(curTimeseries, consCache, consFixed)
           return null
         })
         callbackFunc(extras.url)
