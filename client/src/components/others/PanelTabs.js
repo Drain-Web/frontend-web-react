@@ -9,6 +9,7 @@ import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { Scrollbars } from "react-custom-scrollbars";
 import CloseButton from "react-bootstrap/CloseButton";
 import VarsState from "../contexts/VarsState";
+import MetricsTable from "./MetricsTable";
 
 /* Panel open with the list of timeseries of a Location to be plot and the timeseries plot
  * Referenced by MapControler.
@@ -91,6 +92,26 @@ const DraggableTimeseriesDiv = ({ isHidden, setIsHidden, timeSerieUrl }) => {
                         </Tab>
                       );
                     })}
+                    <Tab eventKey={"Metrics"} title={"Metrics"}>
+                      <MetricsTable
+                        timeSeriesMetrics={{
+                          evaluations: {
+                            RMSE: {
+                              ImportHLModelHist01: 16.156,
+                              Dist050t065USGSobs: 31.041,
+                              Dist115t140USGSobs: 20.745,
+                            },
+                            KGE: {
+                              ImportHLModelHist01: 0.31,
+                              Dist050t065USGSobs: 0.572,
+                              Dist115t140USGSobs: 0.722,
+                            },
+                          },
+                          version: "1.25",
+                        }}
+                        className="justify-content-md-center"
+                      ></MetricsTable>
+                    </Tab>
                   </Tabs>
                 )}
               </div>

@@ -14,6 +14,7 @@ function filterByValue(array, string) {
 }
 
 const LoadTimeSeriesData = ({ timeSerieUrl }) => {
+  console.log(timeSerieUrl);
   // Get global states and set local states
   const { varsState, setVarsState } = useContext(VarsState);
   const { consFixed } = useContext(ConsFixed);
@@ -23,8 +24,8 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   const [availableVariables, setAvailableVariables] = useState(null);
   const [unitsVariables, setUnitsVariables] = useState(null);
   const [thresholdsArray, setThresholdsArray] = useState(null);
-
-  console.log(consFixed.locations);
+  const [modelEvaluationMetricsUrls, setModelEvaluationMetricsUrls] =
+    useState(null);
 
   varsStateLib.setTimeSerieUrl(timeSerieUrl, varsState);
   setVarsState(varsState);
@@ -36,6 +37,8 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
   });
   if (error) return <div>failed to load</div>;
   if (!apiData) return <div>loading...</div>;
+
+  console.log(apiData);
 
   // Aux variables to set data used for plots
   let timeSeriesPlotDataAux;
@@ -124,7 +127,6 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
             units: entry.properties.units,
             variable: entry.properties.parameterId,
             opacity: opacity,
-            legendgroup: "group1",
           });
         }
       }
@@ -174,7 +176,6 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
         }
       }
     }
-    console.log(obj);
     return obj;
   };
 
@@ -218,6 +219,63 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     return obj;
   };
 
+  const getModelEvaluationMetrics = (timeSerieUrl, plotData) => {
+    let variables = Object.keys(plotData);
+    let metricsUrl;
+    let metrics = {};
+    let filter;
+    let baseUrl;
+    let simModuleInstanceIds;
+    let obsModuleInstanceId;
+    let locationId;
+
+    let obj = {};
+    for (let variable of variables) {
+      obj[variable] = [];
+    }
+
+    for (let variable of variables) {
+      for (let entry of plotData[variable]) {
+        if (entry.properties.parameterId.split(".")[0] == variable) {
+          obj[variable].push(entry.properties.moduleInstanceId);
+        }
+      }
+      obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
+    }
+
+    for (let variable of variables) {
+      console.log(plotData[variable]);
+      filter = timeSerieUrl.split("filter=")[1].split("&")[0];
+      baseUrl = timeSerieUrl.split(".com")[0];
+
+      simModuleInstanceIds = plotData[variable]
+        .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))
+        .map((entry) => {
+          return entry.properties.moduleInstanceId;
+        })
+        .join(",");
+
+      obsModuleInstanceId = plotData[variable]
+        .filter((o) => o.properties.parameterId.toLowerCase().includes("obs"))
+        .map((entry) => {
+          return entry.properties.moduleInstanceId;
+        })
+        .join(",");
+      locationId = timeSerieUrl.split("location=")[1];
+
+      metricsUrl = `${baseUrl}.com/v1dw/timeseries_calculator?filter=${filter}&calcs=RMSE,KGE&simParameterId=${variable}.sim&obsParameterId=${variable}.obs&simModuleInstanceIds=${simModuleInstanceIds}&obsModuleInstanceId=${obsModuleInstanceId}&locationId=${locationId}`;
+
+      console.log(metricsUrl);
+
+      if (obsModuleInstanceId.length > 0 && simModuleInstanceIds.length > 0) {
+        metrics[variable] = metricsUrl;
+      }
+    }
+    console.log(metrics);
+
+    return metrics;
+  };
+
   const getTimeSeriesData = async () => {
     timeSeriesPlotDataAux = await apiData.map((series) => {
       return rearrangeSeries(series);
@@ -235,6 +293,9 @@ const LoadTimeSeriesData = ({ timeSerieUrl }) => {
     setAvailableVariables(getUnitsVariables(timeSeriesPlotDataAux));
     setUnitsVariables(getAvailableVariables(timeSeriesPlotDataAux));
     setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
+    setModelEvaluationMetricsUrls(
+      getModelEvaluationMetricsUrls(timeSerieUrl, timeSeriesPlotDataAux)
+    );
   };
 
   useEffect(() => getTimeSeriesData(), [timeSerieUrl]);
