@@ -25,15 +25,17 @@ const getParameterIdsFromParameterGroup = (parameterGroup, consFixed) => {
 
 // 
 const getParameterGroupOfParameterId = (parameterId, consFixed) => {
-  console.log()
   return consFixed.parameters[parameterId].parameterGroup
 }
 
-//
-const getThresholdGroupsOfParameterId = (parameterId, consFixed) => {
-  const thresholdGroupSet = new Set()
-  console.log("consFixed:", consFixed)
-  return thresholdGroupSet
+// 
+const getThresholdGroupData = (thresholdGroupId, consFixed) => {
+  return consFixed.thresholdGroup[thresholdGroupId]
+}
+
+// 
+const getThresholdGroupBaseIcons = (thresholdGroupId, settings) => {
+  return settings.thresholdGroups[thresholdGroupId]
 }
 
 // 
@@ -60,15 +62,31 @@ const getThresholdGroupsOfLevelThresholds = (levelThresholds, consFixed) => {
   return retThresholdGroups
 }
 
+// 
+const getThresholdLevelData = (thresholdLevelId, consFixed) => {
+  
+  for (const [curThreshValueSetId, curThreshLevels] of 
+                                                  Object.entries(consFixed.thresholdValueSets)) {
+    for (const curThreshLevel of curThreshLevels.levelThresholdValues) {
+      if (curThreshLevel.levelThresholdId === thresholdLevelId) {
+        return curThreshLevel
+      }
+    }
+  }
+  return null
+}
+
 /* ** NAMESPACE ****************************************************************************** */
 
 // aggregate all public functions into a single namespace
 const consFixedLib = {
   getLocationData: getLocationData,
   getParameterGroupOfParameterId: getParameterGroupOfParameterId,
-  getThresholdGroupsOfParameterId: getThresholdGroupsOfParameterId,
+  getThresholdGroupBaseIcons: getThresholdGroupBaseIcons,
+  getThresholdGroupData: getThresholdGroupData,
   getThresholdGroupsOfLevelThreshold: getThresholdGroupsOfLevelThreshold,
-  getThresholdGroupsOfLevelThresholds: getThresholdGroupsOfLevelThresholds
+  getThresholdGroupsOfLevelThresholds: getThresholdGroupsOfLevelThresholds,
+  getThresholdLevelData: getThresholdLevelData
 }
 
 export default consFixedLib

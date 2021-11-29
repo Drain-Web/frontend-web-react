@@ -19,12 +19,7 @@ const fetcher = (url) => axios.get(url).then((res) => res.data)
 // same as 'fetcher', but includes extra info in response
 async function fetcherMultiargs (args) {
   const jsonData = await fetcher(args.url)
-  return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
-}
-
-// returns an array
-const getModuleInstancesOfWarning = (warning, settings) => {
-  
+  return new Promise((resolve, reject) => { resolve([jsonData, args]) })
 }
 
 
@@ -44,11 +39,9 @@ const IconsAlertsSubform = ( { settings } ) => {
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
-    console.log('In useEffect')
-    if (varsStateLib.getContextIconsType(varsState) !== 'alerts') { console.log('Not in alerts:', varsStateLib.getContextIconsType(varsState)); return (null) }
-    if (!selectedThresholdGroup) { console.log('SelectedThreshGroup:', selectedThresholdGroup); return (null) }
-    if (!selectedModuleInstanceId) { console.log('SelectedModuleInstanceId:', selectedModuleInstanceId); return (null) }
-    console.log('Inside useEffect with:', selectedThresholdGroup, selectedModuleInstanceId)
+    if (varsStateLib.getContextIconsType(varsState) !== 'alerts') { return (null) }
+    if (!selectedThresholdGroup)   { return (null) }
+    if (!selectedModuleInstanceId) { return (null) }
 
     // 1. get URL for retrieving timeseries
     const urlTimeseriesRequest = apiUrl(
@@ -64,7 +57,7 @@ const IconsAlertsSubform = ( { settings } ) => {
 
     // 2. define callback function that updates the icons
     const callbackFunc = (urlRequested) => {
-      varsStateLib.updateLocationIcons(varsState, consCache, settings)
+      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
       setVarState(Math.random())
     }
     
@@ -73,9 +66,10 @@ const IconsAlertsSubform = ( { settings } ) => {
       callbackFunc(urlTimeseriesRequest)
     } else {
       const extraArgs = {
-        url: urlTimeseriesRequest
+        url: urlTimeseriesRequest,
+        filterId: varsStateLib.getContextFilterId(varsState)
       }
-      varsStateLib.hideAllLocationIcons(varsState)
+      varsStateLib.setUniformIcon(settings.loadingLocationIcon, varsState)
       fetcherMultiargs(extraArgs).then(([jsonData, extras]) => {
         consCacheLib.addUrlRequested(extras.url, consCache)
         jsonData.map((curTimeseries) => {
@@ -85,6 +79,7 @@ const IconsAlertsSubform = ( { settings } ) => {
         })
         callbackFunc(extras.url)
       })
+      setVarState(Math.random())
     }
 
   }, [varsStateLib.getContextIconsType(varsState), 
@@ -98,13 +93,13 @@ const IconsAlertsSubform = ( { settings } ) => {
 
   //
   const changeSelectedThresholdGroup = (selectedItem) => {
-    varsStateLib.setContextIcons('alerts', { thresholdGroup: selectedItem.target.value }, 
+    varsStateLib.setContextIcons('alerts', { thresholdGroupId: selectedItem.target.value }, 
                                  varsState)
     setSelectedThresholdGroup(selectedItem.target.value)
   }
 
   // 
-  const changeSelectedParameterGroup = (selectedItem) => {
+  const changeSelectedModuleInstanceId = (selectedItem) => {
     varsStateLib.setContextIcons('alerts', { moduleInstanceId: selectedItem.target.value },
                                  varsState)
     setSelectedModuleInstanceId(selectedItem.target.value)
@@ -162,7 +157,8 @@ const IconsAlertsSubform = ( { settings } ) => {
           <FloatingLabel label='Module Instance Id'>
             <Form.Control
               as='select'
-              onChange={changeSelectedParameterGroup}
+              onChange={changeSelectedModuleInstanceId}
+              defaultValue={selectedModuleInstanceId}
               className='rounded-1'
               label='Module Instance Id'
             >
@@ -174,7 +170,5 @@ const IconsAlertsSubform = ( { settings } ) => {
     </>
   )
 }
-
-/* defaultValue=\{selectedParameterGroup\} */
 
 export default IconsAlertsSubform

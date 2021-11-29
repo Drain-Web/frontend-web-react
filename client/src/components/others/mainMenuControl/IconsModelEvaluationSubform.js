@@ -6,6 +6,7 @@ import axios from 'axios'
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache'
+import ConsFixed from '../../contexts/ConsFixed'
 import consCacheLib from '../../contexts/consCacheLib'
 import VarsState from '../../contexts/VarsState'
 import varsStateLib from '../../contexts/varsStateLib'
@@ -42,6 +43,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
+  const { consFixed } = useContext(ConsFixed)
   const { varsState, setVarState } = useContext(VarsState)
   const [selectedMetric, setSelectedMetric] =
     useState(varsStateLib.getContextIconsArgs('evaluation', varsState).metric)
@@ -79,7 +81,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
       // const responseData = consCacheLib.getEvaluationResponseData(urlRequested, consCache)
       // console.log('FROM ConsCache, GOT', urlRequested)
       // console.log(' AS', responseData)
-      varsStateLib.updateLocationIcons(varsState, consCache, settings)
+      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
       setVarState(Math.random())
     }
 
@@ -92,7 +94,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
       const extraArgs = {
         url: urlTimeseriesCalcRequest
       }
-      varsStateLib.hideAllLocationIcons(varsState)
+      varsStateLib.setUniformIcon(settings.loadingLocationIcon, varsState)
       fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
         consCacheLib.addUrlRequested(extras.url, consCache)
         consCacheLib.storeEvaluationResponseData(extras.url, jsonData.evaluation, consCache)
@@ -103,7 +105,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     console.log('Will request:', urlTimeseriesCalcRequest)
 
     // TODO: should make a call if not in cache, as in IconsUniformSubform, and as callback...
-    varsStateLib.updateLocationIcons(varsState, consCache, settings)
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
     setVarState(Math.random())
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
     varsStateLib.getContextIconsArgs('evaluation', varsState), selectedMetric, 

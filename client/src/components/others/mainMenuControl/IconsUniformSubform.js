@@ -64,7 +64,7 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         // TODO: add parameterGroups
         // TODO: add modelInstances
       }
-      varsStateLib.updateLocationIcons(varsState, consCache, settings)
+      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
       setFilterOptions(filterOptions)
       setVarState(Math.random())
     }

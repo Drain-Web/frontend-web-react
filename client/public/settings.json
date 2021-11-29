@@ -3,6 +3,7 @@
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop.svg",
+  "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
   "locationIconsOptions": {
     "default": {
       "available": true
@@ -35,7 +36,7 @@
           "noValueIcon": null,
           "parameterGroups": {
             "Discharge": {
-			  "parameters": {
+			        "parameters": {
                 "obs": "Q.obs",
                 "sim": "Q.sim"
               },
@@ -66,11 +67,13 @@
   "thresholdGroups": {
     "peakQ": {
       "function": "ts.maxValue",
-      "noWarningIcon": "./img/location_icons/warning_Hnowarning.svg"
+      "noWarningIcon": "./img/location_icons/alerts/warning_Hnowarning.svg",
+      "unknownIcon":   "./img/location_icons/alerts/warning_unknown.svg"
     },
     "peakH": {
       "function": "ts.maxValue",
-      "noWarningIcon": "./img/location_icons/warning_Qnowarning.svg"
+      "noWarningIcon": "./img/location_icons/warning_Qnowarning.svg",
+      "unknownIcon":   "./img/location_icons/alerts/warning_unknown.svg"
     }
   },
   "riverNetwork": {

@@ -91,8 +91,9 @@ const getTimeSerieUrl = (varsState) => {
   return varsState["context"]["timeSeriesData"]["timeSerieUrl"]
 }
 
+//
 const hideAllLocationIcons = (varsState) => {
-  _hideAllLocationIcons(varsState)
+  for (const locId in varsState.locations) { varsState.locations[locId].display = false }
 }
 
 //
@@ -138,7 +139,6 @@ const setContextIcons = (iconsType, args, varsState) => {
   const argsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
   varsState.context.icons.iconType = iconsType
   for (const k in args) {
-    console.log('Setting "%s.%s" as "%s"', argsKey, k, args[k])
     varsState.context.icons[argsKey][k] = args[k]
   }
 }
@@ -156,6 +156,11 @@ const setMainMenuControlActiveTabAsActiveFeatureInfo = (varsState) => {
 //
 const setMainMenuControlActiveTabAsOverview = (varsState) => {
   varsState['domObjects']['mainMenuControl']['activeTab'] = "tabOverview"
+}
+
+// 
+const setUniformIcon = (iconUrl, varsState) => {
+  for (const locId in varsState.locations) { varsState.locations[locId].icon = iconUrl }
 }
 
 //
@@ -205,7 +210,7 @@ const toggleMainMenuControl = (varsState) => {
 }
 
 // Updates the 'locations' content considering the rest of the object
-const updateLocationIcons = (varsState, consCache, settings) => {
+const updateLocationIcons = (varsState, consCache, consFixed, settings) => {
   // TODO: implement
   if (inMainMenuControlActiveTabOverview(varsState)) {
     // if in overview shows all locations
@@ -220,10 +225,10 @@ const updateLocationIcons = (varsState, consCache, settings) => {
       // _randomHideShowAllLocationIcons(varsState)
       console.log('Should have updated by Evaluation')
     } else if (getContextIconsType(varsState) === 'alerts') {
-      _updateLocationIconsAlerts(varsState, consCache, settings)
+      _updateLocationIconsAlerts(varsState, consCache, consFixed, settings)
       console.log('Should have updated by Alerts')
     } else {
-      _hideAllLocationIcons(varsState)
+      hideAllLocationIcons(varsState)
       console.log('Hide icons because update icon time for "%s" was not implemented yet.')
     }
   } else if (inMainMenuControlActiveTabActiveFeatureInfo(varsState)) {
@@ -251,10 +256,6 @@ const updateTimeSerieUrlByLocationId = (locationId, varsState) => {
 
 /* ** PRIVATE FUNCTIONS ********************************************************************** */
 
-const _hideAllLocationIcons = (varsState) => {
-  for (const locId in varsState.locations) { varsState.locations[locId].display = false }
-}
-
 const _randomHideShowAllLocationIcons = (varsState) => {
   for (const locId in varsState.locations) {
     varsState.locations[locId].display = !!Math.round(Math.random())
@@ -277,43 +278,106 @@ const _showAllLocationIcons = (varsState) => {
 }
 
 // 
-const _updateLocationIconsAlerts = (varsState, consCache, settings) => {
+const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) => {
   // get all timeseries of filterId of selected ParameterGroup and ModuleInstanceId
   const filterId = getContextFilterId(varsState)
   const moduleInstanceId = getContextIconsArgs('alerts', varsState).moduleInstanceId
   const thresholdGroupId = getContextIconsArgs('alerts', varsState).thresholdGroupId
 
+  // get timeseries
+  const consideredTimeseries = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!consideredTimeseries) {
+    console.warn("No timeseries found for filter '" + filterId + "' on cache.")
+    return
+  }
+
   // get all possible parameters
-  const allParameterIds = consCacheLib.getParameterIdsByThresholdGroupId(thresholdGroupId, consCache)
+  const allParameterIds = consCacheLib.getParameterIdsByThresholdGroupId(thresholdGroupId,
+    consCache)
+
+  // get all info about thresh group
+  const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
+  const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
+
+  // get the value function of the thresh levels
+  const thresholdLevelFunction = {}
+  for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
+    const curThreshLevelId = curThreshLevelObj.id
+    thresholdLevelFunction[curThreshLevelId] =
+      consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed).valueFunction
+  }
+  
+  // TODO: double check if it needs to be moved somewhere
+  const getThresholdLevel = (timeseriesData, locationData, thresholdGroupData,
+      threshLevelFunctions) => {
+    let lastThreshLevelObj = true
+
+    // iterate threshold level by threshold level
+    for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
+      const curThreshLevelId = curThreshLevelObj.id
+      const curThreshLevelFunction = threshLevelFunctions[curThreshLevelId]
+
+      if ((curThreshLevelFunction.charAt(0) === "@") && 
+          (curThreshLevelFunction.charAt(curThreshLevelFunction.length-1) === "@")) {
+        
+        // get the value of the attribute in the location info
+        const curAttrId = curThreshLevelFunction.substring(1, curThreshLevelFunction.length - 1)
+        const curAttrObj = _getObjectFromArrayById(curAttrId, locationData.attributes)
+        if (!curAttrObj) { return null }
+        const curAttrValue = parseFloat(curAttrObj.number)
+
+        // if time series exceeds this value, continue checking a higher. If not, return it
+        if (timeseriesData.maxValue < curAttrValue) { break }
+        lastThreshLevelObj = curThreshLevelObj
+      }
+      else
+      {
+        console.warn("Unexpected threshold value function:", curThreshLevelFunction)
+      }
+    }
+    return lastThreshLevelObj
+  }
 
   // define icons to be updated
   const locationIdsIcons = {}
-  for (const curTimeseriesId of consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)) {
+  for (const curTimeseriesId of consideredTimeseries) {
     const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
-    if (allParameterIds.has(curTimeseriesData.header.parameterId) && true) {
-      // TODO also check by module id
-      // (moduleInstanceId == curTimeseriesData.header.moduleInstanceId)
+    if (allParameterIds.has(curTimeseriesData.header.parameterId) && 
+        (curTimeseriesData.header.moduleInstanceId === moduleInstanceId)) {
 
-      // TODO - replace this by a valid one
-      const randomIconUrl = ["./img/location_icons/alerts/warning_Halert.svg", 
-                             "./img/location_icons/alerts/warning_Hflood.svg",
-                             "./img/location_icons/alerts/warning_Hmajorflood.svg",
-                             "./img/location_icons/alerts/warning_Hnowarning.svg",
-                             "./img/location_icons/alerts/warning_unknown.svg"][Math.floor(Math.random() * 5)]
-      locationIdsIcons[curTimeseriesData.header.location_id] = randomIconUrl
-      varsState.locations[curTimeseriesData.header.location_id].icon = randomIconUrl
-    }
-    else
-    {
-      console.log("NOT", allParameterIds, "=", curTimeseriesData.header.parameterId, "OR", moduleInstanceId, "=", curTimeseriesData.header.moduleInstanceId)
+      // define the threshold level
+      const curLocationId = curTimeseriesData.header.location_id
+      const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
+      const thresholdLevel = getThresholdLevel(curTimeseriesData, curLocationData,
+        thresholdGroupData, thresholdLevelFunction)
+
+      // set the icon properly
+      let selectedIcon = null
+      if (!thresholdLevel) {
+        selectedIcon = thresholdGroupBase.unknownIcon
+      } else if (typeof thresholdLevel === "boolean") {
+        selectedIcon = thresholdGroupBase.noWarningIcon
+      } else {
+        selectedIcon = thresholdLevel.upWarningLevelId.iconName
+      }
+      locationIdsIcons[curTimeseriesData.header.location_id] = selectedIcon
+      varsState.locations[curTimeseriesData.header.location_id].icon = selectedIcon
     }
   }
 
   // update varsState location by location
   for (const locationId in varsState.locations) {
-    const willDisplay = locationId in locationIdsIcons
     varsState.locations[locationId].display = locationId in locationIdsIcons
   }
+}
+
+//
+const _getObjectFromArrayById = (idValue, arrayData) => {
+  if (!arrayData) { return null }
+  for (const curEntry of arrayData) {
+    if (curEntry.id === idValue) { return curEntry }
+  }
+  return null
 }
 
 // changes all locations' icons and display flags according to the selescted filter Id
@@ -322,7 +386,7 @@ const _updateLocationIconsUniform = (varsState, consCache) => {
   const filterId = getContextFilterId(varsState)
   const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
   if (!timeseriesIdsByFilter) {
-    _hideAllLocationIcons(varsState)
+    hideAllLocationIcons(varsState)
     return
   }
 
@@ -405,6 +469,7 @@ const varsStateLib = {
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
   setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
+  setUniformIcon: setUniformIcon,
   showMainMenuControl: showMainMenuControl,
   showPanelTabs: showPanelTabs,
   toggleMainMenuControl: toggleMainMenuControl,

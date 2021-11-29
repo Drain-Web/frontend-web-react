@@ -46,7 +46,7 @@ const MapControler = ({ settings }) => {
 
   useEffect(() => {
     console.log('useEffect triggering updateLocationIcons()')
-    varsStateLib.updateLocationIcons(varsState, consCache, settings)
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
     setVarState(Math.random())
   }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)])
 

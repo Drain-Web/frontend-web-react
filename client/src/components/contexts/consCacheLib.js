@@ -17,6 +17,35 @@ const associateTimeseriesIdAndFilterId = (timeseriesId, filterId, consCache) => 
 }
 
 //
+const getAlertIconAndColor = () => {
+  
+}
+
+// 
+const getEvaluationIconAndColor = (metric, parameterGroupId, value, settings) => {
+  const iconMetricSettings = settings.locationIconsOptions.evaluation.options[metric]
+  const iconParameterGroupSettings = iconMetricSettings.parameterGroups[parameterGroupId]
+
+  // find a thresnold not exceeded
+  for (let [rangeIndex, rangeValue] of iconParameterGroupSettings.ranges.entries()) {
+    if (!rangeValue) { continue }
+    if (rangeValue > value) {
+      return [iconParameterGroupSettings.icons[rangeIndex-1], 
+              iconParameterGroupSettings.colors[rangeIndex-1]]
+    }
+  }
+
+  // if not found and last value is null, return last color/icon, or [null, null] otherwise
+  if (!iconParameterGroupSettings.ranges.slice(-1)[0]) {
+    const lastIdx = iconParameterGroupSettings.icons.length
+    return [iconParameterGroupSettings.icons[lastIdx], 
+            iconParameterGroupSettings.colors[lastIdx]]
+  } else {
+    return [null, null]
+  }
+}
+
+//
 const getEvaluationLastRequestUrl = (consCache) => {
   return consCache.indexes.evaluationResponseData._lastUrlRequested_
 }
@@ -132,6 +161,7 @@ const _dictToDict = (fD, tD) => { for (const key in fD) { tD[key] = fD[key] } }
 const consCacheLib = {
   addUrlRequested: addUrlRequested,
   associateTimeseriesIdAndFilterId: associateTimeseriesIdAndFilterId,
+  getEvaluationIconAndColor: getEvaluationIconAndColor,
   getEvaluationLastRequestUrl: getEvaluationLastRequestUrl,
   getEvaluationLastResponseData: getEvaluationLastResponseData,
   getEvaluationResponseData: getEvaluationResponseData,
