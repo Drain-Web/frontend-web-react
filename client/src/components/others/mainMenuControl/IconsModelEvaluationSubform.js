@@ -87,6 +87,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
     //
     if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache)) {
+      console.log('URL was already requested')
       callbackFunc(urlTimeseriesCalcRequest)
     } else {
       // request URL, update local states, update cache, access cache
@@ -101,15 +102,10 @@ const IconsModelEvaluationSubform = ({ settings }) => {
         callbackFunc(extras.url)
       })
     }
-
-    console.log('Will request:', urlTimeseriesCalcRequest)
-
-    // TODO: should make a call if not in cache, as in IconsUniformSubform, and as callback...
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
     setVarState(Math.random())
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
-    varsStateLib.getContextIconsArgs('evaluation', varsState), selectedMetric, 
-    selectedParameterGroup])
+      varsStateLib.getContextIconsArgs('evaluation', varsState), selectedMetric, 
+      selectedParameterGroup])
 
   /* ** BUILD COMPONENT ********************************************************************** */
 

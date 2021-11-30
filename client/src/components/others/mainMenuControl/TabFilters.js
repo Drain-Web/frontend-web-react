@@ -241,7 +241,6 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
                 idTitleList={retGeo}
                 selectedId={varsStateLib.getContextFilterGeoId(varsState)}
                 onChangeFunction={changeGeoSubFilter}
-                addOverviewOption={settings.overviewFilter}
                 label='Sub-Area'
               />
             </Col>
@@ -251,7 +250,6 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
               idTitleList={retEvt}
               selectedId={varsStateLib.getContextFilterEvtId(varsState)}
               onChangeFunction={changeEventSubFilter}
-              addOverviewOption={settings.overviewFilter}
               label='Event'
             />
           </Col></Row>

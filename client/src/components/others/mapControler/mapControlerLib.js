@@ -397,6 +397,7 @@ const updateLocationsToOverview = (
   // get all locations and show their icons
   // TODO: should work with varsState instead
   // TODO: should ensure icons are the default ones
+  console.log("Updating here!")
   const updLocs = mapLocationsContextData.byLocations;
   for (const curLocationId of Object.keys(updLocs)) {
     updLocs[curLocationId].show = true;

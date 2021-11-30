@@ -215,10 +215,11 @@ const updateLocationIcons = (varsState, consCache, consFixed, settings) => {
   if (inMainMenuControlActiveTabOverview(varsState)) {
     // if in overview shows all locations
     _showAllLocationIcons(varsState)
+    setUniformIcon(settings.generalLocationIcon, varsState)
   } else if (inMainMenuControlActiveTabFilters(varsState)) {
     // if in a specific filter, decide location by location
     if (getContextIconsType(varsState) === 'uniform') {
-      _updateLocationIconsUniform(varsState, consCache)
+      _updateLocationIconsUniform(varsState, consCache, settings)
       console.log('Should have updated by Uniform')
     } else if (getContextIconsType(varsState) === 'evaluation') {
       _updateLocationIconsEvaluation(varsState, consCache, settings)
@@ -275,6 +276,10 @@ const _replaceUrlParam = (url, paramName, paramValue) => {
 
 const _showAllLocationIcons = (varsState) => {
   for (const lcId in varsState.locations) { varsState.locations[lcId].display = true }
+}
+
+const _setAllLocationsUniformIcons = (iconUrl, varsState) => {
+  for (const lcId in varsState.locations) { varsState.locations[lcId].icon = iconUrl }
 }
 
 // 
@@ -381,7 +386,7 @@ const _getObjectFromArrayById = (idValue, arrayData) => {
 }
 
 // changes all locations' icons and display flags according to the selescted filter Id
-const _updateLocationIconsUniform = (varsState, consCache) => {
+const _updateLocationIconsUniform = (varsState, consCache, settings) => {
   // get all timeseries of filterId
   const filterId = getContextFilterId(varsState)
   const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
@@ -396,8 +401,9 @@ const _updateLocationIconsUniform = (varsState, consCache) => {
   }))
 
   // update varsState location by location
+  setUniformIcon(settings.generalLocationIcon, varsState)
   for (const locationId in varsState.locations) {
-    varsState.locations[locationId].icon = "./img/drop.svg"  // TODO: get this URL from settings
+    // varsState.locations[locationId].icon = "./img/drop.svg"  // TODO: get this URL from settings
     varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
 }
