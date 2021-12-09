@@ -7,6 +7,8 @@ import { MainMenuControl } from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
+import WMSTileLayers from "../layers/WMSLayers";
+import MapTileLayers from "../layers/MapTileLayers";
 import Panel from "./PanelTabs";
 import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
@@ -18,6 +20,8 @@ import ConsFixed from "../contexts/ConsFixed";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
+import { wmsLayersData } from "../../assets/WMSLayers";
+import { mapTilesLayersData } from "../../assets/MapTileLayers";
 
 // import libs
 import { onChangeFilterContextData } from "./mapControler/mapControlerLib.js";
@@ -78,6 +82,8 @@ const MapControler = ({ settings }) => {
         />
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
+          <WMSTileLayers wmsLayersData={wmsLayersData} />
+          <MapTileLayers mapTilesLayersData={mapTilesLayersData} />
 
           {/* adds layer of points as a react component */}
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
@@ -89,7 +95,6 @@ const MapControler = ({ settings }) => {
               />
             </FilterContext.Provider>
           </MapLocationsContext.Provider>
-
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <FilterContext.Provider value={{ filterContextData }}>
             <PolygonLayer
@@ -98,7 +103,6 @@ const MapControler = ({ settings }) => {
               reversePolygon
             />
           </FilterContext.Provider>
-
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
           {settings.riverNetwork.fullRaw ? (
             <GeoJsonLayerRiverNetwork

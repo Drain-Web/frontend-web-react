@@ -1,4 +1,4 @@
-import { TileLayer, LayersControl } from "react-leaflet";
+import { TileLayer, LayersControl, WMSTileLayer } from "react-leaflet";
 import React from "react";
 
 const { BaseLayer } = LayersControl;
@@ -36,14 +36,6 @@ const BaseLayers = ({ baseLayerData }) => {
           );
         }
       })}
-      <BaseLayer checked={true} name={"PPT"} key={"PPT"}>
-        <TileLayer
-          attribution={"Prueba"}
-          url={"./prueba_reproj/{z}/{x}/{y}.png"}
-          tms={true}
-          opacity={0.5}
-        />
-      </BaseLayer>
     </>
   );
 };
