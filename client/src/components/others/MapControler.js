@@ -1,5 +1,8 @@
-import { LayersControl, ZoomControl, useMap } from "react-leaflet";
+import { LayersControl, ZoomControl, useMap, TileLayer } from "react-leaflet";
 import React, { useEffect, useContext } from "react";
+// import {} from "leaflet.vectorgrid";
+// import VectorGrid from "react-leaflet-vectorgrid";
+import VectorGrid from "./VectorGrid";
 
 // import components
 import MapLocationsContext from "../contexts/MapLocationsContext";
@@ -22,6 +25,7 @@ import ConsFixed from "../contexts/ConsFixed";
 import { baseLayersData } from "../../assets/MapBaseLayers";
 import { wmsLayersData } from "../../assets/WMSLayers";
 import { mapTilesLayersData } from "../../assets/MapTileLayers";
+import { riverNetworkVectorTilesData } from "../../assets/RiverNetworkVectorLayer";
 
 // import libs
 import { onChangeFilterContextData } from "./mapControler/mapControlerLib.js";
@@ -84,6 +88,7 @@ const MapControler = ({ settings }) => {
           <BaseLayers baseLayerData={baseLayersData} />
           <WMSTileLayers wmsLayersData={wmsLayersData} />
           <MapTileLayers mapTilesLayersData={mapTilesLayersData} />
+          <VectorGrid />
 
           {/* adds layer of points as a react component */}
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
