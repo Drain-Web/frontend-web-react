@@ -17,6 +17,8 @@ body {
   /* right: 5%; */
   /* left: 20%; */
   z-index: 1000;
+  min-height: 400px;
+  min-width: 400px;
   /* min-height: 500px; */
   /* max-height: 50vh; */
   /* width: 500px; */ /* width: 70%; */
@@ -72,6 +74,12 @@ div.Panel-content {
 .plotting-panel-button {
   position: relative;
   min-width: 12rem;
+}
+
+.metricTables {
+  padding: 2rem;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* width */

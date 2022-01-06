@@ -73,22 +73,26 @@ const getContextIconsType = (varsState) => {
 
 //
 const getMainMenuControlActiveTab = (varsState) => {
-  return varsState['domObjects']['mainMenuControl']['activeTab']
+  return varsState.domObjects['mainMenuControl']['activeTab']
 }
 
 //
 const getMainMenuControlShow = (varsState) => {
-  return varsState['domObjects']['mainMenuControl']['show']
+  return varsState.domObjects['mainMenuControl']['show']
 }
 
 //
 const getPanelTabsShow = (varsState) => {
-  return varsState['domObjects']['timeseriesPanel']['show']
+  return varsState.domObjects['timeseriesPanel']['show']
 }
 
 //
 const getTimeSerieUrl = (varsState) => {
-  return varsState["context"]["timeSeriesData"]["timeSerieUrl"]
+  return varsState.domObjects.timeSeriesData.timeSerieUrl
+}
+
+const getTimeSeriesPlotData = (varsState) => {
+  return varsState.domObjects.timeSeriesData.plotData
 }
 
 //
@@ -98,21 +102,21 @@ const hideAllLocationIcons = (varsState) => {
 
 //
 const hideMainMenuControl = (varsState) => {
-  varsState['domObjects']['mainMenuControl']['show'] = false
+  varsState.domObjects['mainMenuControl']['show'] = false
 }
 
 const hidePanelTabs = (varsState) => {
-  varsState['domObjects']['timeseriesPanel']['show'] = false
+  varsState.domObjects['timeseriesPanel']['show'] = false
 }
 
 //
 const inMainMenuControlActiveTabActiveFeatureInfo = (varsState) => {
-  return (varsState['domObjects']['mainMenuControl']['activeTab'] === "tabActiveFeatureInfo")
+  return (varsState.domObjects['mainMenuControl']['activeTab'] === "tabActiveFeatureInfo")
 }
 
 //
 const inMainMenuControlActiveTabFilters = (varsState) => {
-  return (varsState['domObjects']['mainMenuControl']['activeTab'] === "tabFilters")
+  return (varsState.domObjects['mainMenuControl']['activeTab'] === "tabFilters")
 }
 
 //
@@ -150,12 +154,12 @@ const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
 
 //
 const setMainMenuControlActiveTabAsActiveFeatureInfo = (varsState) => {
-  varsState['domObjects']['mainMenuControl']['activeTab'] = "tabActiveFeatureInfo"
+  varsState.domObjects['mainMenuControl']['activeTab'] = "tabActiveFeatureInfo"
 }
 
 //
 const setMainMenuControlActiveTabAsOverview = (varsState) => {
-  varsState['domObjects']['mainMenuControl']['activeTab'] = "tabOverview"
+  varsState.domObjects['mainMenuControl']['activeTab'] = "tabOverview"
 }
 
 // 
@@ -169,33 +173,42 @@ const setUniformIcon = (iconUrl, varsState) => {
 
 // Set the time series url to fetch data
 const setTimeSerieUrl = (timeSerieUrl, varsState) => {
-  varsState["context"]["timeSeriesData"]["timeSerieUrl"] = timeSerieUrl
+  varsState.domObjects.timeSeriesData["timeSerieUrl"] = timeSerieUrl
 }
 
 // Set the data to be used for plots
 const setTimeSeriesPlotData = (plotData, varsState) => {
-  varsState["context"]["timeSeriesData"]["plotData"] = plotData
+  varsState.domObjects.timeSeriesData["plotData"] = plotData
 }
 
 //
 const setTimeSeriesPlotArrays = (plotArrays, varsState) => {
-  varsState["context"]["timeSeriesData"]["plotArrays"] = plotArrays
+  varsState.domObjects.timeSeriesData["plotArrays"] = plotArrays
 }
 
 //
 const setTimeSeriesPlotAvailableVariables = (availableVariables, varsState) => {
-  varsState["context"]["timeSeriesData"]["availableVariables"] =
+  varsState.domObjects.timeSeriesData["availableVariables"] =
     availableVariables
+}
+
+// 
+const setTimeSeriesPlotThresholdsArray = (thresholdsArray, varsState) => {
+  varsState.domObjects.timeSeriesData.thresholdsArray = thresholdsArray
+}
+
+const setTimeSeriesPlotModelEvaluationMetrics = (evaluationMetrics, varsState) => {
+  varsState.domObjects.timeSeriesData.evaluationMetrics = evaluationMetrics
 }
 
 //
 const setTimeSeriesPlotUnitsVariables = (unitsVariables, varsState) => {
-  varsState.context.timeSeriesData.unitsVariables = unitsVariables
+  varsState.domObjects.timeSeriesData.unitsVariables = unitsVariables
 }
 
 //
 const showMainMenuControl = (varsState) => {
-  varsState['domObjects']['mainMenuControl']['show'] = true
+  varsState.domObjects['mainMenuControl']['show'] = true
 }
 
 //
@@ -458,6 +471,7 @@ const varsStateLib = {
   getMainMenuControlShow: getMainMenuControlShow,
   getPanelTabsShow: getPanelTabsShow,
   getTimeSerieUrl: getTimeSerieUrl,
+  getTimeSeriesPlotData: getTimeSeriesPlotData,
   hideAllLocationIcons: hideAllLocationIcons,
   hideMainMenuControl: hideMainMenuControl,
   hidePanelTabs: hidePanelTabs,
@@ -474,6 +488,8 @@ const varsStateLib = {
   setTimeSeriesPlotData: setTimeSeriesPlotData,
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
+  setTimeSeriesPlotThresholdsArray: setTimeSeriesPlotThresholdsArray,
+  setTimeSeriesPlotModelEvaluationMetrics: setTimeSeriesPlotModelEvaluationMetrics,
   setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
   setUniformIcon: setUniformIcon,
   showMainMenuControl: showMainMenuControl,

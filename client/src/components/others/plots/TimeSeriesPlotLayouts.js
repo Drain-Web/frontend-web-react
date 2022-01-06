@@ -6,6 +6,7 @@ const TimeSeriesPlotLayouts = ({
   plotData,
   availableVariables,
   unitsVariables,
+  thresholdsArray
 }) => {
   const updatemenus = [
     {
@@ -27,6 +28,15 @@ const TimeSeriesPlotLayouts = ({
   ];
 
   let layouts = {};
+  
+  const fontAttrs = {
+    family: "Arial",
+    size: 16
+  }
+  const legendAttrs = {
+    x: 1.05, y: 1.00,
+    font: { size: 12 }
+  }
 
   if (availableVariables.length == 1) {
     layouts = {
@@ -35,23 +45,16 @@ const TimeSeriesPlotLayouts = ({
       yaxis: {
         title: availableVariables[0] + "[" + unitsVariables[0] + "]",
       },
-      font: {
-        family: "Arial",
-        size: 16,
-      },
+      font: fontAttrs,
       showlegend: true,
-      legend: { x: 1.05, y: 1 },
-      // updatemenus: updatemenus,
+      legend: legendAttrs
     };
   } else if (availableVariables.length == 2) {
     layouts = {
       title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
-      font: {
-        family: "Arial",
-        size: 16,
-      },
+      font: fontAttrs,
       showlegend: true,
-      legend: { x: 1.2, y: 1 },
+      legend: legendAttrs,
       yaxis: {
         title: availableVariables[0] + "[" + unitsVariables[0] + "]",
       },
@@ -63,14 +66,12 @@ const TimeSeriesPlotLayouts = ({
     };
   }
 
-  // console.log(unitsVariables);
-  // console.log(availableVariables);
+  console.log(thresholdsArray);
+  const retData = (thresholdsArray != null) ? plotArray.concat(thresholdsArray) : plotArray
 
   return (
-    <>
-      <Plot data={plotArray} layout={layouts} />
-    </>
-  );
+    <Plot data={retData} layout={layouts} />
+  )
 };
 
 export default TimeSeriesPlotLayouts;

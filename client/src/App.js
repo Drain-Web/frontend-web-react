@@ -23,7 +23,6 @@ import appLoad from './libs/appLoad.js'
 // import CSS styles
 import "style/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
-import "style/GeoSearchBox.css";
 import "./App.css";
 
 /* ** FUNCTIONS ******************************************************************************** */
@@ -60,13 +59,12 @@ const App = ({ settings }) => {
   // check if still loading
   if (appLoad.isStillLoadingConsFixed(consFixed)) { return <AppLoading /> }
 
-
   /* ** FILL varState with default values ****************************************************** */
 
   // update varsState and trigger render if needed
   let updatedVarsState = false;
   if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true }
-  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true }
+  if (appLoad.setVarsStateContext(consFixed, settings, varsState))   { updatedVarsState = true }
   if (!varsStateLib.getContextFilterId(varsState)) {
     varsStateLib.setContextFilterId(consFixed['region'].defaultFilter, varsState)
     updatedVarsState = true
@@ -108,6 +106,14 @@ const AppSettings = () => {
   const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher)
 
   /* ** MAIN RENDER  *************************************************************************** */
+
+  /*
+  return (
+      <ConsFixed.Provider value={ ConsFixed._currentValue }>
+        <App settings={settingsData} />
+      </ConsFixed.Provider>
+    )
+  */
 
   if (dataSettings && !errorSettings) {
     for (const i in dataSettings) settingsData[i] = dataSettings[i]

@@ -158,6 +158,7 @@ const setVarsStateLocations = (consFixed, settings, varsState) => {
 const setVarsStateContext = (consFixed, settings, varsState) => {
   if (varsState['context']['filterId']) { return false }
   
+  console.log("Setting", consFixed['region']['defaultFilter'], "to", varsState)
   varsStateLib.setContextFilterId(consFixed['region']['defaultFilter'], varsState)
   varsStateLib.setContextIcons("uniform", {}, varsState)
   return true

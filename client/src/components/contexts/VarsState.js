@@ -36,13 +36,6 @@ const VarsState = createContext({
           metric: null,                           // <higherMax|higherMean|lowerMax|lowerMean>
           moduleInstanceIds: new Set()            // moduleInstanceIds
         }
-      },
-      timeSeriesData: {
-        timeSerieUrl: null,
-        plotData: null,
-        plotArrays: null,
-        availableVariables: null,
-        unitsVariables: null,
       }
     },
 
@@ -58,6 +51,14 @@ const VarsState = createContext({
       mainMenuControl: {
         show: true,
         activeTab: 'tabFilters'                   // <tabOverview|tabFilters|tabActiveFeatureInfo>
+      },
+      timeSeriesData: {
+        timeSerieUrl: null,
+        plotData: null,
+        plotArrays: null,
+        availableVariables: null,
+        unitsVariables: null,
+        thresholdsArray: null
       },
       timeseriesPanel: {
         show: false

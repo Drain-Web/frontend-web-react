@@ -9,6 +9,7 @@ import { Scrollbars } from "react-custom-scrollbars";
 import LoadTimeSeriesData from "./plots/LoadTimeSeriesData";
 import TimeSeriesPlot from "./plots/TimeSeriesPlot";
 import CloseButton from "react-bootstrap/CloseButton";
+import MetricsTable from "./MetricsTable";
 
 // import contexts
 import VarsState from "../contexts/VarsState";
@@ -37,16 +38,19 @@ const showTimeseriesPlot = (variable, varsState) => {
   return (
     <TimeSeriesPlot
       plotData={
-        varsState.context.timeSeriesData.plotData[variable]
+        varsState.domObjects.timeSeriesData.plotData[variable]
       }
       plotArray={
-        varsState.context.timeSeriesData.plotArrays[variable]
+        varsState.domObjects.timeSeriesData.plotArrays[variable]
       }
       availableVariables={
-        varsState.context.timeSeriesData.availableVariables[variable]
+        varsState.domObjects.timeSeriesData.availableVariables[variable]
       }
       unitsVariables={
-        varsState.context.timeSeriesData.unitsVariables[variable]
+        varsState.domObjects.timeSeriesData.unitsVariables[variable]
+      }
+      thresholdsArray={
+        varsState.domObjects.timeSeriesData.thresholdsArray[variable]
       }
     />
   )
@@ -75,23 +79,50 @@ const DraggableTimeseriesDiv = () => {
               <div>
                 <LoadTimeSeriesData />
                 {
-                  varsState.context.timeSeriesData.availableVariables && (
+                  varsState.domObjects.timeSeriesData.availableVariables && (
                     <Tabs
                       defaultActiveKey={
-                        varsState.context.timeSeriesData.availableVariables[0]
+                        varsState.domObjects.timeSeriesData.availableVariables[0]
                       }
                       id="uncontrolled-tab-example"
                       className="mb-3"
                     >
-                      {Object.keys(
-                        varsState.context.timeSeriesData.availableVariables
-                      ).map((variable) => {
-                        return (
-                          <Tab eventKey={variable} title={variable} key={variable}>
-                            {showTimeseriesPlot(variable, varsState)}
-                          </Tab>
-                        )
-                      })}
+                      {
+                        /* Add one tab per time series */
+                        Object.keys(
+                          varsState.domObjects.timeSeriesData.availableVariables
+                        ).map((variable) => {
+                          return (
+                            <Tab 
+                              eventKey={variable} 
+                              title={{ Q: "Streamflow", H: "Stream Level" }[variable]}  /* TODO: remove hard code */
+                              key={variable}
+                            >
+                              {showTimeseriesPlot(variable, varsState)}
+                            </Tab>
+                          )
+                        })
+                      }
+                      <Tab eventKey={"Metrics"} title={"Metrics"}>
+                        <MetricsTable
+                          timeSeriesMetrics={{
+                            evaluations: {
+                              RMSE: {
+                                ImportHLModelHist01: 16.156,  /* TODO: remove hard code */
+                                Dist050t065USGSobs: 31.041,
+                                Dist115t140USGSobs: 20.745,
+                              },
+                              KGE: {
+                                ImportHLModelHist01: 0.31,
+                                Dist050t065USGSobs: 0.572,
+                                Dist115t140USGSobs: 0.722,
+                              },
+                            },
+                            version: "1.25",
+                          }}
+                          className="justify-content-md-center"
+                        />
+                      </Tab>
                     </Tabs>
                   )
                 }

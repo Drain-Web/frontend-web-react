@@ -7,7 +7,6 @@ import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
-import GeoJsonLayerRiverNetwork from "../layers/GeoJsonLayerRiverNetwork";
 import SearchField from "./GeoSearchBox";
 
 // import contexts
@@ -77,11 +76,13 @@ const MapControler = ({ settings }) => {
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
           {
+            /*
           settings.riverNetwork.fullRaw
             ?
               (<GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />)
             :
               (<></>)
+            */
             }
         </LayersControl>
 
