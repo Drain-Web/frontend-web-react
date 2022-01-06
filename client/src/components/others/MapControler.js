@@ -88,7 +88,7 @@ const MapControler = ({ settings }) => {
           <BaseLayers baseLayerData={baseLayersData} />
           <WMSTileLayers wmsLayersData={wmsLayersData} />
           <MapTileLayers mapTilesLayersData={mapTilesLayersData} />
-          <VectorGrid />
+          <VectorGrid layerSettings={settings.riverNetwork.fullRaw} />
 
           {/* adds layer of points as a react component */}
           <MapLocationsContext.Provider value={{ mapLocationsContextData }}>
@@ -109,13 +109,13 @@ const MapControler = ({ settings }) => {
             />
           </FilterContext.Provider>
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
-          {settings.riverNetwork.fullRaw ? (
+          {/* {settings.riverNetwork.fullRaw ? (
             <GeoJsonLayerRiverNetwork
               layerSettings={settings.riverNetwork.fullRaw}
             />
           ) : (
             <></>
-          )}
+          )} */}
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
