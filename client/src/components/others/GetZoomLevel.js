@@ -1,20 +1,20 @@
-import React, { useState, useContext, Fragment } from "react";
-import MapContext from "../contexts/MapContext";
-// import react-compatible components
-import { MapContainer, useMapEvents } from "react-leaflet";
+import React, { useContext, Fragment } from "react";
+import { useMapEvents } from "react-leaflet";
+
+import VarsState from "../contexts/VarsState";
+import varsStateLib from "../contexts/varsStateLib";
 
 const GetZoomLevel = ({}) => {
   // initial zoom level provided for MapContainer
+  const { varsState, setVarState } = useContext(VarsState)
 
-  const { zoomLevel, setZoomLevel } = useContext(MapContext);
-
+  // as map changes its zoom, context variable is updates accordingly
   const mapEvents = useMapEvents({
     zoomend: () => {
-      setZoomLevel(mapEvents.getZoom());
+      varsStateLib.setMapZoomLevel(mapEvents.getZoom(), varsState)
+      setVarState(Math.random())
     },
   });
-
-  console.log(zoomLevel);
 
   return null;
 };

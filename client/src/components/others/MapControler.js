@@ -27,22 +27,7 @@ const MapControler = ({ settings }) => {
   const { consFixed } = useContext(ConsFixed)
   const { varsState, setVarState } = useContext(VarsState)
 
-  // when filterContextData is changed, load new filter data and refresh map
-  // useEffect(onChangeFilterContextData, [filterContextData]);
-  /*
-  useEffect( () => {
-    onChangeFilterContextData(map, filterContextData, mapLocationsContextData,
-                              setMapLocationsContextData, varsState, consFixed, settings)
-  }, [filterContextData])
-  */
-
-  // when filterContextData is changed, load new filter data and refresh map
-  /*
-  useEffect( () => {
-    mapControlerLib.onChangeContextFilter(map, varsState, consFixed, settings)
-  }, [varsState])
-  */
-
+  // when varsState.context is changed, update location icons
   useEffect(() => {
     console.log('useEffect triggering updateLocationIcons()')
     varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)

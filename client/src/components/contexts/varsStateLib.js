@@ -82,8 +82,13 @@ const getMainMenuControlShow = (varsState) => {
 }
 
 //
+const getMapZoomLevel = (varsState) => {
+  return varsState.domObjects.map.zoomLevel
+}
+
+//
 const getPanelTabsShow = (varsState) => {
-  return varsState.domObjects['timeseriesPanel']['show']
+  return varsState.domObjects.timeseriesPanel.show
 }
 
 //
@@ -154,12 +159,17 @@ const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
 
 //
 const setMainMenuControlActiveTabAsActiveFeatureInfo = (varsState) => {
-  varsState.domObjects['mainMenuControl']['activeTab'] = "tabActiveFeatureInfo"
+  varsState.domObjects.mainMenuControl.activeTab = "tabActiveFeatureInfo"
 }
 
 //
 const setMainMenuControlActiveTabAsOverview = (varsState) => {
-  varsState.domObjects['mainMenuControl']['activeTab'] = "tabOverview"
+  varsState.domObjects.mainMenuControl.activeTab = "tabOverview"
+}
+
+// 
+const setMapZoomLevel = (newZoomLevel, varsState) => {
+  varsState.domObjects.map.zoomLevel = newZoomLevel
 }
 
 // 
@@ -173,22 +183,22 @@ const setUniformIcon = (iconUrl, varsState) => {
 
 // Set the time series url to fetch data
 const setTimeSerieUrl = (timeSerieUrl, varsState) => {
-  varsState.domObjects.timeSeriesData["timeSerieUrl"] = timeSerieUrl
+  varsState.domObjects.timeSeriesData.timeSerieUrl = timeSerieUrl
 }
 
 // Set the data to be used for plots
 const setTimeSeriesPlotData = (plotData, varsState) => {
-  varsState.domObjects.timeSeriesData["plotData"] = plotData
+  varsState.domObjects.timeSeriesData.plotData = plotData
 }
 
 //
 const setTimeSeriesPlotArrays = (plotArrays, varsState) => {
-  varsState.domObjects.timeSeriesData["plotArrays"] = plotArrays
+  varsState.domObjects.timeSeriesData.plotArrays = plotArrays
 }
 
 //
 const setTimeSeriesPlotAvailableVariables = (availableVariables, varsState) => {
-  varsState.domObjects.timeSeriesData["availableVariables"] =
+  varsState.domObjects.timeSeriesData.availableVariables =
     availableVariables
 }
 
@@ -208,7 +218,7 @@ const setTimeSeriesPlotUnitsVariables = (unitsVariables, varsState) => {
 
 //
 const showMainMenuControl = (varsState) => {
-  varsState.domObjects['mainMenuControl']['show'] = true
+  varsState.domObjects.mainMenuControl.show = true
 }
 
 //
@@ -469,6 +479,7 @@ const varsStateLib = {
   getContextIconsType: getContextIconsType,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
   getMainMenuControlShow: getMainMenuControlShow,
+  getMapZoomLevel: getMapZoomLevel,
   getPanelTabsShow: getPanelTabsShow,
   getTimeSerieUrl: getTimeSerieUrl,
   getTimeSeriesPlotData: getTimeSeriesPlotData,
@@ -484,6 +495,7 @@ const varsStateLib = {
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
+  setMapZoomLevel: setMapZoomLevel,
   setTimeSerieUrl: setTimeSerieUrl,
   setTimeSeriesPlotData: setTimeSeriesPlotData,
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,

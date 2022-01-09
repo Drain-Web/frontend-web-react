@@ -62,6 +62,9 @@ const VarsState = createContext({
       },
       timeseriesPanel: {
         show: false
+      },
+      map: {
+        zoomLevel: null
       }
     }
   }

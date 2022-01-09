@@ -10,8 +10,6 @@ import MapControler from "./components/others/MapControler";
 import GetZoomLevel from "./components/others/GetZoomLevel";
 
 // import contexts
-// TODO: use only the standard ones
-import MapContext from "./components/contexts/MapContext";
 import ConsCache from "./components/contexts/ConsCache";
 import ConsFixed from "./components/contexts/ConsFixed";
 import VarsState from "./components/contexts/VarsState";
@@ -78,23 +76,14 @@ const App = ({ settings }) => {
   const position = [posXY.y, posXY.x]
 
   return (
-    <MapContext.Provider
-      value={{
-        mapLocationsContextData,
-        setMapLocationsContextData,
-        zoomLevel,
-        setZoomLevel
-      }}
-    >
-      <VarsState.Provider value={{ varsState, setVarState }}>
-        <ConsCache.Provider value={{ consCache }}>
-          <MapContainer center={position} zoom={zoomLevel} zoomControl={false}>
-            <GetZoomLevel />
-            <MapControler settings={settings} />
-          </MapContainer>
-        </ConsCache.Provider>
-      </VarsState.Provider>
-    </MapContext.Provider>
+    <VarsState.Provider value={{ varsState, setVarState }}>
+      <ConsCache.Provider value={{ consCache }}>
+        <MapContainer center={position} zoom={zoomLevel} zoomControl={false}>
+          <GetZoomLevel />
+          <MapControler settings={settings} />
+        </MapContainer>
+      </ConsCache.Provider>
+    </VarsState.Provider>
   )
 }
 
