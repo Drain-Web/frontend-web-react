@@ -11,6 +11,7 @@ const ConsCache = createContext({
       evaluationResponseData: {},
       locationIdByTimeseriesId: {},
       moduleInstanceIdsByThresholdGroupId: {},
+      moduleInstanceIdsByParameterId: {},
       parameterIdsByThresholdGroupId: {},
       timeseriesIdsByFilterId: {},
       timeseriesIdsByLocationId: {},

@@ -24,16 +24,12 @@ async function fetcherWith (url, extra) {
 }
 
 const getParameterGroupsOfMetric = (metricId, settings) => {
-  console.log('metricId:', metricId)
-  console.log('settings:', settings.locationIconsOptions.evaluation.options)
   const paramGroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
   return Object.keys(paramGroups)
 }
 
 const getSimObsParameterIds = (metricId, parameterGroupId, settings) => {
-  console.log(metricId)
-  console.log(parameterGroupId)
-  console.log(settings)
+  // return two strings: the parameter ID of the simulations and the parameter id of the observations
   const pgroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
   return [pgroups[parameterGroupId].parameters.sim, pgroups[parameterGroupId].parameters.obs]
 }
@@ -49,30 +45,41 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     useState(varsStateLib.getContextIconsArgs('evaluation', varsState).metric)
   const [selectedParameterGroup, setSelectedParameterGroup] =
     useState(varsStateLib.getContextIconsArgs('evaluation', varsState).parameterGroupId)
-  const [simModuleInstanceId, setSimModuleInstanceId] = useState('Dist115t140USGSobs')
-  const [obsModuleInstanceId, setObsModuleInstanceId] = useState('ImportUSGSobs')
-
+  const [simModuleInstanceId, setSimModuleInstanceId] = 
+    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).simulationModuleInstanceId)
+  const [obsModuleInstanceId, setObsModuleInstanceId] = 
+    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).observationModuleInstanceId)
+    
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
-    if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
-    if (!selectedMetric) { return (null) }
-    if (!selectedParameterGroup) { return (null) }
+    if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { 
+      console.log(':::fail 1')
+      return (null) 
+    }
+    if (!selectedMetric) {
+      console.log(':::fail 2')
+      return (null)
+    }
+    if (!selectedParameterGroup) {
+      console.log(':::fail 3')
+      return (null)
+    }
 
-    // TODO: get obs and mod parameter IDs from parameter group
-
+    // get obs and mod parameter IDs from parameter group
     const [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
       selectedParameterGroup, settings)
 
     // define url to be called and skip call if this was the last URL called
+    console.log("Building URL for:", obsModuleInstanceId, simModuleInstanceId)
     const urlTimeseriesCalcRequest = apiUrl(
       settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
         filter: varsStateLib.getContextFilterId(varsState),
         calc: selectedMetric,
         simParameterId: simParameterId,
         obsParameterId: obsParameterId,
-        obsModuleInstanceId: obsModuleInstanceId, // selectedMetric.observationModuleInstanceId,
-        simModuleInstanceId: simModuleInstanceId // TODO: selectedMetric.simulationModuleInstanceId
+        obsModuleInstanceId: obsModuleInstanceId,
+        simModuleInstanceId: simModuleInstanceId
       }
     )
 
@@ -104,8 +111,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     }
     setVarState(Math.random())
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
-      varsStateLib.getContextIconsArgs('evaluation', varsState), selectedMetric, 
-      selectedParameterGroup])
+      varsStateLib.getContextIconsArgs('evaluation', varsState),
+      selectedMetric, selectedParameterGroup, simModuleInstanceId, obsModuleInstanceId])
 
   /* ** BUILD COMPONENT ********************************************************************** */
 
@@ -117,9 +124,20 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     setSelectedMetric(selectedItem.target.value)
   }
 
+  // TODO: implement this one
   const changeSelectedParameterGroup = (selectedItem) => {
     // varsStateLib.setContextIcons('evaluation', { metric: selectedItem.target.value }, varsState)
     // setSelectedMetric(selectedItem.target.value)
+  }
+
+  const changeSelectedObsModuleInstanceId = (selectedItem) => {
+    varsStateLib.setContextIcons('evaluation', { observationModuleInstanceId: selectedItem.target.value }, varsState)
+    setObsModuleInstanceId(selectedItem.target.value)
+  }
+  
+  const changeSelectedSimModuleInstanceId = (selectedItem) => {
+    varsStateLib.setContextIcons('evaluation', { simulationModuleInstanceId: selectedItem.target.value }, varsState)
+    setSimModuleInstanceId(selectedItem.target.value)
   }
 
   // build options for metrics
@@ -137,6 +155,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     return <></>
   }
 
+  // build options for parameter groups
   const allParameterGroupOptions = []
   const paramGroupIds = selectedMetric ? getParameterGroupsOfMetric(selectedMetric, settings) : []
   if (selectedMetric) {
@@ -156,66 +175,109 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     allParameterGroupOptions.push(<option value={null} key={null}>Select a metric!</option>)
   }
 
+  // build options for moduleInstanceIds
+  let [simParameterId, obsParameterId] = [null, null]
+  let [allSimModuleInstanceOptions, allObsModuleInstanceOptions] = [[], []]
+
+  if (selectedMetric && selectedParameterGroup) {
+    [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
+      selectedParameterGroup, settings)
+    
+    // get all module ids
+    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
+    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
+  
+    // build simulation options
+    for (const curSimulationModuleInstanceId of allSimModInstIds) {
+      allSimModuleInstanceOptions.push(
+        <option value={curSimulationModuleInstanceId} key={curSimulationModuleInstanceId}>
+          {curSimulationModuleInstanceId}
+        </option>
+      )
+    }
+
+    // build observation module options
+    for (const curObservationModuleInstanceId of allObsModInstIds) {
+      allObsModuleInstanceOptions.push(
+        <option value={curObservationModuleInstanceId} key={curObservationModuleInstanceId}>
+          {curObservationModuleInstanceId}
+        </option>
+      )
+    }
+
+    // if no simulation module instance selected, select one
+    if ((!simModuleInstanceId) && (allSimModInstIds.size > 0)) {
+      setSimModuleInstanceId(allSimModInstIds.values().next().value)
+      return <></>
+    }
+
+    // if no observation module instance selected, select one
+    if ((!obsModuleInstanceId) && (allObsModInstIds.size > 0)) {
+      setObsModuleInstanceId(allObsModInstIds.values().next().value)
+      return <></>
+    }
+    
+  } else {
+    allSimModuleInstanceOptions.push(<option value={null} key={null}>Select a metric and a parameter group!</option>)
+    allObsModuleInstanceOptions.push(<option value={null} key={null}>Select a metric and a parameter group!</option>)
+  }
+
   return (
     <>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
-          <FloatingLabel label='Metric'>
-            <Form.Control
-              as='select'
-              onChange={changeSelectedMetric}
-              defaultValue={selectedMetric}
-              className='rounded-1'
-              label='Metric'
-            >
-              {allMetricOptions}
-            </Form.Control>
-          </FloatingLabel>
-        </Col>
-      </Row>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
-          <FloatingLabel label='Parameter Group'>
-            <Form.Control
-              as='select'
-              onChange={changeSelectedParameterGroup}
-              defaultValue={selectedParameterGroup}
-              className='rounded-1'
-              label='Parameter Group'
-            >
-              {allParameterGroupOptions}
-            </Form.Control>
-          </FloatingLabel>
-        </Col>
-      </Row>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
-          <FloatingLabel label='Simulations'>
-            <Form.Control
-              as='select'
-              defaultValue={simModuleInstanceId}
-              className='rounded-1'
-              label='Simulations'
-            >
-              <option value={simModuleInstanceId} key={simModuleInstanceId}>{simModuleInstanceId}</option>
-            </Form.Control>
-          </FloatingLabel>
-        </Col>
-      </Row>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
-          <FloatingLabel label='Observations'>
-            <Form.Control
-              as='select'
-              defaultValue={obsModuleInstanceId}
-              className='rounded-1'
-              label='Observations'
-            >
-              <option value={obsModuleInstanceId} key={obsModuleInstanceId}>{obsModuleInstanceId}</option>
-            </Form.Control>
-          </FloatingLabel>
-        </Col>
-      </Row>
+      <Row className={ownStyles['row-padding-top']}><Col>
+        <FloatingLabel label='Metric'>
+          <Form.Control
+            as='select'
+            onChange={changeSelectedMetric}
+            defaultValue={selectedMetric}
+            className='rounded-1'
+            label='Metric'
+          >
+            {allMetricOptions}
+          </Form.Control>
+        </FloatingLabel>
+      </Col></Row>
+      <Row className={ownStyles['row-padding-top']}><Col>
+        <FloatingLabel label='Parameter Group'>
+          <Form.Control
+            as='select'
+            onChange={changeSelectedParameterGroup}
+            defaultValue={selectedParameterGroup}
+            className='rounded-1'
+            label='Parameter Group'
+          >
+            {allParameterGroupOptions}
+          </Form.Control>
+        </FloatingLabel>
+      </Col></Row>
+      <Row className={ownStyles['row-padding-top']}><Col>
+        <FloatingLabel label='Simulations'>
+          <Form.Control
+            as='select'
+            onChange={changeSelectedSimModuleInstanceId}
+            defaultValue={simModuleInstanceId}
+            className='rounded-1'
+            label='Simulations'
+          >
+            {allSimModuleInstanceOptions}
+            {/* <option value={simModuleInstanceId} key={simModuleInstanceId}>{simModuleInstanceId}</option> */}
+          </Form.Control>
+        </FloatingLabel>
+      </Col></Row>
+      <Row className={ownStyles['row-padding-top']}><Col>
+        <FloatingLabel label='Observations'>
+          <Form.Control
+            as='select'
+            onChange={changeSelectedObsModuleInstanceId}
+            defaultValue={obsModuleInstanceId}
+            className='rounded-1'
+            label='Observations'
+          >
+            {allObsModuleInstanceOptions}
+            { /*<option value={obsModuleInstanceId} key={obsModuleInstanceId}>{obsModuleInstanceId}</option> */ }
+          </Form.Control>
+        </FloatingLabel>
+      </Col></Row>
     </>
   )
 }

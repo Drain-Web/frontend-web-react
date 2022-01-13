@@ -71,6 +71,10 @@ const getModuleInstancesOfThreshouldGroup = (threshouldGroupId, consCache) => {
   return consCache.indexes.moduleInstanceIdsByThresholdGroupId[threshouldGroupId]
 }
 
+const getModuleInstancesWithParameter = (parameterId, consCache) => {
+  return consCache.indexes.moduleInstanceIdsByParameterId[parameterId]
+}
+
 // 
 const getParameterIdsByThresholdGroupId = (threshouldGroupId, consCache) => {
   return consCache.indexes.parameterIdsByThresholdGroupId[threshouldGroupId]
@@ -99,6 +103,8 @@ const storeTimeseriesData = (tsData, consCache, consFixed) => {
   // add indexes
   _addToIndex('timeseriesIdsByLocationId', tsData.header.location_id, tsData.id, consCache)
   _addToIndex('timeseriesIdsByParameterId', tsData.header.parameterId, tsData.id, consCache)
+  _addToIndex('moduleInstanceIdsByParameterId', tsData.header.parameterId, 
+    tsData.header.moduleInstanceId, consCache)
   _setToIndex('locationIdByTimeseriesId', tsData.id, tsData.header.location_id, consCache)
   
   // get threshold levels out of the timeseries
@@ -167,6 +173,7 @@ const consCacheLib = {
   getEvaluationResponseData: getEvaluationResponseData,
   getLocationIdOfTimeseriesId: getLocationIdOfTimeseriesId,
   getModuleInstancesOfThreshouldGroup: getModuleInstancesOfThreshouldGroup,
+  getModuleInstancesWithParameter: getModuleInstancesWithParameter,
   getParameterIdsByThresholdGroupId: getParameterIdsByThresholdGroupId,
   getTimeseriesData: getTimeseriesData,
   getTimeseriesIdsInFilterId: getTimeseriesIdsInFilterId,
