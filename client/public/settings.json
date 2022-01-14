@@ -62,6 +62,12 @@
           }
         }
       }
+    },
+    "comparison": {
+      "available": true,
+      "options": {
+        "availableParameterGroupIds": ["Discharge", "Waterlevel"]
+      }
     }
   },
   "thresholdGroups": {
