@@ -23,13 +23,14 @@ import ownStyles from "../../style/MainMenuControl.module.css";
 /* ** OBJ - Bootstrap div ******************************************************************** */
 
 const MainMenuControl = ({ settings, position }) => {
-  
   /* ** SET HOOKS **************************************************************************** */
-  const { consFixed } = useContext(ConsFixed)
+  const { consFixed } = useContext(ConsFixed);
 
   // Get global states and set local states
-  const { varsState, setVarState } = useContext(VarsState)
-  const [showMe, setShowMe] = useState(varsStateLib.getMainMenuControlShow(varsState))
+  const { varsState, setVarState } = useContext(VarsState);
+  const [showMe, setShowMe] = useState(
+    varsStateLib.getMainMenuControlShow(varsState)
+  );
 
   const divRef = useRef(null);
 
@@ -38,8 +39,11 @@ const MainMenuControl = ({ settings, position }) => {
   });
 
   useEffect(() => {
-    console.log("Should update.")
-  }, [varsState['context'], varsState['domObjects']['mainMenuControl']['activeTab']]) 
+    console.log("Should update.");
+  }, [
+    varsState["context"],
+    varsState["domObjects"]["mainMenuControl"]["activeTab"],
+  ]);
 
   const remValue = useRemValue();
 
@@ -56,7 +60,7 @@ const MainMenuControl = ({ settings, position }) => {
         <Container className="h-100" ref={divRef}>
           <Row>
             <Col>
-              <h1>{consFixed['region'].systemInformation.name}</h1>
+              <h1>{consFixed["region"].systemInformation.name}</h1>
             </Col>
           </Row>
           <Row>
@@ -67,11 +71,16 @@ const MainMenuControl = ({ settings, position }) => {
           <Row>
             <Tabs
               className="mb-2"
-              defaultActiveKey={ varsStateLib.getMainMenuControlActiveTab(varsState) }
-              activeKey={ varsStateLib.getMainMenuControlActiveTab(varsState) }
+              defaultActiveKey={varsStateLib.getMainMenuControlActiveTab(
+                varsState
+              )}
+              activeKey={varsStateLib.getMainMenuControlActiveTab(varsState)}
               onSelect={(selectedTab) => {
-                varsStateLib.setMainMenuControlActiveTab(selectedTab, varsState);
-                setVarState(Math.random())
+                varsStateLib.setMainMenuControlActiveTab(
+                  selectedTab,
+                  varsState
+                );
+                setVarState(Math.random());
               }}
             >
               <Tab eventKey="tabOverview" title="Overview">
@@ -85,22 +94,21 @@ const MainMenuControl = ({ settings, position }) => {
 
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
-                  filtersData={consFixed['filters']}
-                  locationsData={consFixed['locations']}
-                  thresholdValueSets={consFixed['thresholdValueSets']}
-                  thresholdGroups={consFixed['thresholdGroup']}
+                  filtersData={consFixed["filters"]}
+                  locationsData={consFixed["locations"]}
+                  thresholdValueSets={consFixed["thresholdValueSets"]}
+                  thresholdGroups={consFixed["thresholdGroup"]}
                   settings={settings}
                 />
               </Tab>
 
-              <Tab eventKey='tabActiveFeatureInfo' title='Info'>
+              <Tab eventKey="tabActiveFeatureInfo" title="Info">
                 <TabActiveFeatureInfo
                   settings={settings}
                   // filtersData={consFixed['filters']}
                   // overviewFilter={settings.overviewFilter}
                 />
               </Tab>
-
             </Tabs>
           </Row>
         </Container>
@@ -108,11 +116,11 @@ const MainMenuControl = ({ settings, position }) => {
       <div
         className={ownStyles.buttonSlide}
         onClick={() => {
-          varsStateLib.toggleMainMenuControl(varsState)
-          setShowMe(varsStateLib.getMainMenuControlShow(varsState))
+          varsStateLib.toggleMainMenuControl(varsState);
+          setShowMe(varsStateLib.getMainMenuControlShow(varsState));
         }}
       >
-        {varsStateLib.getMainMenuControlShow(varsState) ? '◀' : '▶'}
+        {varsStateLib.getMainMenuControlShow(varsState) ? "◀" : "▶"}
       </div>
     </>
   );
@@ -127,4 +135,4 @@ const MainMenuControl = ({ settings, position }) => {
   );
 };
 
-export default MainMenuControl
+export default MainMenuControl;
