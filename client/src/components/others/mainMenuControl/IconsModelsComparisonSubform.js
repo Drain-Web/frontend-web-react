@@ -30,6 +30,7 @@ const getParameterMetric = (param, metric) => {
   return param + '|' + metric
 }
 
+
 const IconsModelsComparisonSubform = ({ settings }) => {
   /* ** SET HOOKS **************************************************************************** */
 
@@ -50,7 +51,15 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     // only triggers when "evaluation" is selected and the selected metric is not null
     if (varsStateLib.getContextIconsType(varsState) !== 'comparison') { return (null) }
 
+    const selModInstIds = Array.from(selectedModuleInstanceIds)
+    const allIcons = settings.locationIconsOptions.comparison.icons
+    const useIcons = allIcons.slice(0, selModInstIds.length)
+
     // TODO - call varsStateLib.updateLocationIcons()
+    console.log("Selected:", selectedModuleInstanceIds)
+    console.log("Truly:", varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
+    console.log("Sliced icons:", useIcons, "in", selModInstIds.length)
+
 
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
     varsStateLib.getContextIconsArgs('comparison', varsState),
@@ -70,6 +79,27 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     setSelectedParameter(parameterGroupId)
     setSelectedMetric(metricId)
     setSelectedParameterMetric(selectedParameterMetric.target.value)
+  }
+
+  // 
+  const changeSelectedModuleInstances = (args) => {
+    const targetIsChecked = args.target.checked
+    const targetValue = args.target.value
+
+    // get and update elements
+    const activeModuleInstanceIds = new Set(
+      varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
+    if (targetIsChecked) { 
+      activeModuleInstanceIds.add(targetValue)
+    } else {
+      activeModuleInstanceIds.delete(targetValue)
+    }
+
+    // save them
+    varsStateLib.setContextIcons("comparison", { 
+      moduleInstanceIds: activeModuleInstanceIds
+    }, varsState)
+    setSelectedModuleInstanceIds(activeModuleInstanceIds)
   }
   
   // build parameter metrics options
@@ -100,7 +130,13 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     allModuleInstanceOptionIds.forEach((curModuleInstanceId) => {
       // TODO - check if there is at least one time series of the current module instance in the selected filter
       allModuleInstanceOptions.push(
-        <Form.Check type="checkbox" label={curModuleInstanceId} key={curModuleInstanceId} />
+        <Form.Check
+          type="checkbox"
+          value={curModuleInstanceId}
+          label={curModuleInstanceId}
+          key={curModuleInstanceId}
+          onChange={changeSelectedModuleInstances}
+        />
       )
     })
   }

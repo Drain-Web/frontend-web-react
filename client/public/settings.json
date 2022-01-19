@@ -67,7 +67,13 @@
       "available": true,
       "options": {
         "availableParameterGroupIds": ["Discharge", "Waterlevel"]
-      }
+      },
+      "icons": ["./img/location_icons/classification/classA.svg",
+                "./img/location_icons/classification/classB.svg",
+                "./img/location_icons/classification/classC.svg",
+                "./img/location_icons/classification/classD.svg",
+                "./img/location_icons/classification/classE.svg",
+                "./img/location_icons/classification/classF.svg"]
     }
   },
   "thresholdGroups": {
