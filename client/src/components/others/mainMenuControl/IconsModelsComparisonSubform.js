@@ -3,13 +3,14 @@ import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 
 // import contexts
+import ConsCache from '../../contexts/ConsCache'
+import ConsFixed from '../../contexts/ConsFixed'
 import consCacheLib from '../../contexts/consCacheLib'
 import VarsState from "../../contexts/VarsState";
 import varsStateLib from "../../contexts/varsStateLib";
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
-import ConsCache from '../../contexts/ConsCache'
 
 
 // TODO
@@ -20,6 +21,13 @@ const getAvailableMetrics = () => {
     'lowerMax': 'Lower Max',
     'lowerMean': 'Lower Mean'
   }
+}
+
+const getGuideMessage = (numberSelectedModuleInstanceIds) => {
+  if (numberSelectedModuleInstanceIds < 2) {
+    return "Select at least 2 ModuleInstanceIds."
+  }
+  return null
 }
 
 const getParameterAndMetric = (parameterMetric) => {
@@ -36,7 +44,8 @@ const IconsModelsComparisonSubform = ({ settings }) => {
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
-  const { varsState } = useContext(VarsState)
+  const { consFixed } = useContext(ConsFixed)
+  const { varsState, setVarState } = useContext(VarsState)
   const [selectedParameter, setSelectedParameter] =
     useState(varsStateLib.getContextIconsArgs('comparison', varsState).parameterGroupId)
   const [selectedMetric, setSelectedMetric] =
@@ -45,21 +54,16 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     useState(getParameterMetric(selectedParameter, selectedMetric))
   const [selectedModuleInstanceIds, setSelectedModuleInstanceIds] =
     useState(varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
+  const [guideMessage, setGuideMessage] = useState(null)
     
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
     if (varsStateLib.getContextIconsType(varsState) !== 'comparison') { return (null) }
 
-    const selModInstIds = Array.from(selectedModuleInstanceIds)
-    const allIcons = settings.locationIconsOptions.comparison.icons
-    const useIcons = allIcons.slice(0, selModInstIds.length)
-
-    // TODO - call varsStateLib.updateLocationIcons()
-    console.log("Selected:", selectedModuleInstanceIds)
-    console.log("Truly:", varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
-    console.log("Sliced icons:", useIcons, "in", selModInstIds.length)
-
+    // if not enough modules select, shows uniform
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
+    setVarState(Math.random())
 
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
     varsStateLib.getContextIconsArgs('comparison', varsState),
@@ -100,6 +104,7 @@ const IconsModelsComparisonSubform = ({ settings }) => {
       moduleInstanceIds: activeModuleInstanceIds
     }, varsState)
     setSelectedModuleInstanceIds(activeModuleInstanceIds)
+    setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
   }
   
   // build parameter metrics options
@@ -156,6 +161,11 @@ const IconsModelsComparisonSubform = ({ settings }) => {
               {allParameterMetricOptions}
             </Form.Control>
           </FloatingLabel>
+        </Col>
+      </Row>
+      <Row className={ownStyles['row-padding-top']}>
+        <Col>
+          {guideMessage}
         </Col>
       </Row>
       <Row className={ownStyles['row-padding-top']}>

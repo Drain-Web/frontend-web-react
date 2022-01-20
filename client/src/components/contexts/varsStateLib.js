@@ -152,6 +152,63 @@ const setContextIcons = (iconsType, args, varsState) => {
   }
 }
 
+
+// 
+const setMapLegendSubtitle = (subtitle, varsState) => {
+  varsState.domObjects.mapLegend.subtitle = subtitle
+}
+
+// 
+const getMapLegendSubtitle = (varsState) => {
+  return varsState.domObjects.mapLegend.subtitle
+}
+
+
+// 
+// param icons: Dictionary with 'description' as key and 'iconUrl' as value
+// param iconsOrder: List with sequential keys of 'icons' param; or null for any order.
+const setMapLegendIcons = (icons, iconsOrder, varsState) => {
+  const [iconsUrlList, iconsDescList] = [[], []]
+
+  // fill lists
+  if (!iconsOrder) {
+    for (const [curModuleInstanceId, curModuleInstanceValue] of Object.entries(icons)) {
+      iconsUrlList.push(curModuleInstanceValue)
+      iconsDescList.push(curModuleInstanceId)
+    }
+  } else {
+    for (const curModuleInstanceId of iconsOrder){
+      iconsUrlList.push(icons[curModuleInstanceId])
+      iconsDescList.push(curModuleInstanceId)
+    }
+  }
+
+  // update varsState
+  varsState.domObjects.mapLegend.iconsUrls = iconsUrlList
+  varsState.domObjects.mapLegend.iconsTitles = iconsDescList
+}
+
+
+//
+const getMapLegendIcons = (varsState) => {
+  return {
+    "icons": varsState.domObjects.mapLegend.iconsUrls,
+    "titles": varsState.domObjects.mapLegend.iconsTitles
+  }
+}
+
+
+// 
+const setMapLegendVisibility = (display, varsState) => {
+  varsState.domObjects.mapLegend.display = display
+}
+
+// 
+const getMapLegendVisibility = (varsState) => {
+  return varsState.domObjects.mapLegend.display
+}
+
+
 //
 const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
   varsState.domObjects.mainMenuControl.activeTab = newActiveTabId
@@ -243,17 +300,19 @@ const updateLocationIcons = (varsState, consCache, consFixed, settings) => {
     // if in a specific filter, decide location by location
     if (getContextIconsType(varsState) === 'uniform') {
       _updateLocationIconsUniform(varsState, consCache, settings)
-      console.log('Should have updated by Uniform')
+      console.log('Should have updated by Uniform')  // TODO: remove it
     } else if (getContextIconsType(varsState) === 'evaluation') {
       _updateLocationIconsEvaluation(varsState, consCache, settings)
-      // _randomHideShowAllLocationIcons(varsState)
-      console.log('Should have updated by Evaluation')
+      console.log('Should have updated by Evaluation')  // TODO: remove it
     } else if (getContextIconsType(varsState) === 'alerts') {
       _updateLocationIconsAlerts(varsState, consCache, consFixed, settings)
-      console.log('Should have updated by Alerts')
+      console.log('Should have updated by Alerts')  // TODO: remove it
+    } else if (getContextIconsType(varsState) === 'comparison') {
+      _updateLocationIconsComparison(varsState, consCache, consFixed, settings)
+      console.log('Should have updated by Comparison')  // TODO: remove it
     } else {
       hideAllLocationIcons(varsState)
-      console.log('Hide icons because update icon time for "%s" was not implemented yet.')
+      console.log('Hide icons because update icon was not implemented yet.')  // TODO: remove it
     }
   } else if (inMainMenuControlActiveTabActiveFeatureInfo(varsState)) {
     console.log('In features info. Single show.')
@@ -397,6 +456,75 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
   for (const locationId in varsState.locations) {
     varsState.locations[locationId].display = locationId in locationIdsIcons
   }
+
+  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
+}
+
+// 
+const _updateLocationIconsComparison = (varsState, consCache, consFixed, settings) => {
+  const comparisonsArgs = varsStateLib.getContextIconsArgs('comparison', varsState)
+  const selModInstIdsArray = Array.from(comparisonsArgs.moduleInstanceIds)
+  const allIcons = settings.locationIconsOptions.comparison.icons
+  const useIcons = allIcons.slice(0, selModInstIdsArray.length)
+  const filterId = getContextFilterId(varsState)
+  const selectedParameterGroupId = comparisonsArgs.parameterGroupId
+  const selectedMetric = comparisonsArgs.metric
+
+  // get all timeseries for this filter
+  const consideredTimeseries = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!consideredTimeseries) {
+    console.warn("No timeseries found for filter '" + filterId + "' on cache.")
+    return
+  }
+
+  // collect values for each location
+  const [locationIdsIcons, iconsLegend] = [{}, {}]
+  for (const curTimeseriesId of consideredTimeseries) {
+    const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
+    const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(
+      curTimeseriesData.header.parameterId, consFixed)
+    const curLocationId = curTimeseriesData.header.location_id
+    const curModuleInstanceId = curTimeseriesData.header.moduleInstanceId
+
+    // only considers relevant timeseries
+    if (curParameterGroupId != selectedParameterGroupId) { continue }
+    if (!comparisonsArgs.moduleInstanceIds.has(curModuleInstanceId)) { continue }
+
+    // 
+    if (!(curLocationId in locationIdsIcons)) {
+      locationIdsIcons[curLocationId] = {}
+    }
+
+    // get correct value
+    locationIdsIcons[curLocationId][curModuleInstanceId] = Math.random()  // TODO: correct that
+  }
+
+  // define the winner for each location
+  for (const [curLocationId, curLocationDict] of Object.entries(locationIdsIcons)) {
+    let [curWinModuleInstanceId, curWinValue] = [null, null]
+    for (const [curModuleInstanceId, curModuleInstanceValue] of Object.entries(curLocationDict)) {
+      if (!curWinModuleInstanceId) {
+        curWinModuleInstanceId = curModuleInstanceId
+        curWinValue = curModuleInstanceValue
+      } else if (selectedMetric.startsWith("higher") && (curWinValue < curModuleInstanceValue)) {
+        curWinModuleInstanceId = curModuleInstanceId
+        curWinValue = curModuleInstanceValue
+      }
+    }
+    const winIconUrl = useIcons[selModInstIdsArray.indexOf(curWinModuleInstanceId)]
+    varsState.locations[curLocationId].icon = winIconUrl
+    iconsLegend[curWinModuleInstanceId] = winIconUrl
+  }
+
+  // update visibility of icons
+  for (const locationId in varsState.locations) {
+    varsState.locations[locationId].display = locationId in locationIdsIcons
+  }
+
+  // update legend
+  varsStateLib.setMapLegendSubtitle("Winners:", varsState)
+  varsStateLib.setMapLegendIcons(iconsLegend, null, varsState)
+  varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
 //
@@ -415,6 +543,7 @@ const _updateLocationIconsUniform = (varsState, consCache, settings) => {
   const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
   if (!timeseriesIdsByFilter) {
     hideAllLocationIcons(varsState)
+    varsStateLib.setMapLegendVisibility(false, varsState)
     return
   }
 
@@ -429,6 +558,7 @@ const _updateLocationIconsUniform = (varsState, consCache, settings) => {
     // varsState.locations[locationId].icon = "./img/drop.svg"  // TODO: get this URL from settings
     varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
+  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
 }
 
 //
@@ -463,6 +593,8 @@ const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
       varsState.locations[locationId].icon = iconUrl
     }
   }
+
+  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
 }
 
 /* ** NAMESPACE ****************************************************************************** */
@@ -479,6 +611,9 @@ const varsStateLib = {
   getContextIconsType: getContextIconsType,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
   getMainMenuControlShow: getMainMenuControlShow,
+  getMapLegendSubtitle: getMapLegendSubtitle, 
+  getMapLegendVisibility: getMapLegendVisibility,
+  getMapLegendIcons: getMapLegendIcons,
   getMapZoomLevel: getMapZoomLevel,
   getPanelTabsShow: getPanelTabsShow,
   getTimeSerieUrl: getTimeSerieUrl,
@@ -495,6 +630,9 @@ const varsStateLib = {
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
+  setMapLegendSubtitle: setMapLegendSubtitle,
+  setMapLegendIcons: setMapLegendIcons,
+  setMapLegendVisibility: setMapLegendVisibility,
   setMapZoomLevel: setMapZoomLevel,
   setTimeSerieUrl: setTimeSerieUrl,
   setTimeSeriesPlotData: setTimeSeriesPlotData,
@@ -509,5 +647,7 @@ const varsStateLib = {
   toggleMainMenuControl: toggleMainMenuControl,
   updateLocationIcons: updateLocationIcons
 }
+
+setMapLegendSubtitle, setMapLegendIcons, setMapLegendVisibility
 
 export default varsStateLib

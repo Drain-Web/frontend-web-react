@@ -1,21 +1,25 @@
 .mainContainer {
-  /* background-color: #f6f6f6; */
-  height: 100vh;
+  background-color: #f6f6f6;
   margin: 0;
   /* width:20rem; */
   max-width: 25vw;
   border-right-width: 0  !important;
-  border-left-width: 0   !important;
-  border-top-width: 0    !important;
-  border-bottom-width: 0 !important;
-  background: linear-gradient(180deg, rgb(190, 190, 250) 0%, rgb(220, 230, 255) 60%, rgb(200, 200, 255) 100%);
-  clear: none  !important;
+  clear: none            !important;
+  float: right           !important;
+  margin-top: 5rem;
+  border-color: #444444;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .mainContainer h1 {
   font-size: 1.3rem;
   margin-top: 0;
   margin-bottom: 0;
+}
+
+.mainContainer img {
+  width: 1.5rem;
 }
 
 .mainContainer hr {
@@ -29,8 +33,8 @@
 
 div.content {
   background-color: #FFFFFF;
-  width: 18rem;
-  float: left;
+  width: 15rem;
+  float: right;
   height: 100%;
 }
 
@@ -38,7 +42,7 @@ div.buttonSlide {
   background-color: #FFFFFF;
   height: 1.2rem;
   width: 1.2rem;
-  float: left;
+  float: right;
   text-align: center;
   cursor: pointer;
 }

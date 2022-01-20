@@ -65,6 +65,12 @@ const VarsState = createContext({
       },
       map: {
         zoomLevel: null
+      },
+      mapLegend: {
+        subtitle: null,
+        iconsUrls: [],
+        iconsTitles: [],
+        display: false
       }
     }
   }
