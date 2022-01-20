@@ -67,7 +67,7 @@ const MapControler = ({ settings }) => {
               (<></>)
             */}
         </LayersControl>
-        {/* <SearchField /> */}
+        <SearchField />
         <ZoomControl position="bottomright" />
       </div>{" "}
       {/* </FlexContainer> */}
