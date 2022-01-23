@@ -151,7 +151,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
         </Col></Row>
         <IconsModelEvaluationSubform settings={settings} />
         <Row className={ownStyles['row-padding-top']}><Col>
-          <IconsModelsComparisonSubform />
+          <IconsModelsComparisonSubform settings={settings} />
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
           <IconsModelsCompetitionSubform />
