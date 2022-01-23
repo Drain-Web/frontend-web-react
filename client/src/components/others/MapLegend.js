@@ -30,7 +30,6 @@ const MapLegend = ({ settings, position }) => {
 
   //
   const allIcons = []
-  console.log(varsStateLib.getMapLegendIcons(varsState))
   allIconsUrl.forEach((iconUrl, i) => {
     const iconTitle = allIconsTitle[i]
     allIcons.push(
@@ -41,9 +40,7 @@ const MapLegend = ({ settings, position }) => {
 
   // containing div th
   return (
-    <div
-      className={`${ownStyles.mainContainer} leaflet-control`}
-    >
+    <div className={`${ownStyles.mainContainer} leaflet-control`}>
       <strong>Legend</strong>
       <br />
       {varsStateLib.getMapLegendSubtitle(varsState)}

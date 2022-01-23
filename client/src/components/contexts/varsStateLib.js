@@ -460,6 +460,16 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
   varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
 }
 
+const _isComparisonWinner = (selectedMetric, curWinningValue, curEvaluatedValue) => {
+  if (selectedMetric == 'higherMax') {
+    return (curEvaluatedValue.maxValue > curWinningValue)
+  } else if (selectedMetric == 'lowerMax') {
+    return (curEvaluatedValue.maxValue < curWinningValue)
+  } else {
+    return false
+  }
+}
+
 // 
 const _updateLocationIconsComparison = (varsState, consCache, consFixed, settings) => {
   const comparisonsArgs = varsStateLib.getContextIconsArgs('comparison', varsState)
@@ -485,6 +495,7 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
       curTimeseriesData.header.parameterId, consFixed)
     const curLocationId = curTimeseriesData.header.location_id
     const curModuleInstanceId = curTimeseriesData.header.moduleInstanceId
+    let curValue = null
 
     // only considers relevant timeseries
     if (curParameterGroupId != selectedParameterGroupId) { continue }
@@ -496,24 +507,35 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
     }
 
     // get correct value
-    locationIdsIcons[curLocationId][curModuleInstanceId] = Math.random()  // TODO: correct that
+    if (selectedMetric.endsWith("Max")) {
+      curValue = curTimeseriesData.maxValue
+    } else if (selectedMetric.endsWith("Min")) {
+      curValue = curTimeseriesData.minValue
+    }
+    locationIdsIcons[curLocationId][curModuleInstanceId] = curValue
   }
 
   // define the winner for each location
   for (const [curLocationId, curLocationDict] of Object.entries(locationIdsIcons)) {
     let [curWinModuleInstanceId, curWinValue] = [null, null]
     for (const [curModuleInstanceId, curModuleInstanceValue] of Object.entries(curLocationDict)) {
+      // check if it is the winning node of the location
       if (!curWinModuleInstanceId) {
         curWinModuleInstanceId = curModuleInstanceId
         curWinValue = curModuleInstanceValue
-      } else if (selectedMetric.startsWith("higher") && (curWinValue < curModuleInstanceValue)) {
+      } else if (_isComparisonWinner(selectedMetric, curWinValue, curModuleInstanceValue)) {
         curWinModuleInstanceId = curModuleInstanceId
         curWinValue = curModuleInstanceValue
       }
     }
     const winIconUrl = useIcons[selModInstIdsArray.indexOf(curWinModuleInstanceId)]
     varsState.locations[curLocationId].icon = winIconUrl
-    iconsLegend[curWinModuleInstanceId] = winIconUrl
+  }
+
+  // update legend icons
+  for (const curModuleInstanceId of comparisonsArgs.moduleInstanceIds) {
+    const curIconUrl = useIcons[selModInstIdsArray.indexOf(curModuleInstanceId)]
+    iconsLegend[curModuleInstanceId] = curIconUrl
   }
 
   // update visibility of icons
@@ -524,7 +546,10 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
   // update legend
   varsStateLib.setMapLegendSubtitle("Winners:", varsState)
   varsStateLib.setMapLegendIcons(iconsLegend, null, varsState)
-  varsStateLib.setMapLegendVisibility(true, varsState)
+
+  // hide legend if no module is selected
+  const legendView = (comparisonsArgs.moduleInstanceIds.size > 0)
+  varsStateLib.setMapLegendVisibility(legendView, varsState)
 }
 
 //
@@ -555,10 +580,11 @@ const _updateLocationIconsUniform = (varsState, consCache, settings) => {
   // update varsState location by location
   setUniformIcon(settings.generalLocationIcon, varsState)
   for (const locationId in varsState.locations) {
-    // varsState.locations[locationId].icon = "./img/drop.svg"  // TODO: get this URL from settings
     varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
-  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
+  varsStateLib.setMapLegendSubtitle("Uniform:", varsState)
+  varsStateLib.setMapLegendIcons({"Location": settings.generalLocationIcon}, null, varsState)
+  varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
 //

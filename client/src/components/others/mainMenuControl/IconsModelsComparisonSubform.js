@@ -17,9 +17,7 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 const getAvailableMetrics = () => {
   return {
     'higherMax': 'Higher Max',
-    'higherMean': 'Higher Mean',
-    'lowerMax': 'Lower Max',
-    'lowerMean': 'Lower Mean'
+    'lowerMax': 'Lower Max'
   }
 }
 
@@ -55,7 +53,7 @@ const IconsModelsComparisonSubform = ({ settings }) => {
   const [selectedModuleInstanceIds, setSelectedModuleInstanceIds] =
     useState(varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
   const [guideMessage, setGuideMessage] = useState(null)
-    
+  
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
@@ -75,14 +73,30 @@ const IconsModelsComparisonSubform = ({ settings }) => {
 
   // build reaction function
   const changeParameterMetric = (selectedParameterMetric) => {
-    const [parameterGroupId, metricId] = getParameterAndMetric(selectedParameterMetric.target.value)
+    let selParamMetric = null
+    if (selectedParameterMetric.target) {
+      selParamMetric = selectedParameterMetric.target.value
+    } else {
+      selParamMetric = selectedParameterMetric
+    }
+    const [parameterGroupId, metricId] = getParameterAndMetric(selParamMetric)
     varsStateLib.setContextIcons("comparison", { 
       parameterGroupId: parameterGroupId,
       metric: metricId
     }, varsState)
     setSelectedParameter(parameterGroupId)
     setSelectedMetric(metricId)
-    setSelectedParameterMetric(selectedParameterMetric.target.value)
+    setSelectedParameterMetric(selParamMetric)
+    updateSelectedModuleInstanceIds(new Set(), varsState)  // TODO: keep selected modules active
+  }
+
+  // updates varsState and hooks
+  const updateSelectedModuleInstanceIds = (activeModuleInstanceIds, varsState) => {
+    varsStateLib.setContextIcons("comparison", { 
+      moduleInstanceIds: activeModuleInstanceIds
+    }, varsState)
+    setSelectedModuleInstanceIds(activeModuleInstanceIds)
+    setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
   }
 
   // 
@@ -98,13 +112,7 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     } else {
       activeModuleInstanceIds.delete(targetValue)
     }
-
-    // save them
-    varsStateLib.setContextIcons("comparison", { 
-      moduleInstanceIds: activeModuleInstanceIds
-    }, varsState)
-    setSelectedModuleInstanceIds(activeModuleInstanceIds)
-    setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
+    updateSelectedModuleInstanceIds(activeModuleInstanceIds, varsState)
   }
   
   // build parameter metrics options
@@ -118,12 +126,14 @@ const IconsModelsComparisonSubform = ({ settings }) => {
       const parameterMetricValue = curParameterGroupId + ': ' + availableMetrics[curMetricId]
       allParameterMetricOptions.push(
         <option value={parameterMetricId} key={parameterMetricId}>{parameterMetricValue}</option>)
-      firstParameterMetricOptionId = firstParameterMetricOptionId ? firstParameterMetricOptionId : parameterMetricId
+      if (!firstParameterMetricOptionId) {
+        firstParameterMetricOptionId = parameterMetricId
+      }
     })
   })
-
+  
   // if no parameterMetric selected, select first
-  if (!selectedParameterMetric) {
+  if ((!selectedParameter) || (!selectedMetric)) {
     changeParameterMetric(firstParameterMetricOptionId)
     return <></>
   }
@@ -141,6 +151,7 @@ const IconsModelsComparisonSubform = ({ settings }) => {
           label={curModuleInstanceId}
           key={curModuleInstanceId}
           onChange={changeSelectedModuleInstances}
+          checked={selectedModuleInstanceIds.has(curModuleInstanceId)}
         />
       )
     })
