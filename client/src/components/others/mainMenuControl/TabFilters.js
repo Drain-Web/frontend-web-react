@@ -109,12 +109,6 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     setStateIconType(newIconView)
   }
 
-  const updateUniformFilter = (event) => {
-    //
-    const newIconUniformFilter = event.target.value
-    console.log("Update uniform filter:", newIconUniformFilter)
-  }
-
   /* ** MAIN RENDER ************************************************************************** */
 
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
@@ -144,7 +138,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <IconsViewSelectBox onChange={updateIconType} label="Location icons" />
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
-          <IconsUniformSubform onChangeFilter={updateUniformFilter} settings={settings} />
+          <IconsUniformSubform settings={settings} />
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
           <IconsAlertsSubform settings={settings} />
@@ -154,7 +148,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <IconsModelsComparisonSubform settings={settings} />
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
-          <IconsModelsCompetitionSubform />
+          <IconsModelsCompetitionSubform settings={settings} />
         </Col></Row>
       </Container>
     </Form>
