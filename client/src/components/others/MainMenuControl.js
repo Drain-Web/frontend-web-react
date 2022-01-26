@@ -3,10 +3,12 @@ import { DomEvent } from "leaflet";
 import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
+import { Button, CloseButton } from "react-bootstrap";
 
 // import custom components
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
+// import OpenCloseButton from "./mainMenuControl/OpenCloseButton";
 
 // import contexts
 import ConsFixed from "../contexts/ConsFixed";
@@ -48,8 +50,36 @@ const MainMenuControl = ({ settings, position }) => {
   const remValue = useRemValue();
 
   const contentProps = useSpring({
-    marginLeft: showMe ? 0 : -18 * remValue,
+    marginLeft: showMe ? 1 : -18 * remValue,
   });
+
+  const OpenCloseButton = () => {
+    if (varsStateLib.getMainMenuControlShow(varsState)) {
+      return (
+        <div className="close-button">
+          <CloseButton
+            onClick={() => {
+              varsStateLib.toggleMainMenuControl(varsState);
+              setShowMe(varsStateLib.getMainMenuControlShow(varsState));
+            }}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="open-button">
+          <Button
+            onClick={() => {
+              varsStateLib.hidePanelTabs(varsState);
+              setVarState(Math.random());
+            }}
+          >
+            -
+          </Button>
+        </div>
+      );
+    }
+  };
 
   /* ** MAIN RENDER ************************************************************************** */
 
@@ -83,7 +113,11 @@ const MainMenuControl = ({ settings, position }) => {
                 setVarState(Math.random());
               }}
             >
-              <Tab eventKey="tabOverview" title="Overview">
+              <Tab
+                eventKey="tabOverview"
+                title="Overview"
+                style={{ fontsize: "24px" }}
+              >
                 <p>
                   <span className="popuptitle">About</span>
                 </p>
@@ -113,7 +147,9 @@ const MainMenuControl = ({ settings, position }) => {
           </Row>
         </Container>
       </animated.div>
-      <div
+
+      <OpenCloseButton />
+      {/* <div
         className={ownStyles.buttonSlide}
         onClick={() => {
           varsStateLib.toggleMainMenuControl(varsState);
@@ -121,7 +157,7 @@ const MainMenuControl = ({ settings, position }) => {
         }}
       >
         {varsStateLib.getMainMenuControlShow(varsState) ? "◀" : "▶"}
-      </div>
+      </div> */}
     </>
   );
 
