@@ -6,19 +6,21 @@ body {
 .Panel {
   display: inline-block;
   box-sizing: border-box;
-  /* background-color: #f6f6f6; */
-  background: linear-gradient(
-    180deg,
+  background-color: #ffffff;
+  /* background: linear-gradient( */
+  /* 180deg,
     rgb(190, 190, 250) 0%,
     rgb(255, 255, 255) 100%
-  );
-  position: relative;
-  /* top: 0%; */
-  /* right: 5%; */
-  /* left: 20%; */
-  z-index: 1000;
-  min-height: 400px;
-  min-width: 400px;
+  ); */
+  position: absolute;
+  top: 22%;
+  left: 30%;
+  z-index: 1001;
+  min-height: 510px;
+  min-width: 700px;
+  max-height: 600px;
+  max-width: 800px;
+  border-color: #000;
   /* min-height: 500px; */
   /* max-height: 50vh; */
   /* width: 500px; */ /* width: 70%; */
@@ -29,17 +31,23 @@ body {
   padding: 0; /* padding: 1rem; */
   margin: auto;
   /* border: 0.1rem solid #000; */
-  border-radius: 1rem 0rem 1rem 1rem;
-  transform: translate(50%, 50%);
+  border-radius: 1rem 1rem 1rem 1rem;
+  /* transform: translate(50%, 50%); */
 }
 
 .hide {
   display: none;
 }
 
+.close-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
 div.button-close {
-  background-color: #ffffff;
-  width: 2rem;
+  background-color: #000;
+  width: 20rem;
   float: left;
   text-align: center;
   cursor: pointer;

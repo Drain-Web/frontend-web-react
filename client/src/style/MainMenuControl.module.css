@@ -1,14 +1,23 @@
 .mainContainer {
   /* background-color: #f6f6f6; */
-  height: 100vh;
-  margin: 0;
+  top: 5vh;
+  left: 0;
+  height: 90vh;
+  /* margin: 0; */
   /* width:20rem; */
   max-width: 25vw;
-  border-right-width: 0  !important;
-  border-left-width: 0   !important;
-  border-top-width: 0    !important;
+  border-right-width: 0 !important;
+  border-left-width: 0 !important;
+  border-top-width: 0 !important;
   border-bottom-width: 0 !important;
-  background: linear-gradient(180deg, rgb(190, 190, 250) 0%, rgb(220, 230, 255) 60%, rgb(200, 200, 255) 100%);
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+  /* background: linear-gradient(
+    180deg,
+    rgb(190, 190, 250) 0%,
+    rgb(220, 230, 255) 60%,
+    rgb(200, 200, 255) 100%
+  ); */
   clear: none  !important;
 }
 
@@ -23,24 +32,27 @@
 }
 
 .mainContainer select {
-  -webkit-appearance: menulist-button  !important;
-  -moz-appearance: menulist-button     !important;
+  -webkit-appearance: menulist-button !important;
+  -moz-appearance: menulist-button !important;
 }
 
 div.content {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   width: 18rem;
   float: left;
   height: 100%;
 }
 
 div.buttonSlide {
-  background-color: #FFFFFF;
-  height: 1.2rem;
-  width: 1.2rem;
+  background-color: #ffffff;
+  font-size: x-large;
+  height: 2.2rem;
+  width: 2.2rem;
   float: left;
   text-align: center;
   cursor: pointer;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 div.row-padding-top {
@@ -48,12 +60,12 @@ div.row-padding-top {
 }
 
 label.in-div {
-  opacity: .65;
-  transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 
 div.labeled-content {
-  padding-top: 1.0rem;
+  padding-top: 1rem;
   padding-bottom: 0rem;
   height: auto;
 }

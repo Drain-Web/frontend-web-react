@@ -9,24 +9,25 @@ import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
+// import SideNavBarMap from "./SideNavBar/SideNavBarMap";
 
 // import contexts
-import ConsCache from "../contexts/ConsCache"
-import ConsFixed from "../contexts/ConsFixed"
-import VarsState from "../contexts/VarsState"
-import varsStateLib from "../contexts/varsStateLib"
+import ConsCache from "../contexts/ConsCache";
+import ConsFixed from "../contexts/ConsFixed";
+import VarsState from "../contexts/VarsState";
+import varsStateLib from "../contexts/varsStateLib";
 
 // import assets
-import { baseLayersData } from "../../assets/MapBaseLayers"
+import { baseLayersData } from "../../assets/MapBaseLayers";
 
 const MapControler = ({ settings }) => {
   // this specific component is needed to allow useMap()
-  const map = useMap()
+  const map = useMap();
 
   // load contexts
-  const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState)
+  const { consCache } = useContext(ConsCache);
+  const { consFixed } = useContext(ConsFixed);
+  const { varsState, setVarState } = useContext(VarsState);
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
@@ -37,15 +38,13 @@ const MapControler = ({ settings }) => {
   return (
     <>
       <div>
-        {' '}
+        {" "}
         {/* <FlexContainer> */}
         {/* add the main left menu */}
-
         <MainMenuControl settings={settings} position="leaflet-right" />
-
+        {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
-        <PanelTabs position='leaflet-right' />
-
+        <PanelTabs position="leaflet-right" />
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -54,25 +53,21 @@ const MapControler = ({ settings }) => {
 
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <PolygonLayer
-            layerData={consFixed['boundaries']}
+            layerData={consFixed["boundaries"]}
             layerName="Boundaries"
             reversePolygon
           />
 
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
-          {
-            /*
+          {/*
           settings.riverNetwork.fullRaw
             ?
               (<GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />)
             :
               (<></>)
-            */
-            }
+            */}
         </LayersControl>
-
         <SearchField />
-
         <ZoomControl position="bottomright" />
 
         <MapLegend settings={settings} position="left" />
