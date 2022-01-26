@@ -1,42 +1,52 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef } from "react";
+import { DomEvent } from "leaflet";
 
 // import contexts
-import VarsState from "../contexts/VarsState"
-import varsStateLib from "../contexts/varsStateLib"
+import VarsState from "../contexts/VarsState";
+import varsStateLib from "../contexts/varsStateLib";
 
 // import CSS styles
 import ownStyles from "../../style/MapLegend.module.css";
 
-
 /* ** OBJ - Bootstrap div ******************************************************************** */
 
 const MapLegend = ({ settings, position }) => {
-
   /* ** SET HOOKS **************************************************************************** */
 
-  const { varsState, setVarState } = useContext(VarsState)
+  const { varsState, setVarState } = useContext(VarsState);
 
-  const legendContent = "Content"
+  const legendContent = "Content";
+
+  const divRef = useRef(null);
+
+  useEffect(() => {
+    if (divRef.current !== null) {
+      DomEvent.disableClickPropagation(divRef.current);
+    }
+  });
 
   /* ** MAIN RENDER ************************************************************************** */
 
   //
   if (!varsStateLib.getMapLegendVisibility(varsState)) {
-    return <></>
+    return <></>;
   }
-  
-  const allIconsUrl = varsStateLib.getMapLegendIcons(varsState).icons
-  const allIconsTitle = varsStateLib.getMapLegendIcons(varsState).titles
+
+  const allIconsUrl = varsStateLib.getMapLegendIcons(varsState).icons;
+  const allIconsTitle = varsStateLib.getMapLegendIcons(varsState).titles;
 
   //
-  const allIcons = []
+  const allIcons = [];
   allIconsUrl.forEach((iconUrl, i) => {
-    const iconTitle = allIconsTitle[i]
+    const iconTitle = allIconsTitle[i];
     allIcons.push(
       <div key={iconTitle}>
-        <img src={iconUrl} /><span>{iconTitle}</span><br />
-      </div>)
-  })
+        <img src={iconUrl} />
+        <span>{iconTitle}</span>
+        <br />
+      </div>
+    );
+  });
 
   // containing div th
   return (
@@ -47,7 +57,7 @@ const MapLegend = ({ settings, position }) => {
       <br />
       {allIcons}
     </div>
-  )
-}
+  );
+};
 
-export default MapLegend
+export default MapLegend;
