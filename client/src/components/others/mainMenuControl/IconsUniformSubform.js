@@ -20,7 +20,7 @@ async function fetcherWith (url, extra) {
   return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
 }
 
-const IconsUniformSubform = ({ onChangeFilter, settings }) => {
+const IconsUniformSubform = ({ settings }) => {
   /* ** SET HOOKS **************************************************************************** */
 
   // Get global states and set local states
@@ -113,7 +113,6 @@ const IconsUniformSubform = ({ onChangeFilter, settings }) => {
         <FloatingLabel label='Filter by'>
           <Form.Control
             as='select'
-            onChange={onChangeFilter}
             className='rounded-1'
             label='Filter by'
           >

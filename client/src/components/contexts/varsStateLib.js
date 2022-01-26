@@ -385,7 +385,7 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
   // get all info about thresh group
   const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
   const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
-
+  
   // get the value function of the thresh levels
   const thresholdLevelFunction = {}
   for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
@@ -457,7 +457,22 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
     varsState.locations[locationId].display = locationId in locationIdsIcons
   }
 
-  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
+  // define items in legend
+  const [iconsLegendSeq, iconsLegend] = [[], {}]
+  iconsLegendSeq.push("No alerts")
+  iconsLegend["No alerts"] = thresholdGroupBase.noWarningIcon
+  for (const curThresholdLevel of thresholdGroupData.threshold_levels) {
+    const curName = curThresholdLevel.upWarningLevelId.name
+    iconsLegendSeq.push(curName)
+    iconsLegend[curName] = curThresholdLevel.upWarningLevelId.iconName
+  }
+  iconsLegendSeq.push("Unknown")
+  iconsLegend["Unknown"] = thresholdGroupBase.unknownIcon
+
+  // update legend
+  varsStateLib.setMapLegendSubtitle("Alerts:", varsState)
+  varsStateLib.setMapLegendIcons(iconsLegend, iconsLegendSeq, varsState)
+  varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
 const _isComparisonWinner = (selectedMetric, curWinningValue, curEvaluatedValue) => {
@@ -620,7 +635,29 @@ const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
     }
   }
 
-  varsStateLib.setMapLegendVisibility(false, varsState)  // TODO: fix it
+  // define items in legend
+  const [iconsLegend, iconsLegendSeq] = [{}, []]
+  let rangeTopIdx = 1
+  while (rangeTopIdx < iconOptions.ranges.length) {
+    const rangeLw = iconOptions.ranges[rangeTopIdx-1]
+    const rangeUp = iconOptions.ranges[rangeTopIdx]
+    let curLabel = null
+    if (rangeLw && rangeUp) {
+      curLabel = rangeLw + " ~ " + rangeUp
+    } else if (rangeLw && !rangeUp) {
+      curLabel = ">" + rangeLw
+    } else if (rangeUp && !rangeLw) {
+      curLabel = "<" + rangeUp
+    }
+    iconsLegendSeq.push(curLabel)
+    iconsLegend[curLabel] = iconOptions.icons[rangeTopIdx - 1]
+    rangeTopIdx += 1
+  }
+
+  // update legend
+  varsStateLib.setMapLegendSubtitle("Evaluation:", varsState)
+  varsStateLib.setMapLegendIcons(iconsLegend, iconsLegendSeq, varsState)
+  varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
 /* ** NAMESPACE ****************************************************************************** */
