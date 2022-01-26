@@ -18,6 +18,7 @@
     rgb(220, 230, 255) 60%,
     rgb(200, 200, 255) 100%
   ); */
+  clear: none  !important;
 }
 
 .mainContainer h1 {

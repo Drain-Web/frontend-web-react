@@ -7,6 +7,7 @@ import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
+import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
 // import SideNavBarMap from "./SideNavBar/SideNavBarMap";
 
@@ -30,10 +31,9 @@ const MapControler = ({ settings }) => {
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
-    console.log("useEffect triggering updateLocationIcons()");
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings);
-    setVarState(Math.random());
-  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)]);
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
+    setVarState(Math.random())
+  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)])
 
   return (
     <>
@@ -69,6 +69,8 @@ const MapControler = ({ settings }) => {
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
+
+        <MapLegend settings={settings} position="left" />
       </div>{" "}
       {/* </FlexContainer> */}
     </>

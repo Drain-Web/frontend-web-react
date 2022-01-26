@@ -1,0 +1,63 @@
+.mainContainer {
+  background-color: #f6f6f6;
+  margin: 0;
+  /* width:20rem; */
+  max-width: 25vw;
+  border-right-width: 0  !important;
+  clear: none            !important;
+  float: right           !important;
+  margin-top: 5rem;
+  border-color: #444444;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.mainContainer h1 {
+  font-size: 1.3rem;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.mainContainer img {
+  width: 1.5rem;
+}
+
+.mainContainer hr {
+  margin: 0.5rem 0;
+}
+
+.mainContainer select {
+  -webkit-appearance: menulist-button  !important;
+  -moz-appearance: menulist-button     !important;
+}
+
+div.content {
+  background-color: #FFFFFF;
+  width: 15rem;
+  float: right;
+  height: 100%;
+}
+
+div.buttonSlide {
+  background-color: #FFFFFF;
+  height: 1.2rem;
+  width: 1.2rem;
+  float: right;
+  text-align: center;
+  cursor: pointer;
+}
+
+div.row-padding-top {
+  padding-top: 0.5rem;
+}
+
+label.in-div {
+  opacity: .65;
+  transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+}
+
+div.labeled-content {
+  padding-top: 1.0rem;
+  padding-bottom: 0rem;
+  height: auto;
+}

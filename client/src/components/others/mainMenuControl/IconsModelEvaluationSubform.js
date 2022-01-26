@@ -5,8 +5,8 @@ import { apiUrl } from '../../../libs/api.js'
 import axios from 'axios'
 
 // import contexts
-import ConsCache from '../../contexts/ConsCache'
 import ConsFixed from '../../contexts/ConsFixed'
+import ConsCache from '../../contexts/ConsCache'
 import consCacheLib from '../../contexts/consCacheLib'
 import VarsState from '../../contexts/VarsState'
 import varsStateLib from '../../contexts/varsStateLib'
@@ -53,18 +53,9 @@ const IconsModelEvaluationSubform = ({ settings }) => {
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
-    if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { 
-      console.log(':::fail 1')
-      return (null) 
-    }
-    if (!selectedMetric) {
-      console.log(':::fail 2')
-      return (null)
-    }
-    if (!selectedParameterGroup) {
-      console.log(':::fail 3')
-      return (null)
-    }
+    if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
+    if (!selectedMetric) { return (null) }
+    if (!selectedParameterGroup) { return (null) }
 
     // get obs and mod parameter IDs from parameter group
     const [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
