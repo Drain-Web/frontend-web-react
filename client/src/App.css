@@ -50,3 +50,26 @@ h1 {
 }
 .leaflet-tooltip-right.toolTipClass::before {
 }
+
+.tutorial {
+  max-width: 35vh;
+}
+
+.img {
+  display: block;
+  width: 100%;
+}
+
+.dialog {
+  border-style: none;
+  border-color: #000;
+  position: static;
+  left: 10%;
+  top: 10%;
+}
+
+.image {
+  width: 300%;
+  border-color: #000;
+  border-style: solid;
+}
