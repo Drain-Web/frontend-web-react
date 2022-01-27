@@ -68,7 +68,7 @@ div.content {
 } */
 
 .close-button {
-  position: absolute;
+  position: relative;
   right: 10px;
   top: 10px;
 }
