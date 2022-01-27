@@ -100,6 +100,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
         callbackFunc(extras.url)
       })
     }
+    console.log("Hiding locations")
+    varsStateLib.hideAllLocationIcons(varsState)
     setVarState(Math.random())
   }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
       varsStateLib.getContextIconsArgs('evaluation', varsState),

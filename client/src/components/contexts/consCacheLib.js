@@ -21,6 +21,22 @@ const getAlertIconAndColor = () => {
   
 }
 
+//
+const getCompetitionLastRequestUrl = (consCache) => {
+  return consCache.indexes.competitionResponseData._lastUrlRequested_
+}
+
+//
+const getCompetitionLastResponseData = (consCache) => {
+  const lastUrl = getCompetitionLastRequestUrl(consCache)
+  return getCompetitionResponseData(lastUrl, consCache)
+}
+
+//
+const getCompetitionResponseData = (requestUrl, consCache) => {
+  return consCache.indexes.competitionResponseData[requestUrl]
+}
+
 // 
 const getEvaluationIconAndColor = (metric, parameterGroupId, value, settings) => {
   const iconMetricSettings = settings.locationIconsOptions.evaluation.options[metric]
@@ -96,7 +112,13 @@ const getTimeseriesIdsInFilterId = (filterId, consCache) => {
 
 // Just saves the return from API as-is
 // TODO: make a more decent processing
-// TODO: document ''
+const storeCompetitionResponseData = (requestUrl, responseData, consCache) => {
+  _setToIndex('competitionResponseData', requestUrl, responseData, consCache)
+  _setToIndex('competitionResponseData', '_lastUrlRequested_', requestUrl, consCache)
+}
+
+// Just saves the return from API as-is
+// TODO: make a more decent processing
 const storeEvaluationResponseData = (requestUrl, responseData, consCache) => {
   _setToIndex('evaluationResponseData', requestUrl, responseData, consCache)
   _setToIndex('evaluationResponseData', '_lastUrlRequested_', requestUrl, consCache)
@@ -174,6 +196,7 @@ const _dictToDict = (fD, tD) => { for (const key in fD) { tD[key] = fD[key] } }
 const consCacheLib = {
   addUrlRequested: addUrlRequested,
   associateTimeseriesIdAndFilterId: associateTimeseriesIdAndFilterId,
+  getCompetitionLastResponseData: getCompetitionLastResponseData,
   getEvaluationIconAndColor: getEvaluationIconAndColor,
   getEvaluationLastRequestUrl: getEvaluationLastRequestUrl,
   getEvaluationLastResponseData: getEvaluationLastResponseData,
@@ -185,6 +208,7 @@ const consCacheLib = {
   getParameterIdsByThresholdGroupId: getParameterIdsByThresholdGroupId,
   getTimeseriesData: getTimeseriesData,
   getTimeseriesIdsInFilterId: getTimeseriesIdsInFilterId,
+  storeCompetitionResponseData: storeCompetitionResponseData,
   storeEvaluationResponseData: storeEvaluationResponseData,
   storeTimeseriesData: storeTimeseriesData,
   wasUrlRequested: wasUrlRequested

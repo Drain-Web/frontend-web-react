@@ -8,6 +8,7 @@ const ConsCache = createContext({
   consCache: {
     requestedUrls: new Set(),
     indexes: {
+      competitionResponseData: {},
       evaluationResponseData: {},
       locationIdByTimeseriesId: {},
       moduleInstanceIdsByThresholdGroupId: {},

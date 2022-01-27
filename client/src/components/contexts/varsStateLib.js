@@ -1,3 +1,4 @@
+import ConsCache from './ConsCache'
 import consCacheLib from './consCacheLib'
 import consFixedLib from './consFixedLib'
 
@@ -310,7 +311,11 @@ const updateLocationIcons = (varsState, consCache, consFixed, settings) => {
     } else if (getContextIconsType(varsState) === 'comparison') {
       _updateLocationIconsComparison(varsState, consCache, consFixed, settings)
       console.log('Should have updated by Comparison')  // TODO: remove it
+    } else if (getContextIconsType(varsState) === 'competition') {
+      _updateLocationIconsCompetition(varsState, consCache, consFixed, settings)
+      console.log('Should have updated by Competition')  // TODO: remove it
     } else {
+      varsStateLib.setMapLegendVisibility(true, varsState)
       hideAllLocationIcons(varsState)
       console.log('Hide icons because update icon was not implemented yet.')  // TODO: remove it
     }
@@ -568,6 +573,65 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
 }
 
 //
+const _updateLocationIconsCompetition = (varsState, consCache, consFixed, settings) => {
+  // get last response
+  const lastUrlResponseData = consCacheLib.getCompetitionLastResponseData(consCache)
+  if (!lastUrlResponseData) {
+    console.log("Did not stored urlResponseData from", consCache)
+    return
+  }
+
+  const competitionArgs = varsStateLib.getContextIconsArgs('competition', varsState)
+  const allIcons = settings.locationIconsOptions.comparison.icons  // TODO - change to competition
+  const selModInstIdsArray = Array.from(competitionArgs.simulationModuleInstanceIds)
+  const useIcons = allIcons.slice(0, selModInstIdsArray.length)
+
+  // check if we have enought information too display
+  if (competitionArgs.simulationModuleInstanceIds.size < 2) {
+    varsStateLib.setMapLegendVisibility(false, varsState)
+    varsStateLib.hideAllLocationIcons(varsState)
+    return
+  }
+
+  // define icons for the models
+  const iconsLegend = {}
+  for (const curModuleInstanceId of selModInstIdsArray) {
+    const curIconUrl = useIcons[selModInstIdsArray.indexOf(curModuleInstanceId)]
+    iconsLegend[curModuleInstanceId] = curIconUrl
+  }
+
+  // iterate location by location, showing/hiding icons
+  for (const curLocationId in varsState.locations) {
+    // hide if not available in response
+    if (!lastUrlResponseData.locations[curLocationId]) {
+      varsState.locations[curLocationId].display = false
+      continue
+    }
+
+    // define icon otherwise
+    let [curWinSimulation, curWinValue] = [null, null]
+    for (const [curModuleInstanceId, curModuleInstanceDict] of 
+        Object.entries(lastUrlResponseData.locations[curLocationId].simulations)) {
+      const curModuleInstanceValue = curModuleInstanceDict.value
+      if (curWinValue && (curModuleInstanceValue < curWinValue)) {
+        continue
+      }
+      [curWinSimulation, curWinValue] = [curModuleInstanceId, curModuleInstanceValue]
+    }
+
+    // 
+    varsState.locations[curLocationId].display = true
+    varsState.locations[curLocationId].icon = iconsLegend[curWinSimulation]
+  }
+
+  // update legend
+  varsStateLib.setMapLegendSubtitle("Winners:", varsState)
+  varsStateLib.setMapLegendIcons(iconsLegend, null, varsState)
+  varsStateLib.setMapLegendVisibility(true, varsState)
+  console.log("Show legend")
+}
+
+//
 const _getObjectFromArrayById = (idValue, arrayData) => {
   if (!arrayData) { return null }
   for (const curEntry of arrayData) {
@@ -582,7 +646,7 @@ const _updateLocationIconsUniform = (varsState, consCache, settings) => {
   const filterId = getContextFilterId(varsState)
   const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
   if (!timeseriesIdsByFilter) {
-    hideAllLocationIcons(varsState)
+    varsStateLib.hideAllLocationIcons(varsState)
     varsStateLib.setMapLegendVisibility(false, varsState)
     return
   }

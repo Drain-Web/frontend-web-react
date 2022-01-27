@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import { Col, Form, Row } from 'react-bootstrap'
 import { apiUrl } from '../../../libs/api.js'
+import axios from 'axios'
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache.js'
@@ -12,6 +13,15 @@ import varsStateLib from "../../contexts/varsStateLib";
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
+
+// function 'fetcher' will do HTTP requests
+const fetcher = (url) => axios.get(url).then((res) => res.data)
+
+// same as 'fetcher', but includes extra info in response
+async function fetcherWith (url, extra) {
+  const jsonData = await fetcher(url)
+  return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
+}
 
 const getParameterGroupsOfMetric = (metricId, settings) => {
   const paramGroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
@@ -58,26 +68,54 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
     const [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
       selectedParameterGroup, settings)
 
-    // define url to be called and skip call if this was the last URL called
-    console.log("Building URL for:", obsModuleInstanceId, simModuleInstanceIds)
-    const urlTimeseriesCalcRequest = apiUrl(
-      settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
-        filter: varsStateLib.getContextFilterId(varsState),
-        calc: selectedMetric,
-        simParameterId: simParameterId,
-        obsParameterId: obsParameterId,
-        obsModuleInstanceId: obsModuleInstanceId,
-        simModuleInstanceIds: simModuleInstanceIds
-      }
-    )
-
     // final response function: get data from consCache and update varsState
     const callbackFunc = (urlRequested) => {
       varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
       setVarState(Math.random())
     }
 
-  }, [selectedMetric, selectedParameterGroup, simModuleInstanceIds, obsModuleInstanceId])
+    // define url
+    let urlTimeseriesCalcRequest = null
+    if (simModuleInstanceIds.size >= 2) {
+
+      // define url to be called and skip call if this was the last URL called
+      const simModInstIds = Array.from(simModuleInstanceIds).join(",")
+      urlTimeseriesCalcRequest = apiUrl(
+        settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
+          filter: varsStateLib.getContextFilterId(varsState),
+          calc: selectedMetric,
+          simParameterId: simParameterId,
+          obsParameterId: obsParameterId,
+          obsModuleInstanceId: obsModuleInstanceId,
+          simModuleInstanceIds: simModInstIds
+        }
+      )
+    }
+
+    //
+    if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache) ||
+        !urlTimeseriesCalcRequest) {
+      console.log('URL was already requested or no URL.')
+      callbackFunc(urlTimeseriesCalcRequest)
+    } else {
+      // request URL, update local states, update cache, access cache
+      console.log('URL %s was not requested yet:', urlTimeseriesCalcRequest, consCache)
+      const extraArgs = {
+        url: urlTimeseriesCalcRequest
+      }
+      varsStateLib.setUniformIcon(settings.loadingLocationIcon, varsState)
+      fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
+        consCacheLib.addUrlRequested(extras.url, consCache)
+        consCacheLib.storeCompetitionResponseData(extras.url, jsonData.competition, consCache)
+        callbackFunc(extras.url)
+      })
+    }
+
+    varsStateLib.hideAllLocationIcons(varsState)
+    setVarState(Math.random())
+  }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
+      varsStateLib.getContextIconsArgs('evaluation', varsState),
+      selectedMetric, selectedParameterGroup, simModuleInstanceIds, obsModuleInstanceId])
 
   /* ** FUNCTIONS **************************************************************************** */
 
@@ -108,7 +146,7 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
 
     // get and update elements
     const activeModuleInstanceIds = new Set(
-      varsStateLib.getContextIconsArgs('competition', varsState).moduleInstanceIds)
+      varsStateLib.getContextIconsArgs('competition', varsState).simulationModuleInstanceIds)
     if (targetIsChecked) { 
       activeModuleInstanceIds.add(targetValue)
     } else {
@@ -120,7 +158,7 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
   // updates varsState and hooks
   const updateSelectedModuleInstanceIds = (activeModuleInstanceIds, varsState) => {
     varsStateLib.setContextIcons("competition", { 
-      moduleInstanceIds: activeModuleInstanceIds
+      simulationModuleInstanceIds: activeModuleInstanceIds
     }, varsState)
     setSimModuleInstanceIds(activeModuleInstanceIds)
     setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
@@ -176,6 +214,16 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
     const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
     const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
 
+    // if no observation module ID selected, select one
+    if (!obsModuleInstanceId) {
+      console.log("..allObsModInstIds:", Array.from(allObsModInstIds)[0])
+      changeSelectedObsModuleInstanceId({
+        "target": {
+          "value": Array.from(allObsModInstIds)[0]
+        }
+      })
+    }
+
     // build observation module options
     for (const curObservationModuleInstanceId of allObsModInstIds) {
       allObsModuleInstanceOptions.push(
@@ -186,17 +234,9 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
     }
 
     // build simulation options
-    /*
-    for (const curSimulationModuleInstanceId of allSimModInstIds) {
-      allSimModuleInstanceOptions.push(
-        <option value={curSimulationModuleInstanceId} key={curSimulationModuleInstanceId}>
-          {curSimulationModuleInstanceId}
-        </option>
-      )
-    }
-    */
     allSimModInstIds.forEach((curModuleInstanceId) => {
-      // TODO - check if there is at least one time series of the current module instance in the selected filter
+      // TODO - check if there is at least one time series of the current module instance in
+      //   the selected filter
       allSimModuleInstanceOptions.push(
         <Form.Check
           type="checkbox"
@@ -210,18 +250,16 @@ const IconsModelsCompetitionSubform = ({ settings }) => {
     })
 
     // if no observation module instance selected, select one
-    console.log("-+-", allObsModInstIds)
     if ((!obsModuleInstanceId) && (allObsModInstIds.size > 0)) {
       setObsModuleInstanceId(allObsModInstIds.values().next().value)
       return <></>
     }
   
   } else {
-    allObsModuleInstanceOptions.push(<option value={null} key={null}>Select a metric and a parameter group!</option>)
+    allObsModuleInstanceOptions.push(<option value={null} key={null}>
+      Select a metric and a parameter group!
+    </option>)
   }
-
-  //
-  
 
 
   /* ** BUILD COMPONENT ********************************************************************** */
