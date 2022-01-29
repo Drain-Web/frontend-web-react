@@ -86,16 +86,8 @@ div.Panel-content {
 
 .metricTables {
   position: absolute;
-
-  /* padding: 1rem; */
-  /* margin: 1; */
   width: 100% !important;
-  /* left: 1px; */
-  /* border-style: none; */
-  /* border-width: 0vw; */
   border-style: none !important;
-  /* border-width: 1vw !important; */
-  border-color: tomato !important;
   font-size: medium;
 }
 
