@@ -20,7 +20,7 @@ const MetricsTable = ({ timeSeriesMetrics }) => {
   }
 
   return (
-    <div className="border d-flex align-items-center justify-content-center">
+    <div className="d-flex align-items-center justify-content-center metricTables">
       <Table responsive="md">
         <thead>
           <tr>
@@ -35,7 +35,7 @@ const MetricsTable = ({ timeSeriesMetrics }) => {
             return (
               <tr key={`r${rowIndex}`}>
                 {row.map((field, colIndex) => {
-                  const tdKey = `r${rowIndex}c${colIndex}`
+                  const tdKey = `r${rowIndex}c${colIndex}`;
                   return <td key={tdKey}>{field}</td>;
                 })}
               </tr>
