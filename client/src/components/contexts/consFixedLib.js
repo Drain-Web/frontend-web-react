@@ -39,11 +39,11 @@ const getThresholdGroupBaseIcons = (thresholdGroupId, settings) => {
 }
 
 // 
-const getThresholdGroupsOfLevelThreshold = (levelThreshold, consFixed) => {
+const getThresholdGroupsOfLevelThreshold = (levelThresholdId, consFixed) => {
   const thresholdGroups = new Set()
   for (const [curId, curThreshGroup] of Object.entries(consFixed.thresholdGroup)) {
     for (const curThreshLevel of curThreshGroup.threshold_levels) {
-      if (curThreshLevel.id == levelThreshold) { 
+      if (curThreshLevel.id == levelThresholdId) { 
         thresholdGroups.add(curId)
         break
       }
@@ -76,6 +76,35 @@ const getThresholdLevelData = (thresholdLevelId, consFixed) => {
   return null
 }
 
+
+const getThresholdLevelFromValueFunction = (valueFunction, consFixed) => {
+
+  // get levelThresholdId from value function
+  let levelThresholdId = null
+  const lvlThreshId = "@" + valueFunction + "@"
+  for (const [curThresholdValueSetId, curThresholdValueSetData] of
+    Object.entries(consFixed.thresholdValueSets)) {
+      for (const curThresholdLevel of curThresholdValueSetData.levelThresholdValues) {
+        if (curThresholdLevel.valueFunction != lvlThreshId) { continue }
+        levelThresholdId = curThresholdLevel.levelThresholdId
+        break
+      }
+    if (levelThresholdId) { break; }
+  }
+
+  // check if found something
+  if (!levelThresholdId) { return null; }
+
+  // get the upWarningLevel object from the level threshold
+  for (const [curThreshGroupId, curThreshGroup] of Object.entries(consFixed.thresholdGroup)) {
+    for (const curThreshLevel of curThreshGroup.threshold_levels) {
+      if (curThreshLevel.id != levelThresholdId) { continue; }
+      return (curThreshLevel)
+    }
+  }
+  return null
+}
+
 /* ** NAMESPACE ****************************************************************************** */
 
 // aggregate all public functions into a single namespace
@@ -86,7 +115,8 @@ const consFixedLib = {
   getThresholdGroupData: getThresholdGroupData,
   getThresholdGroupsOfLevelThreshold: getThresholdGroupsOfLevelThreshold,
   getThresholdGroupsOfLevelThresholds: getThresholdGroupsOfLevelThresholds,
-  getThresholdLevelData: getThresholdLevelData
+  getThresholdLevelData: getThresholdLevelData,
+  getThresholdLevelFromValueFunction: getThresholdLevelFromValueFunction
 }
 
 export default consFixedLib

@@ -33,27 +33,27 @@ const showLoading = () => {
   );
 };
 
-//
-const showTimeseriesPlot = (variable, varsState) => {
+// 
+const showTimeseriesPlot = (parameterGroupId, varsState) => {
   return (
     <TimeSeriesPlot
-      plotData={varsState.domObjects.timeSeriesData.plotData[variable]}
-      plotArray={varsState.domObjects.timeSeriesData.plotArrays[variable]}
+      plotData={varsState.domObjects.timeSeriesData.plotData[parameterGroupId]}
+      plotArray={varsState.domObjects.timeSeriesData.plotArrays[parameterGroupId]}
       availableVariables={
-        varsState.domObjects.timeSeriesData.availableVariables[variable]
+        varsState.domObjects.timeSeriesData.availableVariables[parameterGroupId]
       }
       unitsVariables={
-        varsState.domObjects.timeSeriesData.unitsVariables[variable]
+        varsState.domObjects.timeSeriesData.unitsVariables[parameterGroupId]
       }
       thresholdsArray={
-        varsState.domObjects.timeSeriesData.thresholdsArray[variable]
+        varsState.domObjects.timeSeriesData.thresholdsArray[parameterGroupId]
       }
     />
   );
 };
 
 //
-const DraggableTimeseriesDiv = () => {
+const DraggableTimeseriesDiv = ({settings}) => {
   const divRef = useRef(null);
   const { varsState, setVarState } = useContext(VarsState);
 
@@ -77,7 +77,7 @@ const DraggableTimeseriesDiv = () => {
         {varsStateLib.getTimeSerieUrl(varsState) && (
           <Suspense fallback={showLoading()}>
             <div>
-              <LoadTimeSeriesData />
+              <LoadTimeSeriesData settings={settings} />
               {varsState.domObjects.timeSeriesData.availableVariables && (
                 <Tabs
                   defaultActiveKey={
@@ -90,16 +90,14 @@ const DraggableTimeseriesDiv = () => {
                     /* Add one tab per time series */
                     Object.keys(
                       varsState.domObjects.timeSeriesData.availableVariables
-                    ).map((variable) => {
+                    ).map((parameterGroupId) => {
                       return (
                         <Tab
-                          eventKey={variable}
-                          title={
-                            { Q: "Streamflow", H: "Stream Level" }[variable]
-                          } /* TODO: remove hard code */
-                          key={variable}
+                          eventKey={parameterGroupId}
+                          title={parameterGroupId}
+                          key={parameterGroupId}
                         >
-                          {showTimeseriesPlot(variable, varsState)}
+                          {showTimeseriesPlot(parameterGroupId, varsState)}
                         </Tab>
                       );
                     })
@@ -145,9 +143,9 @@ const DraggableTimeseriesDiv = () => {
   );
 };
 
-const PanelTabs = ({ position }) => {
+const PanelTabs = ({ position, settings }) => {
   /* TimeSeriesPlot */
-  return <DraggableTimeseriesDiv />;
+  return <DraggableTimeseriesDiv settings={settings} />;
 };
 
 export default PanelTabs;

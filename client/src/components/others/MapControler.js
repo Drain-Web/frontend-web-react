@@ -44,7 +44,7 @@ const MapControler = ({ settings }) => {
         <MainMenuControl settings={settings} position="leaflet-right" />
         {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
-        <PanelTabs position="leaflet-right" />
+        <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 

@@ -63,9 +63,6 @@ const TimeSeriesPlotLayouts = ({
     };
   }
 
-  // console.log(unitsVariables);
-  // console.log(availableVariables);
-
   return (
     <>
       <Plot data={plotArray} layout={layouts} />
