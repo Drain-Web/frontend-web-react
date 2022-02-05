@@ -22,13 +22,15 @@
                 "obs": "Q.obs",
                 "sim": "Q.sim"
               },
-              "ranges": [null,   0.2,       0.4,       0.6,       0.8,     null],
-              "colors": ["#770000", "#FFAAAA", "#777777", "#AAAAFF",  "#000077"],
-              "icons": ["./img/location_icons/evaluation_paultols_5lvls/05_worst.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/01_best.svg"]
+              "ranges": [null, 0.2, 0.4, 0.6, 0.8, null],
+              "colors": ["#770000", "#FFAAAA", "#777777", "#AAAAFF", "#000077"],
+              "icons": [
+                "./img/location_icons/evaluation_paultols_5lvls/05_worst.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/01_best.svg"
+              ]
             }
           }
         },
@@ -36,17 +38,19 @@
           "noValueIcon": null,
           "parameterGroups": {
             "Discharge": {
-			        "parameters": {
+              "parameters": {
                 "obs": "Q.obs",
                 "sim": "Q.sim"
               },
-              "ranges": [null,   0.1,       0.2,       0.4,       0.6,    null],
+              "ranges": [null, 0.1, 0.2, 0.4, 0.6, null],
               "colors": ["#AAAAFF", "#000077", "#777777", "#770000", "#FFAAAA"],
-              "icons": ["./img/location_icons/evaluation_paultols_5lvls/01_best.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
-                        "./img/location_icons/evaluation_paultols_5lvls/05_worst.svg"]
+              "icons": [
+                "./img/location_icons/evaluation_paultols_5lvls/01_best.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/02_good.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/03_average.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
+                "./img/location_icons/evaluation_paultols_5lvls/05_worst.svg"
+              ]
             }
           }
         },
@@ -68,24 +72,26 @@
       "options": {
         "availableParameterGroupIds": ["Discharge", "Waterlevel"]
       },
-      "icons": ["./img/location_icons/classification/classA.svg",
-                "./img/location_icons/classification/classB.svg",
-                "./img/location_icons/classification/classC.svg",
-                "./img/location_icons/classification/classD.svg",
-                "./img/location_icons/classification/classE.svg",
-                "./img/location_icons/classification/classF.svg"]
+      "icons": [
+        "./img/location_icons/classification/classA.svg",
+        "./img/location_icons/classification/classB.svg",
+        "./img/location_icons/classification/classC.svg",
+        "./img/location_icons/classification/classD.svg",
+        "./img/location_icons/classification/classE.svg",
+        "./img/location_icons/classification/classF.svg"
+      ]
     }
   },
   "thresholdGroups": {
     "peakQ": {
       "function": "ts.maxValue",
       "noWarningIcon": "./img/location_icons/alerts/warning_Hnowarning.svg",
-      "unknownIcon":   "./img/location_icons/alerts/warning_unknown.svg"
+      "unknownIcon": "./img/location_icons/alerts/warning_unknown.svg"
     },
     "peakH": {
       "function": "ts.maxValue",
       "noWarningIcon": "./img/location_icons/warning_Qnowarning.svg",
-      "unknownIcon":   "./img/location_icons/alerts/warning_unknown.svg"
+      "unknownIcon": "./img/location_icons/alerts/warning_unknown.svg"
     }
   },
   "riverNetwork": {
@@ -95,5 +101,13 @@
       "url": "./geo/river_network_rounded.json",
       "layerName": "River network"
     }
+  },
+  "plotStyles": {
+    "timeSeriesLinePlotsObsOpacity": 1,
+    "timeSeriesLinePlotsObsDash": "solid",
+    "timeSeriesLinePlotsObsWidth": 3,
+    "timeSeriesLinePlotsSimOpacity": 0.8,
+    "timeSeriesLinePlotsSimDash": "solid",
+    "timeSeriesLinePlotsSimWidth": 1
   }
 }

@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useContext } from "react"
-import useSWR from "swr"
-import axios from "axios"
+import React, { useEffect, useState, useContext } from "react";
+import useSWR from "swr";
+import axios from "axios";
 
-import varsStateLib from "../../contexts/varsStateLib"
-import VarsState from "../../contexts/VarsState"
+import varsStateLib from "../../contexts/varsStateLib";
+import VarsState from "../../contexts/VarsState";
 import ConsFixed from "../../contexts/ConsFixed";
+
+import GetMetricsData from "./GetMetricsData";
 
 function filterByValue(array, string) {
   return array.filter((o) =>
@@ -14,47 +16,52 @@ function filterByValue(array, string) {
   );
 }
 
-const LoadTimeSeriesData = () => {
-
+const LoadTimeSeriesData = ({ plotStyles }) => {
   // Get global states and set local states
-  const { varsState, setVarState } = useContext(VarsState)
-  const { consFixed } = useContext(ConsFixed)
-  const setPlotData = useState(null)[1]
+  const { varsState, setVarState } = useContext(VarsState);
+  const { consFixed } = useContext(ConsFixed);
+  const setPlotData = useState(null)[1];
 
-  const fetcher = (url) => axios.get(url).then((res) => res.data)
+  const fetcher = (url) => axios.get(url).then((res) => res.data);
 
-  const { data: apiData, error } = useSWR(varsStateLib.getTimeSerieUrl(varsState), fetcher, {
-    suspense: true
-  })
+  const { data: apiData, error } = useSWR(
+    varsStateLib.getTimeSerieUrl(varsState),
+    fetcher,
+    {
+      suspense: true,
+    }
+  );
 
-  useEffect(() => getTimeSeriesData(), [varsStateLib.getTimeSerieUrl(varsState)])
+  useEffect(
+    () => getTimeSeriesData(),
+    [varsStateLib.getTimeSerieUrl(varsState), plotStyles]
+  );
 
-  if (error) return <div>failed to load</div>
-  if (!apiData) return <div>loading...</div>
+  if (error) return <div>failed to load</div>;
+  if (!apiData) return <div>loading...</div>;
 
   // Aux variables to set data used for plots
-  let timeSeriesPlotDataAux
-  let timeSeriesPlotArrayAux
-  let timeSeriesThresholdsArrayAux
+  let timeSeriesPlotDataAux;
+  let timeSeriesPlotArrayAux;
 
   //
   const rearrangeSeries = (series) => {
-    const objData = {}
+    const objData = {};
 
     objData.datetime = series.events.map((timeStep) => {
-      return timeStep.date + ' ' + timeStep.time
-    })
+      return timeStep.date + " " + timeStep.time;
+    });
 
     objData.value = series.events.map((timeStep) => {
-      return timeStep.value
-    })
+      return timeStep.value;
+    });
 
-    objData.properties = series.header
+    objData.properties = series.header;
 
-    objData.thresholdValueSets = series.thresholdValueSets
+    objData.thresholdValueSets = series.thresholdValueSets;
 
-    return objData
-  }
+    return objData;
+  };
 
   //
   const reorder = (arr) => {
@@ -83,10 +90,10 @@ const LoadTimeSeriesData = () => {
         objs[key] = obj[key];
         return objs;
       }, {});
-  }
+  };
 
   //
-  const getPlotArrays = (plotData) => {
+  const getPlotArrays = (plotData, plotStyles) => {
     let variables = Object.keys(plotData);
 
     let obj = {};
@@ -98,13 +105,16 @@ const LoadTimeSeriesData = () => {
     for (let variable of variables) {
       for (let entry of plotData[variable]) {
         if (entry.properties.parameterId.split(".")[0] == variable) {
-
           // TODO: double check if this hard coding is needed
-          let [opacity, dash, width] = [null, null, null]
+          let [opacity, dash, width] = [null, null, null];
           if (entry.properties.parameterId.toLowerCase().includes("obs")) {
-            [opacity, dash, width] = [1.0, "solid", 3]
+            opacity = plotStyles["timeSeriesLinePlotsObsOpacity"];
+            dash = plotStyles["timeSeriesLinePlotsObsDash"];
+            width = plotStyles["timeSeriesLinePlotsObsWidth"];
           } else {
-            [opacity, dash, width] = [0.8, "solid", 1]
+            opacity = plotStyles["timeSeriesLinePlotsSimOpacity"];
+            dash = plotStyles["timeSeriesLinePlotsSimDash"];
+            width = plotStyles["timeSeriesLinePlotsSimWidth"];
           }
 
           obj[variable].push({
@@ -117,16 +127,16 @@ const LoadTimeSeriesData = () => {
             yaxis: "y",
             units: entry.properties.units,
             variable: entry.properties.parameterId,
-            opacity: opacity
+            opacity: opacity,
           });
         }
       }
     }
 
     return obj;
-  }
+  };
 
-  // 
+  //
   const getPlotThresholdsArrays = (plotData) => {
     let variables = Object.keys(plotData);
     let thresholds;
@@ -172,9 +182,10 @@ const LoadTimeSeriesData = () => {
   };
 
   //
-  const getModelEvaluationMetricsUrls = (timeSerieUrl, timeSeriesPlotDataAux) => {
-
-  };
+  const getModelEvaluationMetricsUrls = (
+    timeSerieUrl,
+    timeSeriesPlotDataAux
+  ) => {};
 
   //
   const getAvailableVariables = (plotData) => {
@@ -195,7 +206,7 @@ const LoadTimeSeriesData = () => {
     }
 
     return obj;
-  }
+  };
 
   //
   const getUnitsVariables = (plotData) => {
@@ -215,8 +226,8 @@ const LoadTimeSeriesData = () => {
       obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
     }
 
-    return obj
-  }
+    return obj;
+  };
 
   const getModelEvaluationMetrics = (timeSerieUrl, plotData) => {
     let variables = Object.keys(plotData);
@@ -243,7 +254,6 @@ const LoadTimeSeriesData = () => {
     }
 
     for (let variable of variables) {
-      console.log(plotData[variable]);
       filter = timeSerieUrl.split("filter=")[1].split("&")[0];
       baseUrl = timeSerieUrl.split(".com")[0];
 
@@ -265,8 +275,6 @@ const LoadTimeSeriesData = () => {
       // TODO: double check if URLs are supposed to be hardcoded
       metricsUrl = `${baseUrl}.com/v1dw/timeseries_calculator?filter=${filter}&calcs=RMSE,KGE&simParameterId=${variable}.sim&obsParameterId=${variable}.obs&simModuleInstanceIds=${simModuleInstanceIds}&obsModuleInstanceId=${obsModuleInstanceId}&locationId=${locationId}`;
 
-      console.log(metricsUrl);
-
       if (obsModuleInstanceId.length > 0 && simModuleInstanceIds.length > 0) {
         metrics[variable] = metricsUrl;
       }
@@ -279,24 +287,29 @@ const LoadTimeSeriesData = () => {
   //
   const getTimeSeriesData = async () => {
     timeSeriesPlotDataAux = await apiData.map((series) => {
-      return rearrangeSeries(series)
-    })
+      return rearrangeSeries(series);
+    });
 
-    timeSeriesPlotDataAux = reorder(timeSeriesPlotDataAux)
+    timeSeriesPlotDataAux = reorder(timeSeriesPlotDataAux);
 
-    varsStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, varsState)
-    setPlotData(timeSeriesPlotDataAux)
+    varsStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, varsState);
+    setPlotData(timeSeriesPlotDataAux);
 
     timeSeriesPlotArrayAux = await getPlotArrays(
-      varsState.domObjects.timeSeriesData.plotData
-    )
+      varsState.domObjects.timeSeriesData.plotData,
+      plotStyles
+    );
 
     // update states and force re-rendering
-    varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState)
+    varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState);
     varsStateLib.setTimeSeriesPlotUnitsVariables(
-      getAvailableVariables(timeSeriesPlotDataAux), varsState)
+      getAvailableVariables(timeSeriesPlotDataAux),
+      varsState
+    );
     varsStateLib.setTimeSeriesPlotAvailableVariables(
-      getUnitsVariables(timeSeriesPlotDataAux), varsState)
+      getUnitsVariables(timeSeriesPlotDataAux),
+      varsState
+    );
     /*
       setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
       setModelEvaluationMetricsUrls(
@@ -304,14 +317,22 @@ const LoadTimeSeriesData = () => {
       );
     */
     varsStateLib.setTimeSeriesPlotThresholdsArray(
-      getPlotThresholdsArrays(timeSeriesPlotDataAux), varsState)
-    varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(
-      getModelEvaluationMetrics(varsStateLib.getTimeSerieUrl(varsState), timeSeriesPlotDataAux), varsState)
+      getPlotThresholdsArrays(timeSeriesPlotDataAux),
+      varsState
+    );
 
-    setVarState(Math.random())
-  }
+    varsStateLib.setTimeSeriesPlotModelEvaluationMetricsUrls(
+      getModelEvaluationMetrics(
+        varsStateLib.getTimeSerieUrl(varsState),
+        timeSeriesPlotDataAux
+      ),
+      varsState
+    );
 
-  return null
-}
+    setVarState(Math.random());
+  };
 
-export default LoadTimeSeriesData
+  return null;
+};
+
+export default LoadTimeSeriesData;
