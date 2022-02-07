@@ -10,7 +10,6 @@ import LoadTimeSeriesData from "./plots/LoadTimeSeriesData";
 import TimeSeriesPlot from "./plots/TimeSeriesPlot";
 import CloseButton from "react-bootstrap/CloseButton";
 import MetricsTable from "./MetricsTable";
-import GetMetricsData from "./plots/GetMetricsData";
 
 // import contexts
 import VarsState from "../contexts/VarsState";
@@ -26,7 +25,7 @@ import "../../style/Panel.css";
 //
 const showLoading = () => {
   return (
-    <div className="loading-spinner">
+    <div>
       <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading...</span>
       </Spinner>
@@ -54,12 +53,9 @@ const showTimeseriesPlot = (parameterGroupId, varsState) => {
 };
 
 //
-const DraggableTimeseriesDiv = ({ settings }) => {
-
+const DraggableTimeseriesDiv = ({settings}) => {
   const divRef = useRef(null);
   const { varsState, setVarState } = useContext(VarsState);
-
-  const plotStyles = settings["plotStyles"];
 
   useEffect(() => {
     if (divRef.current !== null) {
@@ -80,73 +76,55 @@ const DraggableTimeseriesDiv = ({ settings }) => {
       <div className="Panel-content">
         {varsStateLib.getTimeSerieUrl(varsState) && (
           <Suspense fallback={showLoading()}>
-
-            <LoadTimeSeriesData plotStyles={plotStyles} />
-            {varsState.domObjects.timeSeriesData.availableVariables && (
-              <Suspense fallback={showLoading()}>
-                <GetMetricsData />
-                <div>
-                  {varsState.domObjects.timeSeriesData.evaluationMetrics && (
-                    <Suspense fallback={showLoading()}>
-                      <Tabs
-                        defaultActiveKey={
-                          varsState.domObjects.timeSeriesData
-                            .availableVariables[0]
-                        }
-                        id="uncontrolled-tab-example"
-                        className="mb-3"
-                      >
-                        {
-                          /* Add one tab per time series */
-                          Object.keys(
-                            varsState.domObjects.timeSeriesData
-                              .availableVariables
-                          ).map((variable) => {
-                            return (
-                              <Tab
-                                eventKey={variable}
-                                title={
-                                  { Q: "Streamflow", H: "Stream Level" }[
-                                    variable
-                                  ]
-                                } /* TODO: remove hard code */
-                                key={variable}
-                              >
-                                {showTimeseriesPlot(variable, varsState)}
-                              </Tab>
-                            );
-                          })
-                        }
-
-                        {Object.keys(
-                          varsState.domObjects.timeSeriesData.evaluationMetrics
-                        ).map((variable) => {
-                          let variableName = {
-                            Q: "Streamflow",
-                            H: "Stream Level",
-                          }[variable];
-                          return (
-                            <Tab
-                              eventKey={`Metrics ${variableName}`}
-                              title={`Metrics ${variableName}`}
-                            >
-                              <MetricsTable
-                                timeSeriesMetrics={
-                                  varsState.domObjects.timeSeriesData
-                                    .evaluationMetrics[variable]
-                                }
-                                className="justify-content-md-center"
-                              />
-                            </Tab>
-                          );
-                        })}
-                      </Tabs>
-                    </Suspense>
-                  )}
-                </div>
-              </Suspense>
-            )}
-
+            <div>
+              <LoadTimeSeriesData settings={settings} />
+              {varsState.domObjects.timeSeriesData.availableVariables && (
+                <Tabs
+                  defaultActiveKey={
+                    varsState.domObjects.timeSeriesData.availableVariables[0]
+                  }
+                  id="uncontrolled-tab-example"
+                  className="mb-3"
+                >
+                  {
+                    /* Add one tab per time series */
+                    Object.keys(
+                      varsState.domObjects.timeSeriesData.availableVariables
+                    ).map((parameterGroupId) => {
+                      return (
+                        <Tab
+                          eventKey={parameterGroupId}
+                          title={parameterGroupId}
+                          key={parameterGroupId}
+                        >
+                          {showTimeseriesPlot(parameterGroupId, varsState)}
+                        </Tab>
+                      );
+                    })
+                  }
+                  <Tab eventKey={"Metrics"} title={"Metrics"}>
+                    <MetricsTable
+                      timeSeriesMetrics={{
+                        evaluations: {
+                          RMSE: {
+                            ImportHLModelHist01: 16.156 /* TODO: remove hard code */,
+                            Dist050t065USGSobs: 31.041,
+                            Dist115t140USGSobs: 20.745,
+                          },
+                          KGE: {
+                            ImportHLModelHist01: 0.31,
+                            Dist050t065USGSobs: 0.572,
+                            Dist115t140USGSobs: 0.722,
+                          },
+                        },
+                        version: "1.25",
+                      }}
+                      className="justify-content-md-center"
+                    />
+                  </Tab>
+                </Tabs>
+              )}
+            </div>
           </Suspense>
         )}
       </div>
@@ -165,9 +143,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
   );
 };
 
-
-const PanelTabs = ({ settings }) => {
-
+const PanelTabs = ({ position, settings }) => {
   /* TimeSeriesPlot */
   return <DraggableTimeseriesDiv settings={settings} />;
 };

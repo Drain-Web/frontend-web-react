@@ -77,6 +77,8 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
         };
       });
 
+    console.log(plotArrayAux);
+
     setAvailableVariables(
       plotArrayAux
         .map((serie) => serie.name.slice(0, 1))
