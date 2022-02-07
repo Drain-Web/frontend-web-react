@@ -1,10 +1,14 @@
-import React, { useEffect, useState, useContext } from "react";
-import useSWR from "swr";
-import axios from "axios";
+import React, { useEffect, useState, useContext } from "react"
+import { apiUrl } from '../../../libs/api.js'
+import useSWR from "swr"
+import axios from "axios"
 
-import varsStateLib from "../../contexts/varsStateLib";
-import VarsState from "../../contexts/VarsState";
+import VarsState from "../../contexts/VarsState"
+import varsStateLib from "../../contexts/varsStateLib"
 import ConsFixed from "../../contexts/ConsFixed";
+import consFixedLib from "../../contexts/consFixedLib"
+import ConsCache from "../../contexts/ConsCache"
+import consCacheLib from "../../contexts/consCacheLib"
 
 import GetMetricsData from "./GetMetricsData";
 
@@ -16,11 +20,13 @@ function filterByValue(array, string) {
   );
 }
 
-const LoadTimeSeriesData = ({ plotStyles }) => {
+const LoadTimeSeriesData = ({ settings }) => {
+
   // Get global states and set local states
-  const { varsState, setVarState } = useContext(VarsState);
-  const { consFixed } = useContext(ConsFixed);
-  const setPlotData = useState(null)[1];
+  const { varsState, setVarState } = useContext(VarsState)
+  const { consCache } = useContext(ConsCache)
+  const { consFixed } = useContext(ConsFixed)
+  const setPlotData = useState(null)[1]
 
   const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -65,21 +71,30 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
 
   //
   const reorder = (arr) => {
-    const variables = arr
-      .map((serie) => {
-        return serie.properties.parameterId.split(".")[0];
-      })
-      .filter((v, i, a) => a.indexOf(v) === i);
 
+    // get the parameter group ids
+    const parameterGroupIds = arr
+      .map((serie) => {
+        const parameterId = serie.properties.parameterId;
+        return consFixedLib.getParameterGroupOfParameterId(parameterId, consFixed);
+      })
+      .filter((v, i, a) => {
+        return (a.indexOf(v) === i)
+      });
+
+    // create the dict to have {"parameterGroupId": [array of entries]}
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroupId of parameterGroupIds) {
+      obj[parameterGroupId] = [];
     }
 
-    for (let variable of variables) {
+    // fill the dict - TODO: optmize this
+    for (let parameterGroupId of parameterGroupIds) {
       for (let entry of arr) {
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          obj[variable].push(entry);
+        const parameterId = entry.properties.parameterId
+        const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(parameterId, consFixed);
+        if (curParameterGroupId == parameterGroupId) {
+          obj[parameterGroupId].push(entry);
         }
       }
     }
@@ -92,44 +107,51 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
       }, {});
   };
 
-  //
+  // 
+  // return: Dict with {"parameterGroupId": [timeseries plot arguments]}
   const getPlotArrays = (plotData, plotStyles) => {
-    let variables = Object.keys(plotData);
+    const parameterGroupIds = Object.keys(plotData);
+
 
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroupId of parameterGroupIds) {
+      obj[parameterGroupId] = [];
     }
 
     // plot each line in the timeseries plot
-    for (let variable of variables) {
-      for (let entry of plotData[variable]) {
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          // TODO: double check if this hard coding is needed
-          let [opacity, dash, width] = [null, null, null];
-          if (entry.properties.parameterId.toLowerCase().includes("obs")) {
+
+    for (let parameterGroupId of parameterGroupIds) {
+      for (let entry of plotData[parameterGroupId]) {
+        const curParameterId = entry.properties.parameterId
+        const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(curParameterId, consFixed)
+
+        if (curParameterGroupId != parameterGroupId) { continue }
+
+        // TODO: double check if this hard coding is needed
+        let [opacity, dash, width] = [null, null, null]
+        if (curParameterId.toLowerCase().includes("obs")) {
             opacity = plotStyles["timeSeriesLinePlotsObsOpacity"];
             dash = plotStyles["timeSeriesLinePlotsObsDash"];
             width = plotStyles["timeSeriesLinePlotsObsWidth"];
-          } else {
+        } else {
             opacity = plotStyles["timeSeriesLinePlotsSimOpacity"];
             dash = plotStyles["timeSeriesLinePlotsSimDash"];
             width = plotStyles["timeSeriesLinePlotsSimWidth"];
-          }
-
-          obj[variable].push({
-            x: entry.datetime,
-            y: entry.value,
-            type: "scattergl",
-            mode: "lines",
-            line: { dash: dash, width: width },
-            name: entry.properties.moduleInstanceId,
-            yaxis: "y",
-            units: entry.properties.units,
-            variable: entry.properties.parameterId,
-            opacity: opacity,
-          });
         }
+
+        // build plot object
+        obj[parameterGroupId].push({
+          x: entry.datetime,
+          y: entry.value,
+          type: "scattergl",
+          mode: "lines",
+          line: { dash: dash, width: width },
+          name: entry.properties.moduleInstanceId,
+          yaxis: "y",
+          units: entry.properties.units,
+          variable: curParameterId,
+          opacity: opacity
+        });
       }
     }
 
@@ -138,56 +160,67 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
 
   //
   const getPlotThresholdsArrays = (plotData) => {
-    let variables = Object.keys(plotData);
-    let thresholds;
+    let parameterGroupIds = Object.keys(plotData);
+    let locationInfo;
     let locationId;
 
+    // 
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroupId of parameterGroupIds) {
+      obj[parameterGroupId] = [];
     }
 
-    for (let variable of variables) {
-      locationId = plotData[variable][0].properties.location_id;
+    for (const parameterGroupId of parameterGroupIds) {
 
-      thresholds = consFixed.locations.locations.filter((obj) => {
+      // get basic info about the location
+      locationId = plotData[parameterGroupId][0].properties.location_id;
+      locationInfo = consFixed.locations.locations.filter((obj) => {
         return obj.locationId === locationId;
-      });
+      })[0];
+      if (!locationInfo.attributes) { continue; }
 
-      if (
-        plotData[variable][0].properties.parameterId.split(".")[0] == variable
-      ) {
-        if (thresholds[0].attributes != null) {
-          for (let threshold of thresholds[0].attributes.filter((obj) => {
-            return obj.id.includes(variable + "raw");
-          })) {
-            obj[variable].push({
-              x: [
-                plotData[variable][0].datetime[0],
-                plotData[variable][0].datetime.slice(-1)[0],
-              ],
-              y: [parseFloat(threshold.number), parseFloat(threshold.number)],
-              legendgroup: "group2",
-              type: "scattergl",
-              mode: "lines",
-              yaxis: "y",
-              name: threshold.name,
-              line: { dash: "dot", color: "black" },
-            });
+      for (const locationAttrValDict of locationInfo.attributes) {
+        
+        // check if it reffers to an upWarningLevel
+        const curThreshLevelDict = consFixedLib.getThresholdLevelFromValueFunction(locationAttrValDict.id, consFixed)
+        if (!curThreshLevelDict) { continue; }
+
+        // check if this threshold value matches the parameters of the parameter group
+        const threshGroupIds = consFixedLib.getThresholdGroupsOfLevelThreshold(curThreshLevelDict.id, consFixed)
+        let shouldInclude = false
+        for (const curThreshGroupId of threshGroupIds) {
+          const curParameterIds = consCacheLib.getParameterIdsByThresholdGroupId(curThreshGroupId, consCache)
+          for (const curParameterId of curParameterIds) {
+            const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(curParameterId, consFixed)
+            if (curParameterGroupId == parameterGroupId){
+              shouldInclude = true
+              break
+            }
           }
+          if (shouldInclude) { break }
         }
+        if (!shouldInclude) { continue }
+        
+        // create plotting attributes
+        const thresholdNumber = parseFloat(locationAttrValDict.number)
+        obj[parameterGroupId].push({
+          x: [
+            plotData[parameterGroupId][0].datetime[0],
+            plotData[parameterGroupId][0].datetime.slice(-1)[0],
+          ],
+          y: [thresholdNumber, thresholdNumber],
+          legendgroup: "group2",
+          type: "scattergl",
+          mode: "lines",
+          yaxis: "y",
+          name: locationAttrValDict.name,
+          line: { dash: "dot", color: curThreshLevelDict.upWarningLevelId.color }
+        });
       }
     }
     return obj;
   };
 
-  //
-  // const getModelEvaluationMetricsUrls = (
-  //   timeSerieUrl,
-  //   timeSeriesPlotDataAux
-  // ) => {};
-
-  //
   const getAvailableVariables = (plotData) => {
     let variables = Object.keys(plotData);
 
@@ -229,60 +262,77 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
     return obj;
   };
 
-  const getModelEvaluationMetricsUrls = (timeSerieUrl, plotData) => {
-    let variables = Object.keys(plotData);
-    let metricsUrl;
+  const getModelEvaluationMetrics = (timeSerieUrl, plotData, settings) => {
+    let parameterGroups = Object.keys(plotData);                                      
+    let metricsUrl = null;
     let metrics = {};
     let filter;
-    let baseUrl;
     let simModuleInstanceIds;
     let obsModuleInstanceId;
     let locationId;
 
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroup of parameterGroups) {
+      obj[parameterGroup] = [];
     }
 
-    for (let variable of variables) {
-      for (let entry of plotData[variable]) {
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          obj[variable].push(entry.properties.moduleInstanceId);
+    for (let parameterGroup of parameterGroups) {
+      for (let entry of plotData[parameterGroup]) {
+        if (entry.properties.parameterId.split(".")[0] == parameterGroup) {           
+          obj[parameterGroup].push(entry.properties.moduleInstanceId);
         }
       }
-      obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
+      obj[parameterGroup] = obj[parameterGroup].filter((v, i, a) => a.indexOf(v) === i);
     }
 
-    for (let variable of variables) {
+    // get basic meta information
+    filter = varsStateLib.getContextFilterId(varsState)
+    locationId = varsStateLib.getActiveLocation(varsState).locationId
+
+    // get the metric values for each ParameterGroup
+    for (let parameterGroup of parameterGroups) {
       filter = timeSerieUrl.split("filter=")[1].split("&")[0];
       baseUrl = timeSerieUrl.split(".com")[0];
 
-      simModuleInstanceIds = plotData[variable]
-        .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))
+      simModuleInstanceIds = plotData[parameterGroup]
+        .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))  // TODO: this should come from settings
         .map((entry) => {
           return entry.properties.moduleInstanceId;
         })
         .join(",");
 
-      obsModuleInstanceId = plotData[variable]
-        .filter((o) => o.properties.parameterId.toLowerCase().includes("obs"))
+      obsModuleInstanceId = plotData[parameterGroup]
+        .filter((o) => o.properties.parameterId.toLowerCase().includes("obs"))  // TODO: this should come from settings
         .map((entry) => {
           return entry.properties.moduleInstanceId;
         })
         .join(",");
-      locationId = timeSerieUrl.split("location=")[1];
 
-      // TODO: double check if URLs are supposed to be hardcoded
-      metricsUrl = `${baseUrl}.com/v1dw/timeseries_calculator?filter=${filter}&calcs=RMSE,KGE&simParameterId=${variable}.sim&obsParameterId=${variable}.obs&simModuleInstanceIds=${simModuleInstanceIds}&obsModuleInstanceId=${obsModuleInstanceId}&locationId=${locationId}`;
+      // build URL
+      metricsUrl = apiUrl(
+        settings.apiBaseUrl,
+        "v1dw",
+        "timeseries_calculator",
+        {
+          filter: filter,
+          calcs: "RMSE,KGE",                  // TODO: remove hard coded
+          simParameterId: `${parameterGroup}.sim`,  // TODO: remove hard coded
+          obsParameterId: `${parameterGroup}.obs`,  // TODO: remove hard coded
+          simModuleInstanceIds: simModuleInstanceIds,
+          obsModuleInstanceId: obsModuleInstanceId,
+          locationId: locationId
+        }
+      );
 
       if (obsModuleInstanceId.length > 0 && simModuleInstanceIds.length > 0) {
-        metrics[variable] = metricsUrl;
+        metrics[parameterGroup] = metricsUrl;
       }
     }
-    console.log(metrics);
 
     return metrics;
   };
+
+  /* ** MAIN CALL **************************************************************************** */
 
   //
   const getTimeSeriesData = async () => {
@@ -331,6 +381,7 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
 
     setVarState(Math.random());
   };
+
 
   return null;
 };

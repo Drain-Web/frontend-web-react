@@ -34,20 +34,20 @@ const showLoading = () => {
   );
 };
 
-//
-const showTimeseriesPlot = (variable, varsState) => {
+// 
+const showTimeseriesPlot = (parameterGroupId, varsState) => {
   return (
     <TimeSeriesPlot
-      plotData={varsState.domObjects.timeSeriesData.plotData[variable]}
-      plotArray={varsState.domObjects.timeSeriesData.plotArrays[variable]}
+      plotData={varsState.domObjects.timeSeriesData.plotData[parameterGroupId]}
+      plotArray={varsState.domObjects.timeSeriesData.plotArrays[parameterGroupId]}
       availableVariables={
-        varsState.domObjects.timeSeriesData.availableVariables[variable]
+        varsState.domObjects.timeSeriesData.availableVariables[parameterGroupId]
       }
       unitsVariables={
-        varsState.domObjects.timeSeriesData.unitsVariables[variable]
+        varsState.domObjects.timeSeriesData.unitsVariables[parameterGroupId]
       }
       thresholdsArray={
-        varsState.domObjects.timeSeriesData.thresholdsArray[variable]
+        varsState.domObjects.timeSeriesData.thresholdsArray[parameterGroupId]
       }
     />
   );
@@ -55,6 +55,7 @@ const showTimeseriesPlot = (variable, varsState) => {
 
 //
 const DraggableTimeseriesDiv = ({ settings }) => {
+
   const divRef = useRef(null);
   const { varsState, setVarState } = useContext(VarsState);
 
@@ -79,6 +80,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
       <div className="Panel-content">
         {varsStateLib.getTimeSerieUrl(varsState) && (
           <Suspense fallback={showLoading()}>
+
             <LoadTimeSeriesData plotStyles={plotStyles} />
             {varsState.domObjects.timeSeriesData.availableVariables && (
               <Suspense fallback={showLoading()}>
@@ -144,6 +146,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
                 </div>
               </Suspense>
             )}
+
           </Suspense>
         )}
       </div>
@@ -162,7 +165,9 @@ const DraggableTimeseriesDiv = ({ settings }) => {
   );
 };
 
+
 const PanelTabs = ({ settings }) => {
+
   /* TimeSeriesPlot */
   return <DraggableTimeseriesDiv settings={settings} />;
 };

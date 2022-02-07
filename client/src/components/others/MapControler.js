@@ -42,7 +42,9 @@ const MapControler = ({ settings }) => {
         {/* add the main left menu */}
         <MainMenuControl settings={settings} position="leaflet-right" />
         {/* timeseries panel */}
+
         <PanelTabs settings={settings} />
+
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
