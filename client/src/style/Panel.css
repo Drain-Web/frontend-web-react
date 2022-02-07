@@ -44,6 +44,15 @@ body {
   right: 10px;
   top: 10px;
 }
+/* 
+div.button-close {
+  background-color: #000;
+  width: 20rem;
+  float: left;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1000;
+} */
 
 div.Panel-content {
   background-color: #ffffff;
@@ -98,10 +107,4 @@ div.Panel-content {
 ::-webkit-scrollbar-thumb {
   background: #186efd;
   border-radius: 10px;
-}
-
-.loading-spinner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
 }

@@ -10,8 +10,6 @@ import consFixedLib from "../../contexts/consFixedLib"
 import ConsCache from "../../contexts/ConsCache"
 import consCacheLib from "../../contexts/consCacheLib"
 
-import GetMetricsData from "./GetMetricsData";
-
 function filterByValue(array, string) {
   return array.filter((o) =>
     Object.keys(o).some((k) =>
@@ -28,46 +26,40 @@ const LoadTimeSeriesData = ({ settings }) => {
   const { consFixed } = useContext(ConsFixed)
   const setPlotData = useState(null)[1]
 
-  const fetcher = (url) => axios.get(url).then((res) => res.data);
+  const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-  const { data: apiData, error } = useSWR(
-    varsStateLib.getTimeSerieUrl(varsState),
-    fetcher,
-    {
-      suspense: true,
-    }
-  );
+  const { data: apiData, error } = useSWR(varsStateLib.getTimeSerieUrl(varsState), fetcher, {
+    suspense: true
+  })
 
-  useEffect(
-    () => getTimeSeriesData(),
-    [varsStateLib.getTimeSerieUrl(varsState), plotStyles]
-  );
+  useEffect(() => getTimeSeriesData(), [varsStateLib.getTimeSerieUrl(varsState)])
 
-  if (error) return <div>failed to load</div>;
-  if (!apiData) return <div>loading...</div>;
+  if (error) return <div>failed to load</div>
+  if (!apiData) return <div>loading...</div>
 
   // Aux variables to set data used for plots
-  let timeSeriesPlotDataAux;
-  let timeSeriesPlotArrayAux;
+  let timeSeriesPlotDataAux
+  let timeSeriesPlotArrayAux
+  let timeSeriesThresholdsArrayAux
 
   //
   const rearrangeSeries = (series) => {
-    const objData = {};
+    const objData = {}
 
     objData.datetime = series.events.map((timeStep) => {
-      return timeStep.date + " " + timeStep.time;
-    });
+      return timeStep.date + ' ' + timeStep.time
+    })
 
     objData.value = series.events.map((timeStep) => {
-      return timeStep.value;
-    });
+      return timeStep.value
+    })
 
-    objData.properties = series.header;
+    objData.properties = series.header
 
-    objData.thresholdValueSets = series.thresholdValueSets;
+    objData.thresholdValueSets = series.thresholdValueSets
 
-    return objData;
-  };
+    return objData
+  }
 
   //
   const reorder = (arr) => {
@@ -105,13 +97,12 @@ const LoadTimeSeriesData = ({ settings }) => {
         objs[key] = obj[key];
         return objs;
       }, {});
-  };
+  }
 
   // 
   // return: Dict with {"parameterGroupId": [timeseries plot arguments]}
-  const getPlotArrays = (plotData, plotStyles) => {
+  const getPlotArrays = (plotData) => {
     const parameterGroupIds = Object.keys(plotData);
-
 
     let obj = {};
     for (let parameterGroupId of parameterGroupIds) {
@@ -119,7 +110,6 @@ const LoadTimeSeriesData = ({ settings }) => {
     }
 
     // plot each line in the timeseries plot
-
     for (let parameterGroupId of parameterGroupIds) {
       for (let entry of plotData[parameterGroupId]) {
         const curParameterId = entry.properties.parameterId
@@ -130,13 +120,9 @@ const LoadTimeSeriesData = ({ settings }) => {
         // TODO: double check if this hard coding is needed
         let [opacity, dash, width] = [null, null, null]
         if (curParameterId.toLowerCase().includes("obs")) {
-            opacity = plotStyles["timeSeriesLinePlotsObsOpacity"];
-            dash = plotStyles["timeSeriesLinePlotsObsDash"];
-            width = plotStyles["timeSeriesLinePlotsObsWidth"];
+          [opacity, dash, width] = [1.0, "solid", 3]
         } else {
-            opacity = plotStyles["timeSeriesLinePlotsSimOpacity"];
-            dash = plotStyles["timeSeriesLinePlotsSimDash"];
-            width = plotStyles["timeSeriesLinePlotsSimWidth"];
+          [opacity, dash, width] = [0.8, "solid", 1]
         }
 
         // build plot object
@@ -156,9 +142,9 @@ const LoadTimeSeriesData = ({ settings }) => {
     }
 
     return obj;
-  };
+  }
 
-  //
+  // 
   const getPlotThresholdsArrays = (plotData) => {
     let parameterGroupIds = Object.keys(plotData);
     let locationInfo;
@@ -221,6 +207,7 @@ const LoadTimeSeriesData = ({ settings }) => {
     return obj;
   };
 
+  //
   const getAvailableVariables = (plotData) => {
     let variables = Object.keys(plotData);
 
@@ -239,7 +226,7 @@ const LoadTimeSeriesData = ({ settings }) => {
     }
 
     return obj;
-  };
+  }
 
   //
   const getUnitsVariables = (plotData) => {
@@ -259,11 +246,11 @@ const LoadTimeSeriesData = ({ settings }) => {
       obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
     }
 
-    return obj;
-  };
+    return obj
+  }
 
   const getModelEvaluationMetrics = (timeSerieUrl, plotData, settings) => {
-    let parameterGroups = Object.keys(plotData);                                      
+    let variables = Object.keys(plotData);                                      // TODO: the "variables" are "ParameterGroups"
     let metricsUrl = null;
     let metrics = {};
     let filter;
@@ -272,17 +259,17 @@ const LoadTimeSeriesData = ({ settings }) => {
     let locationId;
 
     let obj = {};
-    for (let parameterGroup of parameterGroups) {
-      obj[parameterGroup] = [];
+    for (let variable of variables) {
+      obj[variable] = [];
     }
 
-    for (let parameterGroup of parameterGroups) {
-      for (let entry of plotData[parameterGroup]) {
-        if (entry.properties.parameterId.split(".")[0] == parameterGroup) {           
-          obj[parameterGroup].push(entry.properties.moduleInstanceId);
+    for (let variable of variables) {
+      for (let entry of plotData[variable]) {
+        if (entry.properties.parameterId.split(".")[0] == variable) {           // TODO: this should come from ConsFixed
+          obj[variable].push(entry.properties.moduleInstanceId);
         }
       }
-      obj[parameterGroup] = obj[parameterGroup].filter((v, i, a) => a.indexOf(v) === i);
+      obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
     }
 
     // get basic meta information
@@ -290,18 +277,16 @@ const LoadTimeSeriesData = ({ settings }) => {
     locationId = varsStateLib.getActiveLocation(varsState).locationId
 
     // get the metric values for each ParameterGroup
-    for (let parameterGroup of parameterGroups) {
-      filter = timeSerieUrl.split("filter=")[1].split("&")[0];
-      baseUrl = timeSerieUrl.split(".com")[0];
+    for (let variable of variables) {
 
-      simModuleInstanceIds = plotData[parameterGroup]
+      simModuleInstanceIds = plotData[variable]
         .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))  // TODO: this should come from settings
         .map((entry) => {
           return entry.properties.moduleInstanceId;
         })
         .join(",");
 
-      obsModuleInstanceId = plotData[parameterGroup]
+      obsModuleInstanceId = plotData[variable]
         .filter((o) => o.properties.parameterId.toLowerCase().includes("obs"))  // TODO: this should come from settings
         .map((entry) => {
           return entry.properties.moduleInstanceId;
@@ -316,8 +301,8 @@ const LoadTimeSeriesData = ({ settings }) => {
         {
           filter: filter,
           calcs: "RMSE,KGE",                  // TODO: remove hard coded
-          simParameterId: `${parameterGroup}.sim`,  // TODO: remove hard coded
-          obsParameterId: `${parameterGroup}.obs`,  // TODO: remove hard coded
+          simParameterId: `${variable}.sim`,  // TODO: remove hard coded
+          obsParameterId: `${variable}.obs`,  // TODO: remove hard coded
           simModuleInstanceIds: simModuleInstanceIds,
           obsModuleInstanceId: obsModuleInstanceId,
           locationId: locationId
@@ -325,7 +310,7 @@ const LoadTimeSeriesData = ({ settings }) => {
       );
 
       if (obsModuleInstanceId.length > 0 && simModuleInstanceIds.length > 0) {
-        metrics[parameterGroup] = metricsUrl;
+        metrics[variable] = metricsUrl;
       }
     }
 
@@ -337,29 +322,24 @@ const LoadTimeSeriesData = ({ settings }) => {
   //
   const getTimeSeriesData = async () => {
     timeSeriesPlotDataAux = await apiData.map((series) => {
-      return rearrangeSeries(series);
-    });
+      return rearrangeSeries(series)
+    })
 
-    timeSeriesPlotDataAux = reorder(timeSeriesPlotDataAux);
+    timeSeriesPlotDataAux = reorder(timeSeriesPlotDataAux)
 
-    varsStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, varsState);
-    setPlotData(timeSeriesPlotDataAux);
+    varsStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, varsState)
+    setPlotData(timeSeriesPlotDataAux)
 
     timeSeriesPlotArrayAux = await getPlotArrays(
-      varsState.domObjects.timeSeriesData.plotData,
-      plotStyles
-    );
+      varsState.domObjects.timeSeriesData.plotData
+    )
 
     // update states and force re-rendering
-    varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState);
+    varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState)
     varsStateLib.setTimeSeriesPlotUnitsVariables(
-      getAvailableVariables(timeSeriesPlotDataAux),
-      varsState
-    );
+      getAvailableVariables(timeSeriesPlotDataAux), varsState)
     varsStateLib.setTimeSeriesPlotAvailableVariables(
-      getUnitsVariables(timeSeriesPlotDataAux),
-      varsState
-    );
+      getUnitsVariables(timeSeriesPlotDataAux), varsState)
     /*
       setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
       setModelEvaluationMetricsUrls(
@@ -367,23 +347,14 @@ const LoadTimeSeriesData = ({ settings }) => {
       );
     */
     varsStateLib.setTimeSeriesPlotThresholdsArray(
-      getPlotThresholdsArrays(timeSeriesPlotDataAux),
-      varsState
-    );
+      getPlotThresholdsArrays(timeSeriesPlotDataAux), varsState)
+    varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(
+      getModelEvaluationMetrics(varsStateLib.getTimeSerieUrl(varsState), timeSeriesPlotDataAux, settings), varsState)
 
-    varsStateLib.setTimeSeriesPlotModelEvaluationMetricsUrls(
-      getModelEvaluationMetricsUrls(
-        varsStateLib.getTimeSerieUrl(varsState),
-        timeSeriesPlotDataAux
-      ),
-      varsState
-    );
+    setVarState(Math.random())
+  }
 
-    setVarState(Math.random());
-  };
+  return null
+}
 
-
-  return null;
-};
-
-export default LoadTimeSeriesData;
+export default LoadTimeSeriesData

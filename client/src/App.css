@@ -46,6 +46,10 @@ h1 {
 .toolTipClass {
   max-width: 400px;
 }
+.leaflet-tooltip-left.toolTipClass::before {
+}
+.leaflet-tooltip-right.toolTipClass::before {
+}
 
 .tutorial {
   max-width: 35vh;
