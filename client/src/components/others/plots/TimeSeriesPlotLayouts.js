@@ -6,7 +6,7 @@ const TimeSeriesPlotLayouts = ({
   plotData,
   availableVariables,
   unitsVariables,
-  thresholdsArray
+  thresholdsArray,
 }) => {
   const updatemenus = [
     {
@@ -28,15 +28,16 @@ const TimeSeriesPlotLayouts = ({
   ];
 
   let layouts = {};
-  
+
   const fontAttrs = {
     family: "Arial",
-    size: 16
-  }
+    size: 16,
+  };
   const legendAttrs = {
-    x: 1.05, y: 1.00,
-    font: { size: 12 }
-  }
+    x: 1.05,
+    y: 1.0,
+    font: { size: 12 },
+  };
 
   if (availableVariables.length == 1) {
     layouts = {
@@ -47,7 +48,7 @@ const TimeSeriesPlotLayouts = ({
       },
       font: fontAttrs,
       showlegend: true,
-      legend: legendAttrs
+      legend: legendAttrs,
     };
   } else if (availableVariables.length == 2) {
     layouts = {
@@ -65,6 +66,7 @@ const TimeSeriesPlotLayouts = ({
       },
     };
   }
+
 
   const retData = (thresholdsArray != null) ? plotArray.concat(thresholdsArray) : plotArray
 

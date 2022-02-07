@@ -31,20 +31,20 @@ const MapControler = ({ settings }) => {
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-    setVarState(Math.random())
-  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)])
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings);
+    setVarState(Math.random());
+  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)]);
 
   return (
     <>
       <div>
-        {" "}
         {/* <FlexContainer> */}
         {/* add the main left menu */}
         <MainMenuControl settings={settings} position="leaflet-right" />
-        {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
-        <PanelTabs position="leaflet-right" settings={settings} />
+
+        <PanelTabs settings={settings} />
+
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -69,9 +69,8 @@ const MapControler = ({ settings }) => {
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
-
         <MapLegend settings={settings} position="left" />
-      </div>{" "}
+      </div>
       {/* </FlexContainer> */}
     </>
   );
