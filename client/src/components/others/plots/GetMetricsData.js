@@ -9,9 +9,9 @@ const GetMetricsData = () => {
   // Get global states and set local states
   const { varsState, setVarState } = useContext(VarsState);
 
-  const fetcher = (url) => axios.get(url).then((res) => res.data);
+  const [mounted, setMounted] = useState(false);
 
-  console.log(varsState.domObjects.timeSeriesData.evaluationMetrics);
+  const fetcher = (url) => axios.get(url).then((res) => res.data);
 
   let metrics = {};
   let urlMetrics;
@@ -20,10 +20,17 @@ const GetMetricsData = () => {
     varsState.domObjects.timeSeriesData.evaluationMetricsUrls
   )) {
     urlMetrics = varsState.domObjects.timeSeriesData.evaluationMetricsUrls[key];
-    let { data: metricsData, error } = useSWR(urlMetrics, fetcher);
+    let { data: metricsData, error } = useSWR(
+      mounted ? urlMetrics : null,
+      fetcher
+    );
 
     metrics[key] = metricsData;
   }
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(metrics, varsState);
 

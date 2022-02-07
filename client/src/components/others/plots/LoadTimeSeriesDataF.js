@@ -6,23 +6,18 @@ import varsStateLib from "../../contexts/varsStateLib";
 import VarsState from "../../contexts/VarsState";
 import ConsFixed from "../../contexts/ConsFixed";
 
-import GetMetricsData from "./GetMetricsData";
-
-function filterByValue(array, string) {
-  return array.filter((o) =>
-    Object.keys(o).some((k) =>
-      o[k].toLowerCase().includes(string.toLowerCase())
-    )
-  );
-}
-
 const LoadTimeSeriesData = ({ plotStyles }) => {
   // Get global states and set local states
   const { varsState, setVarState } = useContext(VarsState);
   const { consFixed } = useContext(ConsFixed);
+  const [mounted, setMounted] = useState(false);
+  const [metricsUrl, setMetricsUrl] = useState(false);
   const setPlotData = useState(null)[1];
 
-  const fetcher = (url) => axios.get(url).then((res) => res.data);
+  async function fetcher(url) {
+    const data = await axios.get(url);
+    return data;
+  }
 
   const { data: apiData, error } = useSWR(
     varsStateLib.getTimeSerieUrl(varsState),
@@ -32,13 +27,51 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
     }
   );
 
-  useEffect(
-    () => getTimeSeriesData(),
-    [varsStateLib.getTimeSerieUrl(varsState), plotStyles]
-  );
-
   if (error) return <div>failed to load</div>;
   if (!apiData) return <div>loading...</div>;
+
+  console.log(varsState.domObjects.timeSeriesData.evaluationMetricsUrls);
+
+  let aux;
+
+  useEffect(() => {
+    aux = getTimeSeriesData();
+    setMetricsUrl(aux);
+    setMounted(true);
+  }, [varsStateLib.getTimeSerieUrl(varsState), plotStyles]);
+
+  if (metricsUrl !== null) {
+    let metrics = {};
+    let urlMetrics;
+
+    for (let key of Object.keys(metricsUrl)) {
+      urlMetrics = metricsUrl[key];
+      let { data: metricsData, error } = useSWR(
+        mounted ? urlMetrics : null,
+        fetcher
+      );
+
+      metrics[key] = metricsData;
+    }
+
+    varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(metrics, varsState);
+  }
+
+  async function getModelEvaluationMetrics(metricsUrl) {
+    let metrics = {};
+    let urlMetrics;
+
+    console.log(metricsUrl);
+
+    for (let key of Object.keys(metricsUrl)) {
+      urlMetrics = metricsUrl[key];
+      let { data: metricsData, error } = useSWR(urlMetrics, fetcher);
+
+      metrics[key] = metricsData;
+    }
+
+    varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(metrics, varsState);
+  }
 
   // Aux variables to set data used for plots
   let timeSeriesPlotDataAux;
@@ -182,12 +215,6 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
   };
 
   //
-  // const getModelEvaluationMetricsUrls = (
-  //   timeSerieUrl,
-  //   timeSeriesPlotDataAux
-  // ) => {};
-
-  //
   const getAvailableVariables = (plotData) => {
     let variables = Object.keys(plotData);
 
@@ -321,15 +348,21 @@ const LoadTimeSeriesData = ({ plotStyles }) => {
       varsState
     );
 
+    let metricsUrls;
+
+    metricsUrls = getModelEvaluationMetricsUrls(
+      varsStateLib.getTimeSerieUrl(varsState),
+      timeSeriesPlotDataAux
+    );
+
     varsStateLib.setTimeSeriesPlotModelEvaluationMetricsUrls(
-      getModelEvaluationMetricsUrls(
-        varsStateLib.getTimeSerieUrl(varsState),
-        timeSeriesPlotDataAux
-      ),
+      metricsUrls,
       varsState
     );
 
-    setVarState(Math.random());
+    // setVarState(Math.random());
+
+    return metricsUrls;
   };
 
   return null;
