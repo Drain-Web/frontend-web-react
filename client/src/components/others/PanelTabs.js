@@ -25,7 +25,7 @@ import "../../style/Panel.css";
 //
 const showLoading = () => {
   return (
-    <div>
+    <div className="loading-spinner">
       <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading...</span>
       </Spinner>
@@ -33,12 +33,14 @@ const showLoading = () => {
   );
 };
 
-// 
+//
 const showTimeseriesPlot = (parameterGroupId, varsState) => {
   return (
     <TimeSeriesPlot
       plotData={varsState.domObjects.timeSeriesData.plotData[parameterGroupId]}
-      plotArray={varsState.domObjects.timeSeriesData.plotArrays[parameterGroupId]}
+      plotArray={
+        varsState.domObjects.timeSeriesData.plotArrays[parameterGroupId]
+      }
       availableVariables={
         varsState.domObjects.timeSeriesData.availableVariables[parameterGroupId]
       }
@@ -53,7 +55,7 @@ const showTimeseriesPlot = (parameterGroupId, varsState) => {
 };
 
 //
-const DraggableTimeseriesDiv = ({settings}) => {
+const DraggableTimeseriesDiv = ({ settings }) => {
   const divRef = useRef(null);
   const { varsState, setVarState } = useContext(VarsState);
 
