@@ -5,13 +5,34 @@ import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
 import VarsState from '../contexts/VarsState'
 import varsStateLib from '../contexts/varsStateLib'
 
-let polygon
+
+const displayPolygon = (polygonId, varsState) => {
+  return ((varsStateLib.getContextFilterGeoId(varsState) === polygonId) ||
+           varsStateLib.inMainMenuControlActiveTabOverview(varsState))
+}
+
+
+const isMultiPolygon = (polygon) => Array.isArray(polygon[0][0])
+
+
+const revertPoint = (pointCoords) => [pointCoords[1], pointCoords[0]]
+
+
+const revertPolygon = (polygon) => {
+  if (!isMultiPolygon(polygon)) {
+    return polygon.map(revertPoint)
+  } else {
+    return polygon.map((monoPolygon) => monoPolygon.map(revertPoint))
+  }
+}
+
 
 const PolygonLayer = ({
   layerData,
   layerName,
   reversePolygon = false,
-  color = '#069292'
+  color = '#069292',
+  lineWidth = 2
 }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -25,27 +46,17 @@ const PolygonLayer = ({
         <LayerGroup name={layerName}>
           {
             layerData.map((poly) => {
-              /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-              if (reversePolygon) {
-                polygon = Array.from(poly.polygon.values()).map((pol) => [
-                  pol[1], pol[0]
-                ])
-              } else {
-                polygon = Array.from(poly.polygon.values())
-              }
 
-              const displayPolygon = () => {
-                return ((varsStateLib.getContextFilterGeoId(varsState) === poly.id) ||
-                        varsStateLib.inMainMenuControlActiveTabOverview(varsState))
-              }
+              /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+              const polygon = (reversePolygon) ? revertPolygon(poly.polygon) : poly.polygon
 
               /* build polygons */
               return (
-                (displayPolygon() && polygon)
+                (displayPolygon(poly.id, varsState) && polygon)
                   ? <Polygon
                       pathOptions={{
-                        color: color,
-                        // fillColor: null
+                        color: poly.lineColor ? poly.lineColor: color,
+                        weight: poly.lineWidth ? poly.lineWidth: lineWidth
                       }}
                       positions={polygon}
                       key={poly.id}
