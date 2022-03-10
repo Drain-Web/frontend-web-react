@@ -1,5 +1,5 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 
 // import components
 import MainMenuControl from "./MainMenuControl";
@@ -9,6 +9,8 @@ import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
+import WMSTileLayers from "./rasterTiles/WMSTiles";
+import PngTilesLayers from "./rasterTiles/PngTiles";
 // import SideNavBarMap from "./SideNavBar/SideNavBarMap";
 
 // import contexts
@@ -19,6 +21,8 @@ import varsStateLib from "../contexts/varsStateLib";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
+import { wmsLayersData } from "../../assets/WMSLayers.js";
+import { pngTilesLayersData } from "../../assets/PngTileLayers";
 
 const MapControler = ({ settings }) => {
   // this specific component is needed to allow useMap()
@@ -31,9 +35,15 @@ const MapControler = ({ settings }) => {
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-    setVarState(Math.random())
-  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)])
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings);
+    setVarState(Math.random());
+  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)]);
+
+  // const [date, setDate] = useState(dates[1]);
+  // const [countDate, setCountDate] = useState(1);
+
+  // varsStateLib.setPngTilesDate(dates[time], varsState);
+  // setVarState(Math.random());
 
   return (
     <>
@@ -47,6 +57,8 @@ const MapControler = ({ settings }) => {
         <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
           <BaseLayers baseLayerData={baseLayersData} />
+          <WMSTileLayers wmsLayersData={wmsLayersData} />
+          {<PngTilesLayers pngTileLayersData={pngTilesLayersData} />}
 
           {/* adds layer of points as a react component */}
           <PointsLayer layerName="Locations" consFixed={consFixed} />
@@ -69,7 +81,6 @@ const MapControler = ({ settings }) => {
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
-
         <MapLegend settings={settings} position="left" />
       </div>{" "}
       {/* </FlexContainer> */}
