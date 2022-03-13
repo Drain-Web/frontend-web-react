@@ -1,6 +1,49 @@
 import React from "react";
 import Plot from "react-plotly.js";
 
+
+// 
+const createBasicPlotLayoutDict = (plotData) => {
+  return {
+    title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
+    font: {
+      family: "Arial",
+      size: 16
+    },
+    legend: {
+      x: 1.05,
+      y: 1.00,
+      font: {
+        size: 12
+      }
+    },
+    showlegend: true
+  }
+}
+
+
+// 
+const getPlotLayoutDict1var = (availableVariables, unitsVariables, baseDict) => {
+  baseDict['yaxis'] = {
+    title: availableVariables[0] + " [" + unitsVariables[0] + "]",
+  }
+  baseDict['autosize'] = true
+}
+
+
+// 
+const getPlotLayoutDict2vars = (availableVariables, unitsVariables, baseDict) => {
+  baseDict['yaxis'] = {
+    title: availableVariables[0] + " [" + unitsVariables[0] + "]",
+  }
+  baseDict['yaxis2'] = {
+    title: availableVariables[1] + " [" + unitsVariables[1] + "]",
+    overlaying: "y",
+    side: "right",
+  }
+}
+
+
 const TimeSeriesPlotLayouts = ({
   plotArray,
   plotData,
@@ -27,45 +70,17 @@ const TimeSeriesPlotLayouts = ({
     },
   ];
 
-  let layouts = {};
-  
-  const fontAttrs = {
-    family: "Arial",
-    size: 16
-  }
-  const legendAttrs = {
-    x: 1.05, y: 1.00,
-    font: { size: 12 }
-  }
-
+  // build layout attributes dictionary
+  const layouts = createBasicPlotLayoutDict(plotData);
   if (availableVariables.length == 1) {
-    layouts = {
-      autosize: true,
-      title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
-      yaxis: {
-        title: availableVariables[0] + "[" + unitsVariables[0] + "]",
-      },
-      font: fontAttrs,
-      showlegend: true,
-      legend: legendAttrs
-    };
+    getPlotLayoutDict1var(availableVariables, unitsVariables, layouts);
   } else if (availableVariables.length == 2) {
-    layouts = {
-      title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
-      font: fontAttrs,
-      showlegend: true,
-      legend: legendAttrs,
-      yaxis: {
-        title: availableVariables[0] + "[" + unitsVariables[0] + "]",
-      },
-      yaxis2: {
-        title: availableVariables[1] + "[" + unitsVariables[1] + "]",
-        overlaying: "y",
-        side: "right",
-      },
-    };
+    getPlotLayoutDict2vars(availableVariables, unitsVariables, layouts);
+  } else {
+    return(<div>INVALID ARGUMENTS: length {availableVariables.length}</div>)
   }
-
+  
+  // add threshold lines (if needed)
   const retData = (thresholdsArray != null) ? plotArray.concat(thresholdsArray) : plotArray
 
   return (<Plot data={retData} layout={layouts} />)
