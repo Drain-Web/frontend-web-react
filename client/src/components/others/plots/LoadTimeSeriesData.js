@@ -209,20 +209,22 @@ const LoadTimeSeriesData = ({ settings }) => {
 
   //
   const getAvailableVariables = (plotData) => {
-    let variables = Object.keys(plotData);
+    let parameterGroupIds = Object.keys(plotData);
 
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroupId of parameterGroupIds) {
+      obj[parameterGroupId] = [];
     }
 
-    for (let variable of variables) {
-      for (let entry of plotData[variable]) {
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          obj[variable].push(entry.properties.parameterId.split(".")[0]);
+    for (let parameterGroupId of parameterGroupIds) {
+      for (let entry of plotData[parameterGroupId]) {
+        const curParameterId = entry.properties.parameterId
+        const curParamGroupId = consFixedLib.getParameterGroupOfParameterId(curParameterId, consFixed)
+        if (curParamGroupId == parameterGroupId) {
+          obj[parameterGroupId].push(curParamGroupId);
         }
       }
-      obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
+      obj[parameterGroupId] = obj[parameterGroupId].filter((v, i, a) => a.indexOf(v) === i);
     }
 
     return obj;
@@ -230,20 +232,22 @@ const LoadTimeSeriesData = ({ settings }) => {
 
   //
   const getUnitsVariables = (plotData) => {
-    let variables = Object.keys(plotData);
+    let parameterGroupIds = Object.keys(plotData);
 
     let obj = {};
-    for (let variable of variables) {
-      obj[variable] = [];
+    for (let parameterGroupId of parameterGroupIds) {
+      obj[parameterGroupId] = [];
     }
 
-    for (let variable of variables) {
-      for (let entry of plotData[variable]) {
-        if (entry.properties.parameterId.split(".")[0] == variable) {
-          obj[variable].push(entry.properties.units);
+    for (let parameterGroupId of parameterGroupIds) {
+      for (let entry of plotData[parameterGroupId]) {
+        const curParameterId = entry.properties.parameterId
+        const curParamGroupId = consFixedLib.getParameterGroupOfParameterId(curParameterId, consFixed)
+        if (curParamGroupId == parameterGroupId) {
+          obj[parameterGroupId].push(entry.properties.units);
         }
       }
-      obj[variable] = obj[variable].filter((v, i, a) => a.indexOf(v) === i);
+      obj[parameterGroupId] = obj[parameterGroupId].filter((v, i, a) => a.indexOf(v) === i);
     }
 
     return obj
@@ -337,9 +341,10 @@ const LoadTimeSeriesData = ({ settings }) => {
     // update states and force re-rendering
     varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState)
     varsStateLib.setTimeSeriesPlotUnitsVariables(
-      getAvailableVariables(timeSeriesPlotDataAux), varsState)
-    varsStateLib.setTimeSeriesPlotAvailableVariables(
       getUnitsVariables(timeSeriesPlotDataAux), varsState)
+    varsStateLib.setTimeSeriesPlotAvailableVariables(
+      getAvailableVariables(timeSeriesPlotDataAux), varsState)
+
     /*
       setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
       setModelEvaluationMetricsUrls(

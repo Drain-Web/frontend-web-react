@@ -33,24 +33,61 @@ const showLoading = () => {
   );
 };
 
+
 // 
 const showTimeseriesPlot = (parameterGroupId, varsState) => {
+  const tsData = varsState.domObjects.timeSeriesData
   return (
     <TimeSeriesPlot
-      plotData={varsState.domObjects.timeSeriesData.plotData[parameterGroupId]}
-      plotArray={varsState.domObjects.timeSeriesData.plotArrays[parameterGroupId]}
-      availableVariables={
-        varsState.domObjects.timeSeriesData.availableVariables[parameterGroupId]
-      }
-      unitsVariables={
-        varsState.domObjects.timeSeriesData.unitsVariables[parameterGroupId]
-      }
-      thresholdsArray={
-        varsState.domObjects.timeSeriesData.thresholdsArray[parameterGroupId]
-      }
+      plotData={tsData.plotData[parameterGroupId]}
+      plotArray={tsData.plotArrays[parameterGroupId]}
+      availableVariables={tsData.availableVariables[parameterGroupId]}
+      unitsVariables={tsData.unitsVariables[parameterGroupId]}
+      thresholdsArray={tsData.thresholdsArray[parameterGroupId]}
     />
   );
 };
+
+
+// TODO - make it dynamic
+const metricsTab = (id) => {
+  return (
+    <Tab eventKey={"Metrics"+id} title={"Metrics"+id}>
+      <MetricsTable
+        timeSeriesMetrics={{
+          evaluations: {
+            RMSE: {
+              ImportHLModelHist01: 16.156 /* TODO: remove hard code */,
+              Dist050t065USGSobs: 31.041,
+              Dist115t140USGSobs: 20.745,
+            },
+            KGE: {
+              ImportHLModelHist01: 0.31,
+              Dist050t065USGSobs: 0.572,
+              Dist115t140USGSobs: 0.722,
+            },
+          },
+          version: "1.25",
+        }}
+        className="justify-content-md-center"
+      />
+    </Tab>)
+}
+
+
+//
+const timeseriesTab = (parameterGroupId, varsState) => {
+  return (
+    <Tab
+      eventKey={parameterGroupId}
+      title={parameterGroupId}
+      key={parameterGroupId}
+    >
+      {showTimeseriesPlot(parameterGroupId, varsState)}
+    </Tab>
+  );
+}
+
 
 //
 const DraggableTimeseriesDiv = ({settings}) => {
@@ -90,38 +127,11 @@ const DraggableTimeseriesDiv = ({settings}) => {
                     /* Add one tab per time series */
                     Object.keys(
                       varsState.domObjects.timeSeriesData.availableVariables
-                    ).map((parameterGroupId) => {
-                      return (
-                        <Tab
-                          eventKey={parameterGroupId}
-                          title={parameterGroupId}
-                          key={parameterGroupId}
-                        >
-                          {showTimeseriesPlot(parameterGroupId, varsState)}
-                        </Tab>
-                      );
-                    })
+                    ).map((parameterGroupId) => timeseriesTab(parameterGroupId, varsState))
                   }
-                  <Tab eventKey={"Metrics"} title={"Metrics"}>
-                    <MetricsTable
-                      timeSeriesMetrics={{
-                        evaluations: {
-                          RMSE: {
-                            ImportHLModelHist01: 16.156 /* TODO: remove hard code */,
-                            Dist050t065USGSobs: 31.041,
-                            Dist115t140USGSobs: 20.745,
-                          },
-                          KGE: {
-                            ImportHLModelHist01: 0.31,
-                            Dist050t065USGSobs: 0.572,
-                            Dist115t140USGSobs: 0.722,
-                          },
-                        },
-                        version: "1.25",
-                      }}
-                      className="justify-content-md-center"
-                    />
-                  </Tab>
+                  {
+                    metricsTab('')
+                  }
                 </Tabs>
               )}
             </div>
