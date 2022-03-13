@@ -25,7 +25,7 @@ import "../../style/Panel.css";
 //
 const showLoading = () => {
   return (
-    <div>
+    <div className="loading-spinner">
       <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading...</span>
       </Spinner>
@@ -90,7 +90,7 @@ const timeseriesTab = (parameterGroupId, varsState) => {
 
 
 //
-const DraggableTimeseriesDiv = ({settings}) => {
+const DraggableTimeseriesDiv = ({ settings }) => {
   const divRef = useRef(null);
   const { varsState, setVarState } = useContext(VarsState);
 
