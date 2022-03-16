@@ -62,6 +62,27 @@ const getEvaluationIconAndColor = (metric, parameterGroupId, value, settings) =>
 }
 
 //
+const getEvaluationsLastRequestUrl = (consCache) => {
+  return consCache.indexes.evaluationsResponseData._lastUrlRequested_
+}
+
+//
+const setEvaluationsLastRequestUrl = (requestUrl, consCache) => {
+  _setToIndex('evaluationsResponseData', '_lastUrlRequested_', requestUrl, consCache)
+}
+
+//
+const getEvaluationsLastResponseData = (consCache) => {
+  const lastUrl = getEvaluationsLastRequestUrl(consCache)
+  return getEvaluationsResponseData(lastUrl, consCache)
+}
+
+//
+const getEvaluationsResponseData = (requestUrl, consCache) => {
+  return consCache.indexes.evaluationsResponseData[requestUrl]
+}
+
+//
 const getEvaluationLastRequestUrl = (consCache) => {
   return consCache.indexes.evaluationResponseData._lastUrlRequested_
 }
@@ -115,6 +136,13 @@ const getTimeseriesIdsInFilterId = (filterId, consCache) => {
 const storeCompetitionResponseData = (requestUrl, responseData, consCache) => {
   _setToIndex('competitionResponseData', requestUrl, responseData, consCache)
   _setToIndex('competitionResponseData', '_lastUrlRequested_', requestUrl, consCache)
+}
+
+// Just saves the return from API as-is
+// TODO: make a more decent processing
+const storeEvaluationsResponseData = (requestUrl, responseData, consCache) => {
+  _setToIndex('evaluationsResponseData', requestUrl, responseData, consCache)
+  setEvaluationsLastRequestUrl(requestUrl, consCache)
 }
 
 // Just saves the return from API as-is
@@ -201,6 +229,10 @@ const consCacheLib = {
   getEvaluationLastRequestUrl: getEvaluationLastRequestUrl,
   getEvaluationLastResponseData: getEvaluationLastResponseData,
   getEvaluationResponseData: getEvaluationResponseData,
+  getEvaluationsLastRequestUrl: getEvaluationsLastRequestUrl,
+  setEvaluationsLastRequestUrl: setEvaluationsLastRequestUrl,
+  getEvaluationsLastResponseData: getEvaluationsLastResponseData,
+  getEvaluationsResponseData: getEvaluationsResponseData,
   getLocationIdOfTimeseriesId: getLocationIdOfTimeseriesId,
   getModuleInstancesOfThreshouldGroup: getModuleInstancesOfThreshouldGroup,
   getModuleInstancesWithParameterGroup: getModuleInstancesWithParameterGroup,
@@ -209,6 +241,7 @@ const consCacheLib = {
   getTimeseriesData: getTimeseriesData,
   getTimeseriesIdsInFilterId: getTimeseriesIdsInFilterId,
   storeCompetitionResponseData: storeCompetitionResponseData,
+  storeEvaluationsResponseData: storeEvaluationsResponseData,
   storeEvaluationResponseData: storeEvaluationResponseData,
   storeTimeseriesData: storeTimeseriesData,
   wasUrlRequested: wasUrlRequested
