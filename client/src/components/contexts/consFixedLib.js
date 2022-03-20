@@ -6,6 +6,14 @@
 /* ** PUBLIC FUNCTIONS *********************************************************************** */
 
 //
+const getFilterData = (filterId, consFixed) => {
+  for (const curFilter of consFixed.filters) {
+    if (curFilter.id === filterId) { return (curFilter) }
+  }
+  return (null)
+}
+
+//
 const getLocationData = (locationId, consFixed) => {
   for (const curLocation of consFixed.locations.locations) {
     if (curLocation.locationId === locationId) { return (curLocation) }
@@ -23,12 +31,17 @@ const getParameterIdsFromParameterGroup = (parameterGroup, consFixed) => {
   return parameterGroupSet
 }
 
-// 
+//
 const getParameterGroupOfParameterId = (parameterId, consFixed) => {
   return consFixed.parameters[parameterId].parameterGroup
 }
 
-// 
+//
+const getRegionData = (consFixed) => {
+  return consFixed.region
+}
+
+//
 const getThresholdGroupData = (thresholdGroupId, consFixed) => {
   return consFixed.thresholdGroup[thresholdGroupId]
 }
@@ -52,7 +65,7 @@ const getThresholdGroupsOfLevelThreshold = (levelThresholdId, consFixed) => {
   return thresholdGroups
 }
 
-// 
+//
 const getThresholdGroupsOfLevelThresholds = (levelThresholds, consFixed) => {
   let retThresholdGroups = new Set()
   for (const curLevelThesh of Array.from(levelThresholds)) {
@@ -62,7 +75,7 @@ const getThresholdGroupsOfLevelThresholds = (levelThresholds, consFixed) => {
   return retThresholdGroups
 }
 
-// 
+//
 const getThresholdLevelData = (thresholdLevelId, consFixed) => {
   
   for (const [curThreshValueSetId, curThreshLevels] of 
@@ -76,9 +89,8 @@ const getThresholdLevelData = (thresholdLevelId, consFixed) => {
   return null
 }
 
-
+//
 const getThresholdLevelFromValueFunction = (valueFunction, consFixed) => {
-
   // get levelThresholdId from value function
   let levelThresholdId = null
   const lvlThreshId = "@" + valueFunction + "@"
@@ -109,8 +121,10 @@ const getThresholdLevelFromValueFunction = (valueFunction, consFixed) => {
 
 // aggregate all public functions into a single namespace
 const consFixedLib = {
+  getFilterData: getFilterData,
   getLocationData: getLocationData,
   getParameterGroupOfParameterId: getParameterGroupOfParameterId,
+  getRegionData: getRegionData,
   getThresholdGroupBaseIcons: getThresholdGroupBaseIcons,
   getThresholdGroupData: getThresholdGroupData,
   getThresholdGroupsOfLevelThreshold: getThresholdGroupsOfLevelThreshold,

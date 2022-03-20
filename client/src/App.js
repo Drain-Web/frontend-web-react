@@ -72,7 +72,7 @@ const App = ({ settings }) => {
   /* ** MAIN RENDER **************************************************************************** */
 
   // gets the central coordinates of the map into const 'position'
-  const posXY = getMapCenter(consFixed['region'].map.defaultExtent)
+  const posXY = getMapCenter(consFixed.region.map.defaultExtent)
   const position = [posXY.y, posXY.x]
 
   return (

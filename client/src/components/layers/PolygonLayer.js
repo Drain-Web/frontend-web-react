@@ -41,34 +41,31 @@ const PolygonLayer = ({
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
-    <>
-      <LayersControl.Overlay checked name={layerName}>
-        <LayerGroup name={layerName}>
-          {
-            layerData.map((poly) => {
+    <LayersControl.Overlay checked name={layerName}>
+      <LayerGroup name={layerName}>
+        {
+          layerData.map((poly) => {
+            /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+            const polygon = (reversePolygon) ? revertPolygon(poly.polygon) : poly.polygon
 
-              /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-              const polygon = (reversePolygon) ? revertPolygon(poly.polygon) : poly.polygon
-
-              /* build polygons */
-              return (
-                (displayPolygon(poly.id, varsState) && polygon)
-                  ? <Polygon
-                      pathOptions={{
-                        color: poly.lineColor ? poly.lineColor: color,
-                        weight: poly.lineWidth ? poly.lineWidth: lineWidth
-                      }}
-                      positions={polygon}
-                      key={poly.id}
-                      filter={false}
-                    />
-                  : <Fragment key={poly.id} />
-              )
-            })
-          }
-        </LayerGroup>
-      </LayersControl.Overlay>
-    </>
+            /* build polygons */
+            return (
+              (displayPolygon(poly.id, varsState) && polygon)
+                ? <Polygon
+                    pathOptions={{
+                      color: poly.lineColor ? poly.lineColor : color,
+                      weight: poly.lineWidth ? poly.lineWidth : lineWidth
+                    }}
+                    positions={polygon}
+                    key={poly.id}
+                    filter={false}
+                  />
+                : <Fragment key={poly.id} />
+            )
+          })
+        }
+      </LayerGroup>
+    </LayersControl.Overlay>
   )
 }
 
