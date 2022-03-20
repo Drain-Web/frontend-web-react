@@ -109,8 +109,8 @@ const MainMenuControl = ({ settings, position }) => {
                 varsStateLib.setMainMenuControlActiveTab(
                   selectedTab,
                   varsState
-                );
-                setVarState(Math.random());
+                )
+                setVarState(Math.random())
               }}
             >
               <Tab

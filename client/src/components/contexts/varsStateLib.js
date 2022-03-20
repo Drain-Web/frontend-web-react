@@ -108,21 +108,21 @@ const hideAllLocationIcons = (varsState) => {
 
 //
 const hideMainMenuControl = (varsState) => {
-  varsState.domObjects['mainMenuControl']['show'] = false
+  varsState.domObjects.mainMenuControl.show = false
 }
 
 const hidePanelTabs = (varsState) => {
-  varsState.domObjects['timeseriesPanel']['show'] = false
+  varsState.domObjects.timeseriesPanel.show = false
 }
 
 //
 const inMainMenuControlActiveTabActiveFeatureInfo = (varsState) => {
-  return (varsState.domObjects['mainMenuControl']['activeTab'] === "tabActiveFeatureInfo")
+  return (varsState.domObjects.mainMenuControl.activeTab === 'tabActiveFeatureInfo')
 }
 
 //
 const inMainMenuControlActiveTabFilters = (varsState) => {
-  return (varsState.domObjects['mainMenuControl']['activeTab'] === "tabFilters")
+  return (varsState.domObjects.mainMenuControl.activeTab === 'tabFilters')
 }
 
 //
@@ -154,18 +154,18 @@ const setContextIcons = (iconsType, args, varsState) => {
 }
 
 
-// 
+//
 const setMapLegendSubtitle = (subtitle, varsState) => {
   varsState.domObjects.mapLegend.subtitle = subtitle
 }
 
-// 
+//
 const getMapLegendSubtitle = (varsState) => {
   return varsState.domObjects.mapLegend.subtitle
 }
 
 
-// 
+//
 // param icons: Dictionary with 'description' as key and 'iconUrl' as value
 // param iconsOrder: List with sequential keys of 'icons' param; or null for any order.
 const setMapLegendIcons = (icons, iconsOrder, varsState) => {
@@ -178,7 +178,7 @@ const setMapLegendIcons = (icons, iconsOrder, varsState) => {
       iconsDescList.push(curModuleInstanceId)
     }
   } else {
-    for (const curModuleInstanceId of iconsOrder){
+    for (const curModuleInstanceId of iconsOrder) {
       iconsUrlList.push(icons[curModuleInstanceId])
       iconsDescList.push(curModuleInstanceId)
     }
@@ -199,7 +199,7 @@ const getMapLegendIcons = (varsState) => {
 }
 
 
-// 
+//
 const setMapLegendVisibility = (display, varsState) => {
   varsState.domObjects.mapLegend.display = display
 }
@@ -217,20 +217,25 @@ const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
 
 //
 const setMainMenuControlActiveTabAsActiveFeatureInfo = (varsState) => {
-  varsState.domObjects.mainMenuControl.activeTab = "tabActiveFeatureInfo"
+  varsState.domObjects.mainMenuControl.activeTab = 'tabActiveFeatureInfo'
 }
 
 //
 const setMainMenuControlActiveTabAsOverview = (varsState) => {
-  varsState.domObjects.mainMenuControl.activeTab = "tabOverview"
+  varsState.domObjects.mainMenuControl.activeTab = 'tabOverview'
 }
 
-// 
+//
+const setMainMenuControlActiveTabAsFilters = (varsState) => {
+  varsState.domObjects.mainMenuControl.activeTab = 'tabFilters'
+}
+
+//
 const setMapZoomLevel = (newZoomLevel, varsState) => {
   varsState.domObjects.map.zoomLevel = newZoomLevel
 }
 
-// 
+//
 const setUniformIcon = (iconUrl, varsState) => {
   for (const locId in varsState.locations) { varsState.locations[locId].icon = iconUrl }
 }
@@ -757,6 +762,7 @@ const varsStateLib = {
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
+  setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMapLegendSubtitle: setMapLegendSubtitle,
   setMapLegendIcons: setMapLegendIcons,
   setMapLegendVisibility: setMapLegendVisibility,
@@ -774,7 +780,5 @@ const varsStateLib = {
   toggleMainMenuControl: toggleMainMenuControl,
   updateLocationIcons: updateLocationIcons
 }
-
-setMapLegendSubtitle, setMapLegendIcons, setMapLegendVisibility
 
 export default varsStateLib

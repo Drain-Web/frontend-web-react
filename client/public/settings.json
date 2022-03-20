@@ -1,6 +1,7 @@
 {
   "apiBaseUrl": "https://wb-trca-api.herokuapp.com/",
   "apiBaseUrl_": "http://127.0.0.1:8000/",
+  "startingTab": "tabOverview",
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop_white.svg",

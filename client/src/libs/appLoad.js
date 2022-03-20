@@ -121,13 +121,13 @@ const loadConsFixed = ( settings ) => {
   return consFixed
 }
 
-
+//
 const isStillLoadingConsFixedValue = (value) => {
   if (!value) {
     return true
-  } else if (Array.isArray(value) && (value.length == 0)) {
+  } else if (Array.isArray(value) && (value.length === 0)) {
     return true
-  } else if ((value.constructor == Object) && (Object.keys(value).length == 0)) {
+  } else if ((value.constructor === Object) && (Object.keys(value).length === 0)) {
     return true
   } else if (!value) {
     return true
@@ -136,7 +136,7 @@ const isStillLoadingConsFixedValue = (value) => {
   }
 }
 
-
+//
 const isStillLoadingConsFixed = (consFixed) => {
   let allLoaded = true
   for (const k in consFixed) {
@@ -145,26 +145,34 @@ const isStillLoadingConsFixed = (consFixed) => {
   return !allLoaded
 }
 
-
+//
 const setVarsStateLocations = (consFixed, settings, varsState) => {
-  if (Object.keys(varsState['locations']).length != 0) { return false }
-  
+  if (Object.keys(varsState.locations).length != 0) { return false }
+
   const locationIds = consFixed['locations']['locations'].map(loc => loc['locationId']);
-  varsStateLib.addLocations(locationIds, settings['generalLocationIcon'], true, varsState);
+  varsStateLib.addLocations(locationIds, settings.generalLocationIcon, true, varsState);
   return true
 }
 
-
+//
 const setVarsStateContext = (consFixed, settings, varsState) => {
-  if (varsState['context']['filterId']) { return false }
-  
-  console.log("Setting", consFixed['region']['defaultFilter'], "to", varsState)
-  varsStateLib.setContextFilterId(consFixed['region']['defaultFilter'], varsState)
-  varsStateLib.setContextIcons("uniform", {}, varsState)
+  if (varsState.context.filterId) { return false }
+
+  varsStateLib.setContextFilterId(consFixed.region.defaultFilter, varsState)
+
+  if (!settings.startingTab) {
+    varsStateLib.setMainMenuControlActiveTabAsFilters(varsState)
+    console.log('~Setting active tab as filter')
+  } else {
+    varsStateLib.setMainMenuControlActiveTab(settings.startingTab, varsState)
+    console.log('~Setting active tab as:', settings.startingTab)
+  }
+
+  varsStateLib.setContextIcons('uniform', {}, varsState)
   return true
 }
 
-
+//
 const appLoad = {
   "isStillLoadingConsFixed": isStillLoadingConsFixed,
   "isStillLoadingConsFixedValue": isStillLoadingConsFixedValue,

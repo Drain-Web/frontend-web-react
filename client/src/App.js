@@ -41,14 +41,7 @@ const getMapCenter = (mapExtent) => {
 const App = ({ settings }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
-  // Context states
-  // TODO: move them to the consCache, consFixed or varsState contexts
-  const [mapLocationsContextData, setMapLocationsContextData] = useState({})
-  const [zoomLevel, setZoomLevel] = useState(9)  // TODO: make it a function of the map extents
-
   // Contexts
-  // const consCache = consCacheLib.getEmptyStructure()
-  // const consCache = ConsCache._currentValue.consCache
   const consCache = useState(ConsCache._currentValue.consCache)[0]
   const consFixed = useState(appLoad.loadConsFixed(settings))[0]
   const [varsState, setVarsState] = useState(VarsState._currentValue.varsState)
@@ -59,26 +52,20 @@ const App = ({ settings }) => {
 
   /* ** FILL varState with default values ****************************************************** */
 
-  // update varsState and trigger render if needed
-  let updatedVarsState = false;
+  // update varsState
+  let updatedVarsState = false
   if (appLoad.setVarsStateLocations(consFixed, settings, varsState)) { updatedVarsState = true }
-  if (appLoad.setVarsStateContext(consFixed, settings, varsState))   { updatedVarsState = true }
-  if (!varsStateLib.getContextFilterId(varsState)) {
-    varsStateLib.setContextFilterId(consFixed['region'].defaultFilter, varsState)
-    updatedVarsState = true
-  }
+  if (appLoad.setVarsStateContext(consFixed, settings, varsState)) { updatedVarsState = true }
+
+  // trigger render if needed
   if (updatedVarsState) { setVarsState(varsState) }
 
   /* ** MAIN RENDER **************************************************************************** */
 
-  // gets the central coordinates of the map into const 'position'
-  const posXY = getMapCenter(consFixed.region.map.defaultExtent)
-  const position = [posXY.y, posXY.x]
-
   return (
     <VarsState.Provider value={{ varsState, setVarState }}>
       <ConsCache.Provider value={{ consCache }}>
-        <MapContainer center={position} zoom={zoomLevel} zoomControl={false}>
+        <MapContainer>
           <GetZoomLevel />
           <MapControler settings={settings} />
         </MapContainer>
@@ -91,23 +78,15 @@ const AppSettings = () => {
   /* ** SET HOOKS ****************************************************************************** */
 
   // read app settings
-  const settingsData = useState({})[0];
-  const { data: dataSettings, error: errorSettings } = useSWR("settings.json", fetcher)
+  const settingsData = useState({})[0]
+  const { data: dataSettings, error: errorSettings } = useSWR('settings.json', fetcher)
 
   /* ** MAIN RENDER  *************************************************************************** */
-
-  /*
-  return (
-      <ConsFixed.Provider value={ ConsFixed._currentValue }>
-        <App settings={settingsData} />
-      </ConsFixed.Provider>
-    )
-  */
 
   if (dataSettings && !errorSettings) {
     for (const i in dataSettings) settingsData[i] = dataSettings[i]
     return (
-      <ConsFixed.Provider value={ ConsFixed._currentValue }>
+      <ConsFixed.Provider value={ConsFixed._currentValue}>
         <App settings={settingsData} />
       </ConsFixed.Provider>
     )
