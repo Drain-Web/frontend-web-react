@@ -3,7 +3,7 @@
   "apiBaseUrl_": "http://127.0.0.1:8000/",
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
-  "generalLocationIcon": "./img/drop.svg",
+  "generalLocationIcon": "./img/drop_white.svg",
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
   "locationIconsOptions": {
     "default": {
