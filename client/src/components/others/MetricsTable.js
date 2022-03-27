@@ -1,6 +1,11 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
 
+/*
+ * timeSeriesMetrics: Dictionary with format: {'evaluations': {'metric1': {'simulationModuleInstanceId1': value, ...}}}
+ *     as returned by v1dw/timeseries_calculator?filter={...}&calcs={...},{...}&simParameterId={...}&obsParameterId={...}&simModuleInstanceIds={...},{...}&obsModuleInstanceId={...}&locationId={...}
+ */
+
 const MetricsTable = ({ timeSeriesMetrics }) => {
   const evaluations = timeSeriesMetrics["evaluations"];
   const metrics = Object.entries(evaluations).map((entry) => entry[0]);
@@ -18,6 +23,8 @@ const MetricsTable = ({ timeSeriesMetrics }) => {
 
     rows.push(row);
   }
+
+  /* ** MAIN RENDER ************************************************************************** */
 
   return (
     <div className="d-flex align-items-center justify-content-center metricTables">
