@@ -90,7 +90,7 @@ const MainMenuControl = ({ settings, position }) => {
         <Container className="h-100" ref={divRef}>
           <Row>
             <Col>
-              <h1>{consFixed["region"].systemInformation.name}</h1>
+              <h1>{consFixed.region.systemInformation.name}</h1>
             </Col>
           </Row>
           <Row>
@@ -128,10 +128,10 @@ const MainMenuControl = ({ settings, position }) => {
 
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
-                  filtersData={consFixed["filters"]}
-                  locationsData={consFixed["locations"]}
-                  thresholdValueSets={consFixed["thresholdValueSets"]}
-                  thresholdGroups={consFixed["thresholdGroup"]}
+                  filtersData={consFixed.filters}
+                  locationsData={consFixed.locations}
+                  thresholdValueSets={consFixed.thresholdValueSets}
+                  thresholdGroups={consFixed.thresholdGroup}
                   settings={settings}
                 />
               </Tab>
