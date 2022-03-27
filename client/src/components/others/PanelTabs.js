@@ -16,6 +16,7 @@ import MetricsTable from "./MetricsTable";
 // import contexts
 import ConsCache from '../contexts/ConsCache.js'
 import consCacheLib from '../contexts/consCacheLib'
+import ConsFixed from '../contexts/ConsFixed.js'
 import VarsState from "../contexts/VarsState";
 import varsStateLib from "../contexts/varsStateLib";
 
@@ -108,6 +109,87 @@ const timeseriesTab = (parameterGroupId, varsState) => {
 }
 
 
+const listMetrics = (settings) => {
+  /*
+   * settings: Full settings data
+   * returns: list of metric names
+   */
+
+  const evalDict = settings.locationIconsOptions.evaluation
+  if (!evalDict) { return null }
+
+  // remove items meta-entries
+  const allMetrics = Object.keys(evalDict.options)
+  for(let i = allMetrics.length-1; i >= 0; i--){
+    if (allMetrics[i].charAt(0) == "_") { allMetrics.pop(i) }
+  }
+
+  return allMetrics
+}
+
+
+const listMetricsAndParameters = (settings, consFixed, parameterGroupId) => {
+  
+  // basic check
+  const evalDict = settings.locationIconsOptions.evaluation
+  if (!evalDict) { return null }
+
+  // remove items meta-entries
+  let obsParamId = null
+  let simParamId = null
+  for (const curMetricId of Object.keys(evalDict.options)) {
+
+    // ignore meta
+    if (curMetricId.charAt(0) == "_") { continue }
+
+    // get obs and sim parameters
+    console.log("...", evalDict.options[curMetricId])
+    // TODO
+    
+    // check if both are from given paramGroup
+    // TODO
+
+    // update globals
+    // TODO
+
+    // add to return list
+    // TODO
+  }
+  const allMetrics = Object.keys()
+}
+
+
+// 
+const getParametersAndModuleInstanceIds = (varsState, parameterGroupId) => {
+  /*
+   * return {"parameterId": [moduleInstanceId, ...]}
+   */
+  const plotData = varsStateLib.getTimeSeriesPlotData(varsState)
+
+  if (!plotData) { return null }
+  if (!plotData[parameterGroupId]) { return null }
+
+  // identify the module instance of each parameter
+  const returnDict = {}
+  for (const curTimeseriesDict of plotData[parameterGroupId]) {
+    const curParameterId = curTimeseriesDict.properties.parameterId
+    if (!(curParameterId in returnDict)) { 
+      returnDict[curParameterId] = new Set()
+    }
+    returnDict[curParameterId].add(
+      curTimeseriesDict.properties.moduleInstanceId
+    )
+  }
+
+  // turn the sets into arrays
+  for (const curParameterId of Object.keys(returnDict)) {
+    returnDict[curParameterId] = Array.from(returnDict[curParameterId])
+  }
+
+  return(returnDict)
+}
+
+
 //
 const DraggableTimeseriesDiv = ({ settings }) => {
   const divRef = useRef(null);
@@ -173,6 +255,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
 
 const PanelTabs = ({ position, settings }) => {
   const { consCache } = useContext(ConsCache)
+  const { consFixed } = useContext(ConsFixed)
   const { varsState, setVarState } = useContext(VarsState)
 
   // updates matrix table if needed
@@ -180,6 +263,29 @@ const PanelTabs = ({ position, settings }) => {
 
     // only does something if the tab is being shown
     if (!varsStateLib.getPanelTabsShow(varsState)) { return }
+
+    // TODO - make it dynamic
+    const parameterGroupId = 'Discharge'
+    // listMetricsAndParameters(settings, consFixed, parameterGroupId)
+
+    // and only if there is at least one evaluation metric available
+    const evaluationMetrics = listMetrics(settings)
+    if ((!evaluationMetrics) || (evaluationMetrics.length == 0)) { 
+      consCacheLib.setEvaluationsLastRequestUrl = (null, consCache)
+      setVarState(Math.random());
+      return
+    }
+
+    const simParameterId = "Q.sim"  // TODO - make it fully dynamic
+    const obsParameterId = "Q.obs"  // TODO - make it fully dynamic
+
+    // get parameters available
+    const parametersAndModules = getParametersAndModuleInstanceIds(varsState, parameterGroupId)
+    if ((!parametersAndModules) || (!parametersAndModules[simParameterId]) || (!parametersAndModules[obsParameterId])) {
+      consCacheLib.setEvaluationsLastRequestUrl = (null, consCache)
+      setVarState(Math.random());
+      return
+    }
 
     // final response function: get data from consCache and update varsState
     const callbackFunc = (urlRequested) => {
@@ -191,11 +297,11 @@ const PanelTabs = ({ position, settings }) => {
     const urlTimeseriesCalcRequest = apiUrl(
       settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
         filter: varsStateLib.getContextFilterId(varsState),
-        calcs: "RMSE,KGE",                                               // TODO - make it fully dynamic
-        simParameterId: "Q.sim",                                         // TODO - make it fully dynamic
-        obsParameterId: "Q.obs",                                         // TODO - make it fully dynamic
-        obsModuleInstanceId: "ImportUSGSobs",                            // TODO - make it fully dynamic
-        simModuleInstanceIds: "ImportHLModelHist01,Dist050t065USGSobs",  // TODO - make it fully dynamic
+        calcs: evaluationMetrics.join(","),
+        simParameterId: simParameterId,
+        obsParameterId: obsParameterId,
+        obsModuleInstanceId: parametersAndModules[obsParameterId],             // TODO - make it fully dynamic
+        simModuleInstanceIds: parametersAndModules[simParameterId].join(","),  // TODO - make it fully dynamic
         locationId: varsStateLib.getActiveLocation(varsState).locationId
       }
     )
@@ -217,7 +323,8 @@ const PanelTabs = ({ position, settings }) => {
 
   }, [varsStateLib.getContextFilterId(varsState),
       varsStateLib.getActiveLocation(varsState),
-      varsStateLib.getPanelTabsShow(varsState)])
+      varsStateLib.getPanelTabsShow(varsState),
+      varsStateLib.getTimeSeriesPlotData(varsState)])
 
   /* TimeSeriesPlot */
   return <DraggableTimeseriesDiv settings={settings} />;
