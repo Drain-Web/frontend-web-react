@@ -374,7 +374,7 @@ const _setAllLocationsUniformIcons = (iconUrl, varsState) => {
   for (const lcId in varsState.locations) { varsState.locations[lcId].icon = iconUrl }
 }
 
-// 
+//
 const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) => {
   // get all timeseries of filterId of selected ParameterGroup and ModuleInstanceId
   const filterId = getContextFilterId(varsState)
@@ -395,7 +395,7 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
   // get all info about thresh group
   const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
   const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
-  
+
   // get the value function of the thresh levels
   const thresholdLevelFunction = {}
   for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
@@ -403,7 +403,7 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
     thresholdLevelFunction[curThreshLevelId] =
       consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed).valueFunction
   }
-  
+
   // TODO: double check if it needs to be moved somewhere
   const getThresholdLevel = (timeseriesData, locationData, thresholdGroupData,
       threshLevelFunctions) => {
@@ -414,9 +414,8 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
       const curThreshLevelId = curThreshLevelObj.id
       const curThreshLevelFunction = threshLevelFunctions[curThreshLevelId]
 
-      if ((curThreshLevelFunction.charAt(0) === "@") && 
-          (curThreshLevelFunction.charAt(curThreshLevelFunction.length-1) === "@")) {
-        
+      if ((curThreshLevelFunction.charAt(0) === '@') &&
+          (curThreshLevelFunction.charAt(curThreshLevelFunction.length - 1) === '@')) {
         // get the value of the attribute in the location info
         const curAttrId = curThreshLevelFunction.substring(1, curThreshLevelFunction.length - 1)
         const curAttrObj = _getObjectFromArrayById(curAttrId, locationData.attributes)
@@ -439,9 +438,8 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
   const locationIdsIcons = {}
   for (const curTimeseriesId of consideredTimeseries) {
     const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
-    if (allParameterIds.has(curTimeseriesData.header.parameterId) && 
+    if (allParameterIds.has(curTimeseriesData.header.parameterId) &&
         (curTimeseriesData.header.moduleInstanceId === moduleInstanceId)) {
-
       // define the threshold level
       const curLocationId = curTimeseriesData.header.location_id
       const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
@@ -452,7 +450,7 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
       let selectedIcon = null
       if (!thresholdLevel) {
         selectedIcon = thresholdGroupBase.unknownIcon
-      } else if (typeof thresholdLevel === "boolean") {
+      } else if (typeof thresholdLevel === 'boolean') {
         selectedIcon = thresholdGroupBase.noWarningIcon
       } else {
         selectedIcon = thresholdLevel.upWarningLevelId.iconName
@@ -469,26 +467,26 @@ const _updateLocationIconsAlerts = (varsState, consCache, consFixed, settings) =
 
   // define items in legend
   const [iconsLegendSeq, iconsLegend] = [[], {}]
-  iconsLegendSeq.push("No alerts")
-  iconsLegend["No alerts"] = thresholdGroupBase.noWarningIcon
+  iconsLegendSeq.push('No alerts')
+  iconsLegend['No alerts'] = thresholdGroupBase.noWarningIcon
   for (const curThresholdLevel of thresholdGroupData.threshold_levels) {
     const curName = curThresholdLevel.upWarningLevelId.name
     iconsLegendSeq.push(curName)
     iconsLegend[curName] = curThresholdLevel.upWarningLevelId.iconName
   }
-  iconsLegendSeq.push("Unknown")
-  iconsLegend["Unknown"] = thresholdGroupBase.unknownIcon
+  iconsLegendSeq.push('Unknown')
+  iconsLegend.Unknown = thresholdGroupBase.unknownIcon
 
   // update legend
-  varsStateLib.setMapLegendSubtitle("Alerts:", varsState)
+  varsStateLib.setMapLegendSubtitle('Alerts:', varsState)
   varsStateLib.setMapLegendIcons(iconsLegend, iconsLegendSeq, varsState)
   varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
 const _isComparisonWinner = (selectedMetric, curWinningValue, curEvaluatedValue) => {
-  if (selectedMetric == 'higherMax') {
+  if (selectedMetric === 'higherMax') {
     return (curEvaluatedValue.maxValue > curWinningValue)
-  } else if (selectedMetric == 'lowerMax') {
+  } else if (selectedMetric === 'lowerMax') {
     return (curEvaluatedValue.maxValue < curWinningValue)
   } else {
     return false
@@ -523,18 +521,18 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
     let curValue = null
 
     // only considers relevant timeseries
-    if (curParameterGroupId != selectedParameterGroupId) { continue }
+    if (curParameterGroupId !== selectedParameterGroupId) { continue }
     if (!comparisonsArgs.moduleInstanceIds.has(curModuleInstanceId)) { continue }
 
-    // 
+    //
     if (!(curLocationId in locationIdsIcons)) {
       locationIdsIcons[curLocationId] = {}
     }
 
     // get correct value
-    if (selectedMetric.endsWith("Max")) {
+    if (selectedMetric.endsWith('Max')) {
       curValue = curTimeseriesData.maxValue
-    } else if (selectedMetric.endsWith("Min")) {
+    } else if (selectedMetric.endsWith('Min')) {
       curValue = curTimeseriesData.minValue
     }
     locationIdsIcons[curLocationId][curModuleInstanceId] = curValue
@@ -569,7 +567,7 @@ const _updateLocationIconsComparison = (varsState, consCache, consFixed, setting
   }
 
   // update legend
-  varsStateLib.setMapLegendSubtitle("Winners:", varsState)
+  varsStateLib.setMapLegendSubtitle('Winners:', varsState)
   varsStateLib.setMapLegendIcons(iconsLegend, null, varsState)
 
   // hide legend if no module is selected
@@ -582,7 +580,7 @@ const _updateLocationIconsCompetition = (varsState, consCache, consFixed, settin
   // get last response
   const lastUrlResponseData = consCacheLib.getCompetitionLastResponseData(consCache)
   if (!lastUrlResponseData) {
-    console.log("Did not stored urlResponseData from", consCache)
+    console.log('Did not stored urlResponseData from', consCache)
     return
   }
 
@@ -615,8 +613,8 @@ const _updateLocationIconsCompetition = (varsState, consCache, consFixed, settin
 
     // define icon otherwise
     let [curWinSimulation, curWinValue] = [null, null]
-    for (const [curModuleInstanceId, curModuleInstanceDict] of 
-        Object.entries(lastUrlResponseData.locations[curLocationId].simulations)) {
+    for (const [curModuleInstanceId, curModuleInstanceDict] of
+         Object.entries(lastUrlResponseData.locations[curLocationId].simulations)) {
       const curModuleInstanceValue = curModuleInstanceDict.value
       if (curWinValue && (curModuleInstanceValue < curWinValue)) {
         continue
@@ -624,16 +622,16 @@ const _updateLocationIconsCompetition = (varsState, consCache, consFixed, settin
       [curWinSimulation, curWinValue] = [curModuleInstanceId, curModuleInstanceValue]
     }
 
-    // 
+    //
     varsState.locations[curLocationId].display = true
     varsState.locations[curLocationId].icon = iconsLegend[curWinSimulation]
   }
 
   // update legend
-  varsStateLib.setMapLegendSubtitle("Winners:", varsState)
+  varsStateLib.setMapLegendSubtitle('Winners:', varsState)
   varsStateLib.setMapLegendIcons(iconsLegend, null, varsState)
   varsStateLib.setMapLegendVisibility(true, varsState)
-  console.log("Show legend")
+  console.log('Show legend')
 }
 
 //
@@ -666,8 +664,8 @@ const _updateLocationIconsUniform = (varsState, consCache, settings) => {
   for (const locationId in varsState.locations) {
     varsState.locations[locationId].display = locationIdsByFilter.has(locationId)
   }
-  varsStateLib.setMapLegendSubtitle("Uniform:", varsState)
-  varsStateLib.setMapLegendIcons({"Location": settings.generalLocationIcon}, null, varsState)
+  varsStateLib.setMapLegendSubtitle('Uniform:', varsState)
+  varsStateLib.setMapLegendIcons({ Location: settings.generalLocationIcon }, null, varsState)
   varsStateLib.setMapLegendVisibility(true, varsState)
 }
 
@@ -708,15 +706,15 @@ const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
   const [iconsLegend, iconsLegendSeq] = [{}, []]
   let rangeTopIdx = 1
   while (rangeTopIdx < iconOptions.ranges.length) {
-    const rangeLw = iconOptions.ranges[rangeTopIdx-1]
+    const rangeLw = iconOptions.ranges[rangeTopIdx - 1]
     const rangeUp = iconOptions.ranges[rangeTopIdx]
     let curLabel = null
     if (rangeLw && rangeUp) {
-      curLabel = rangeLw + " ~ " + rangeUp
+      curLabel = rangeLw + ' ~ ' + rangeUp
     } else if (rangeLw && !rangeUp) {
-      curLabel = ">" + rangeLw
+      curLabel = '>' + rangeLw
     } else if (rangeUp && !rangeLw) {
-      curLabel = "<" + rangeUp
+      curLabel = '<' + rangeUp
     }
     iconsLegendSeq.push(curLabel)
     iconsLegend[curLabel] = iconOptions.icons[rangeTopIdx - 1]
@@ -724,7 +722,7 @@ const _updateLocationIconsEvaluation = (varsState, consCache, settings) => {
   }
 
   // update legend
-  varsStateLib.setMapLegendSubtitle("Evaluation:", varsState)
+  varsStateLib.setMapLegendSubtitle('Evaluation:', varsState)
   varsStateLib.setMapLegendIcons(iconsLegend, iconsLegendSeq, varsState)
   varsStateLib.setMapLegendVisibility(true, varsState)
 }
@@ -743,7 +741,7 @@ const varsStateLib = {
   getContextIconsType: getContextIconsType,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
   getMainMenuControlShow: getMainMenuControlShow,
-  getMapLegendSubtitle: getMapLegendSubtitle, 
+  getMapLegendSubtitle: getMapLegendSubtitle,
   getMapLegendVisibility: getMapLegendVisibility,
   getMapLegendIcons: getMapLegendIcons,
   getMapZoomLevel: getMapZoomLevel,

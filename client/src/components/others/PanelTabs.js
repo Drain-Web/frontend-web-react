@@ -32,7 +32,6 @@ async function fetcherWith (url, extra) {
   return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
 }
 
-
 /* Panel open with the list of timeseries of a Location to be plot and the timeseries plot
  * Referenced by MapControler.
  */
@@ -45,11 +44,10 @@ const showLoading = () => {
         <span className="visually-hidden">Loading...</span>
       </Spinner>
     </div>
-  );
-};
+  )
+}
 
-
-// 
+//
 const showTimeseriesPlot = (parameterGroupId, varsState) => {
   const tsData = varsState.domObjects.timeSeriesData
   return (
@@ -60,16 +58,14 @@ const showTimeseriesPlot = (parameterGroupId, varsState) => {
       unitsVariables={tsData.unitsVariables[parameterGroupId]}
       thresholdsArray={tsData.thresholdsArray[parameterGroupId]}
     />
-  );
-};
+  )
+}
 
-
-// 
+//
 const metricMatrixTab = (id, consCache) => {
-  
   // wrapping function to create Tab object
   const wrapTab = (tabInnerContent) => (
-    <Tab eventKey={"Metrics"+id} title={"Metrics"+id}>
+    <Tab eventKey={'Metrics' + id} title={'Metrics' + id}>
       {tabInnerContent}
     </Tab>
   )
@@ -89,11 +85,10 @@ const metricMatrixTab = (id, consCache) => {
   // return content tabled
   return wrapTab((
     <MetricsTable timeSeriesMetrics={{
-        evaluations: urlRequestedContent
-      }}/>
+      evaluations: urlRequestedContent
+    }}/>
   ))
 }
-
 
 //
 const timeseriesTab = (parameterGroupId, varsState) => {
@@ -108,7 +103,7 @@ const timeseriesTab = (parameterGroupId, varsState) => {
   );
 }
 
-
+//
 const listMetrics = (settings) => {
   /*
    * settings: Full settings data
@@ -120,42 +115,41 @@ const listMetrics = (settings) => {
 
   // remove items meta-entries
   const allMetrics = Object.keys(evalDict.options)
-  for(let i = allMetrics.length-1; i >= 0; i--){
-    if (allMetrics[i].charAt(0) == "_") { allMetrics.pop(i) }
+  for (let i = allMetrics.length - 1; i >= 0; i--) {
+    if (allMetrics[i].charAt(0) === '_') { allMetrics.pop(i) }
   }
 
   return allMetrics
 }
 
-
-const listMetricsAndParameters = (settings, consFixed, parameterGroupId) => {
-  
+//
+const listMetricsAndParameters = (settings) => {
   // basic check
   const evalDict = settings.locationIconsOptions.evaluation
   if (!evalDict) { return null }
 
-  // remove items meta-entries
-  let obsParamId = null
-  let simParamId = null
+  //
+  const retDict = {}
   for (const curMetricId of Object.keys(evalDict.options)) {
+    if (curMetricId.charAt(0) === '_') { continue } // ignore meta
 
-    // ignore meta
-    if (curMetricId.charAt(0) == "_") { continue }
+    const curMetricDict = evalDict.options[curMetricId]
 
-    // get obs and sim parameters
-    console.log("...", evalDict.options[curMetricId])
-    // TODO
-    
-    // check if both are from given paramGroup
-    // TODO
-
-    // update globals
-    // TODO
-
-    // add to return list
-    // TODO
+    for (const curParameterGroupId of Object.keys(curMetricDict.parameterGroups)) {
+      if (curParameterGroupId in retDict) {
+        console.log(curParameterGroupId + ' already added.')
+      } else {
+        const curParameterIds = curMetricDict.parameterGroups[curParameterGroupId].parameters
+        retDict[curParameterGroupId] = {
+          parameterIdObs: curParameterIds.obs,
+          parameterIdSim: curParameterIds.sim,
+          metrics: []
+        }
+      }
+      retDict[curParameterGroupId].metrics.push(curMetricId)
+    }
   }
-  const allMetrics = Object.keys()
+  return retDict
 }
 
 
@@ -173,7 +167,7 @@ const getParametersAndModuleInstanceIds = (varsState, parameterGroupId) => {
   const returnDict = {}
   for (const curTimeseriesDict of plotData[parameterGroupId]) {
     const curParameterId = curTimeseriesDict.properties.parameterId
-    if (!(curParameterId in returnDict)) { 
+    if (!(curParameterId in returnDict)) {
       returnDict[curParameterId] = new Set()
     }
     returnDict[curParameterId].add(
@@ -189,18 +183,17 @@ const getParametersAndModuleInstanceIds = (varsState, parameterGroupId) => {
   return(returnDict)
 }
 
-
 //
 const DraggableTimeseriesDiv = ({ settings }) => {
-  const divRef = useRef(null);
+  const divRef = useRef(null)
   const { consCache } = useContext(ConsCache)
-  const { varsState, setVarState } = useContext(VarsState);
+  const { varsState, setVarState } = useContext(VarsState)
 
   useEffect(() => {
     if (divRef.current !== null) {
-      DomEvent.disableClickPropagation(divRef.current);
+      DomEvent.disableClickPropagation(divRef.current)
     }
-  });
+  })
 
   // ${position}
   return (
@@ -231,7 +224,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
                       varsState.domObjects.timeSeriesData.availableVariables
                     ).map((parameterGroupId) => timeseriesTab(parameterGroupId, varsState))
                   }
-                  { metricMatrixTab('', consCache) }
+                  {metricMatrixTab('', consCache)}
                 </Tabs>
               )}
             </div>
@@ -239,11 +232,11 @@ const DraggableTimeseriesDiv = ({ settings }) => {
         )}
       </div>
       {/* </Draggable> */}
-      <div className="close-button">
+      <div className='close-button'>
         <CloseButton
           onClick={() => {
-            varsStateLib.hidePanelTabs(varsState);
-            setVarState(Math.random());
+            varsStateLib.hidePanelTabs(varsState)
+            setVarState(Math.random())
           }}
         />
       </div>
@@ -260,36 +253,35 @@ const PanelTabs = ({ position, settings }) => {
 
   // updates matrix table if needed
   useEffect(() => {
-
     // only does something if the tab is being shown
     if (!varsStateLib.getPanelTabsShow(varsState)) { return }
 
-    // TODO - make it dynamic
-    const parameterGroupId = 'Discharge'
-    // listMetricsAndParameters(settings, consFixed, parameterGroupId)
-
     // and only if there is at least one evaluation metric available
     const evaluationMetrics = listMetrics(settings)
-    if ((!evaluationMetrics) || (evaluationMetrics.length == 0)) { 
-      consCacheLib.setEvaluationsLastRequestUrl = (null, consCache)
-      setVarState(Math.random());
+    if ((!evaluationMetrics) || (evaluationMetrics.length === 0)) {
+      consCacheLib.setEvaluationsLastRequestUrl(null, consCache)
+      setVarState(Math.random())
       return
     }
 
-    const simParameterId = "Q.sim"  // TODO - make it fully dynamic
-    const obsParameterId = "Q.obs"  // TODO - make it fully dynamic
+    // TODO: generalize for multiple parameter groups
+    const parameterGroupDicts = listMetricsAndParameters(settings)
+    const parameterGroupId = Object.keys(parameterGroupDicts)[0]
+    const parameterGroupDict = parameterGroupDicts[parameterGroupId]
+    const simParameterId = parameterGroupDict.parameterIdSim
+    const obsParameterId = parameterGroupDict.parameterIdObs
 
     // get parameters available
     const parametersAndModules = getParametersAndModuleInstanceIds(varsState, parameterGroupId)
     if ((!parametersAndModules) || (!parametersAndModules[simParameterId]) || (!parametersAndModules[obsParameterId])) {
-      consCacheLib.setEvaluationsLastRequestUrl = (null, consCache)
-      setVarState(Math.random());
+      consCacheLib.setEvaluationsLastRequestUrl(null, consCache)
+      setVarState(Math.random())
       return
     }
 
     // final response function: get data from consCache and update varsState
     const callbackFunc = (urlRequested) => {
-      consCacheLib.setEvaluationsLastRequestUrl = (urlRequested, consCache)
+      consCacheLib.setEvaluationsLastRequestUrl(urlRequested, consCache)
       setVarState(Math.random())
     }
 
@@ -297,17 +289,17 @@ const PanelTabs = ({ position, settings }) => {
     const urlTimeseriesCalcRequest = apiUrl(
       settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
         filter: varsStateLib.getContextFilterId(varsState),
-        calcs: evaluationMetrics.join(","),
+        calcs: evaluationMetrics.join(','),
         simParameterId: simParameterId,
         obsParameterId: obsParameterId,
-        obsModuleInstanceId: parametersAndModules[obsParameterId],             // TODO - make it fully dynamic
-        simModuleInstanceIds: parametersAndModules[simParameterId].join(","),  // TODO - make it fully dynamic
+        obsModuleInstanceId: parametersAndModules[obsParameterId],
+        simModuleInstanceIds: parametersAndModules[simParameterId].join(','),
         locationId: varsStateLib.getActiveLocation(varsState).locationId
       }
     )
 
-    // 
-    consCacheLib.setEvaluationsLastRequestUrl = (urlTimeseriesCalcRequest, consCache)
+    //
+    consCacheLib.setEvaluationsLastRequestUrl(urlTimeseriesCalcRequest, consCache)
     if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache) ||
         !urlTimeseriesCalcRequest) {
       callbackFunc(urlTimeseriesCalcRequest)
@@ -320,14 +312,13 @@ const PanelTabs = ({ position, settings }) => {
         callbackFunc(extras.url)
       })
     }
-
   }, [varsStateLib.getContextFilterId(varsState),
       varsStateLib.getActiveLocation(varsState),
       varsStateLib.getPanelTabsShow(varsState),
       varsStateLib.getTimeSeriesPlotData(varsState)])
 
   /* TimeSeriesPlot */
-  return <DraggableTimeseriesDiv settings={settings} />;
-};
+  return <DraggableTimeseriesDiv settings={settings} />
+}
 
-export default PanelTabs;
+export default PanelTabs

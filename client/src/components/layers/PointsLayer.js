@@ -5,7 +5,7 @@ import {
   Polygon,
   Tooltip,
   LayersControl,
-  LayerGroup,
+  LayerGroup
 } from "react-leaflet";
 
 // import contexts
@@ -32,7 +32,7 @@ const createMarkerPolygon = (locationInfo, activeLocation) => {
           activeLocation &&
           (activeLocation.locationId === locationInfo.locationId)
             ? 0.5
-            : 0,
+            : 0
       }}
       positions={JSON.parse(locationInfo.polygon).map(
         (pol) => {
