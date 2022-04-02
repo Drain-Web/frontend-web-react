@@ -189,26 +189,43 @@ const setMapLegendIcons = (icons, iconsOrder, varsState) => {
   varsState.domObjects.mapLegend.iconsTitles = iconsDescList
 }
 
-
 //
 const getMapLegendIcons = (varsState) => {
   return {
-    "icons": varsState.domObjects.mapLegend.iconsUrls,
-    "titles": varsState.domObjects.mapLegend.iconsTitles
+    icons: varsState.domObjects.mapLegend.iconsUrls,
+    titles: varsState.domObjects.mapLegend.iconsTitles
   }
 }
 
+//
+const getLastActiveTab = (varsState) => {
+  const history = varsState.domObjects.mainMenuControl.activeTabsHistory
+  return (history.length) ? history[history.length - 1] : null
+}
+
+//
+const pullFromActiveTabHistory = (varsState) => {
+  if (!varsState.domObjects.mainMenuControl.activeTabsHistory.length) {
+    return null
+  } else {
+    return varsState.domObjects.mainMenuControl.activeTabsHistory.pop()
+  }
+}
+
+//
+const pushIntoActiveTabHistory = (activeTabId, varsState) => {
+  varsState.domObjects.mainMenuControl.activeTabsHistory.push(activeTabId)
+}
 
 //
 const setMapLegendVisibility = (display, varsState) => {
   varsState.domObjects.mapLegend.display = display
 }
 
-// 
+//
 const getMapLegendVisibility = (varsState) => {
   return varsState.domObjects.mapLegend.display
 }
-
 
 //
 const setMainMenuControlActiveTab = (newActiveTabId, varsState) => {
@@ -265,7 +282,7 @@ const setTimeSeriesPlotAvailableVariables = (availableVariables, varsState) => {
     availableVariables
 }
 
-// 
+//
 const setTimeSeriesPlotThresholdsArray = (thresholdsArray, varsState) => {
   varsState.domObjects.timeSeriesData.thresholdsArray = thresholdsArray
 }
@@ -739,6 +756,7 @@ const varsStateLib = {
   getContextFilterGeoId: getContextFilterGeoId,
   getContextIconsArgs: getContextIconsArgs,
   getContextIconsType: getContextIconsType,
+  getLastActiveTab: getLastActiveTab,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
   getMainMenuControlShow: getMainMenuControlShow,
   getMapLegendSubtitle: getMapLegendSubtitle,
@@ -754,6 +772,8 @@ const varsStateLib = {
   inMainMenuControlActiveTabActiveFeatureInfo: inMainMenuControlActiveTabActiveFeatureInfo,
   inMainMenuControlActiveTabFilters: inMainMenuControlActiveTabFilters,
   inMainMenuControlActiveTabOverview: inMainMenuControlActiveTabOverview,
+  pullFromActiveTabHistory: pullFromActiveTabHistory,
+  pushIntoActiveTabHistory: pushIntoActiveTabHistory,
   setActiveLocation: setActiveLocation,
   setContextFilterId: setContextFilterId,
   setContextIcons: setContextIcons,

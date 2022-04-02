@@ -5,18 +5,21 @@ import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
 import VarsState from '../contexts/VarsState'
 import varsStateLib from '../contexts/varsStateLib'
 
-
 const displayPolygon = (polygonId, varsState) => {
-  return ((varsStateLib.getContextFilterGeoId(varsState) === polygonId) ||
-           varsStateLib.inMainMenuControlActiveTabOverview(varsState))
-}
+  /* Check if a given polygon should be displayed or not */
 
+  if (varsStateLib.inMainMenuControlActiveTabActiveFeatureInfo(varsState) &&
+      (varsStateLib.getLastActiveTab(varsState) === 'tabOverview')) {
+    return true
+  } else {
+    return ((varsStateLib.getContextFilterGeoId(varsState) === polygonId) ||
+            varsStateLib.inMainMenuControlActiveTabOverview(varsState))
+  }
+}
 
 const isMultiPolygon = (polygon) => Array.isArray(polygon[0][0])
 
-
 const revertPoint = (pointCoords) => [pointCoords[1], pointCoords[0]]
-
 
 const revertPolygon = (polygon) => {
   if (!isMultiPolygon(polygon)) {
@@ -25,7 +28,6 @@ const revertPolygon = (polygon) => {
     return polygon.map((monoPolygon) => monoPolygon.map(revertPoint))
   }
 }
-
 
 const PolygonLayer = ({
   layerData,

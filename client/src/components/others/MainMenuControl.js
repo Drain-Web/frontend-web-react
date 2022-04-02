@@ -32,26 +32,26 @@ const MainMenuControl = ({ settings, position }) => {
   const { varsState, setVarState } = useContext(VarsState);
   const [showMe, setShowMe] = useState(
     varsStateLib.getMainMenuControlShow(varsState)
-  );
+  )
 
   const divRef = useRef(null);
 
   useEffect(() => {
     DomEvent.disableClickPropagation(divRef.current);
-  });
+  })
 
   useEffect(() => {
-    console.log("Should update.");
+    console.log('Should update. Now in:', varsState.domObjects.mainMenuControl.activeTab)
   }, [
-    varsState["context"],
-    varsState["domObjects"]["mainMenuControl"]["activeTab"],
-  ]);
+    varsState.context,
+    varsState.domObjects.mainMenuControl.activeTab
+  ])
 
-  const remValue = useRemValue();
+  const remValue = useRemValue()
 
   const contentProps = useSpring({
-    marginLeft: showMe ? 1 : -18 * remValue,
-  });
+    marginLeft: showMe ? 1 : -18 * remValue
+  })
 
   const OpenCloseButton = () => {
     if (varsStateLib.getMainMenuControlShow(varsState)) {
@@ -139,8 +139,8 @@ const MainMenuControl = ({ settings, position }) => {
               <Tab eventKey="tabActiveFeatureInfo" title="Info">
                 <TabActiveFeatureInfo
                   settings={settings}
-                  // filtersData={consFixed['filters']}
-                  // overviewFilter={settings.overviewFilter}
+                // filtersData={consFixed['filters']}
+                // overviewFilter={settings.overviewFilter}
                 />
               </Tab>
             </Tabs>

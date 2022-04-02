@@ -84,10 +84,16 @@ const createMarker = (locationId, locationInfo, locationIcon, iconSize,
           click: () => {
             const previousLocation = varsStateLib.getActiveLocation(varsState)
             if ((!previousLocation) || (previousLocation.locationId !== locationId)) {
+              const curActiveTab = varsStateLib.getMainMenuControlActiveTab(varsState)
+              varsStateLib.pushIntoActiveTabHistory(curActiveTab, varsState)
               varsStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(varsState)
               varsStateLib.setActiveLocation(locationInfo, varsState)
             } else {
               varsStateLib.setActiveLocation(null, varsState)
+              const lastActiveTab = varsStateLib.pullFromActiveTabHistory(varsState)
+              if (lastActiveTab) {
+                varsStateLib.setMainMenuControlActiveTab(lastActiveTab, varsState)
+              }
             }
             setVarState(Math.random())
           }
