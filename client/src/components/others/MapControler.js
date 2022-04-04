@@ -26,44 +26,48 @@ const MapControler = ({ settings }) => {
   const map = useMap();
 
   // load contexts
-  const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState)
+  const { consCache } = useContext(ConsCache);
+  const { consFixed } = useContext(ConsFixed);
+  const { varsState, setVarState } = useContext(VarsState);
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-    setVarState(Math.random())
-  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)])
+    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings);
+    setVarState(Math.random());
+  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)]);
 
   // when varsState.context is changed, update map view window
   useEffect(() => {
-    let mapExtent = null
+    let mapExtent = null;
 
     if (varsStateLib.inMainMenuControlActiveTabOverview(varsState)) {
-      mapExtent = consFixedLib.getRegionData(consFixed).map.defaultExtent
-
+      mapExtent = consFixedLib.getRegionData(consFixed).map.defaultExtent;
     } else if (varsStateLib.inMainMenuControlActiveTabFilters(varsState)) {
-      const filterId = varsStateLib.getContextFilterId(varsState)
-      const filterData = consFixedLib.getFilterData(filterId, consFixed)
+      const filterId = varsStateLib.getContextFilterId(varsState);
+      const filterData = consFixedLib.getFilterData(filterId, consFixed);
 
       // basic check
-      if (!filterData) { return }
+      if (!filterData) {
+        return;
+      }
 
       //
-      mapExtent = filterData.map.defaultExtent
+      mapExtent = filterData.map.defaultExtent;
     } else {
-      return (null)
+      return null;
     }
 
     const mapBounds = [
       [mapExtent.bottom, mapExtent.left],
-      [mapExtent.top, mapExtent.right]
-    ]
+      [mapExtent.top, mapExtent.right],
+    ];
 
-    map.fitBounds(mapBounds)
-  }, [varsState.context, varsStateLib.getContextFilterId(varsState),
-      varsStateLib.getMainMenuControlActiveTab(varsState)])
+    map.fitBounds(mapBounds);
+  }, [
+    varsState.context,
+    varsStateLib.getContextFilterId(varsState),
+    varsStateLib.getMainMenuControlActiveTab(varsState),
+  ]);
 
   return (
     <>
@@ -99,7 +103,6 @@ const MapControler = ({ settings }) => {
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
-
         <MapLegend settings={settings} position="left" />
       </div>
       {/* </FlexContainer> */}
