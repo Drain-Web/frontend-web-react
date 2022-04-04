@@ -1,0 +1,15 @@
+.leaflet-animation {
+       
+        /* from leaflet-control-layers */
+        border-radius: 5px;
+        background: #fff;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        background-clip: padding-box;
+        
+        padding: 5px;
+        height: 67.5px;
+}
+
+.leaflet-animation .leaflet-animation-timestamp {
+        text-align: center;
+}
