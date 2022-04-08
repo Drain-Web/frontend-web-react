@@ -9,6 +9,8 @@ import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
+import GeoJsonLayer from "./vectorTiles/GeoJsonLayerRiverNetwork";
+import VectorGrid from "./vectorTiles/VectorGrid";
 // import SideNavBarMap from "./SideNavBar/SideNavBarMap";
 
 // import contexts
@@ -80,26 +82,22 @@ const MapControler = ({ settings }) => {
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
+          <VectorGrid />
           <BaseLayers baseLayerData={baseLayersData} />
-
           {/* adds layer of points as a react component */}
           <PointsLayer layerName="Locations" consFixed={consFixed} />
-
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <PolygonLayer
             layerData={consFixed["boundaries"]}
             layerName="Boundaries"
             reversePolygon
           />
-
           {/* adds GeoJson layer to the control and to the map as a component - river network */}
-          {/*
-          settings.riverNetwork.fullRaw
-            ?
-              (<GeoJsonLayerRiverNetwork layerSettings={settings.riverNetwork.fullRaw} />)
-            :
-              (<></>)
-            */}
+          {/* {settings.riverNetwork.fullRaw ? (
+            <GeoJsonLayer layerSettings={settings.riverNetwork.fullRaw} />
+          ) : (
+            <></>
+          )} */}
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
