@@ -4,6 +4,16 @@
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop.svg",
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
+  "stream_network": {
+    "type": "multi_tiles",
+    "url": "http://localhost:8082/trca_tiles_full/{z}/{x}/{y}.pbf",
+    "layer_names": ["order01plus", "order02plus", "order03plus", "order04plus", "order05plus"],
+    "default_color": "#5599FF",
+    "vector_attributes": {
+      "id": "OBJECTID",
+      "stream_order": "HORTON"
+    }
+  },
   "locationIconsOptions": {
     "default": {
       "available": true

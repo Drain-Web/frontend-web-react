@@ -22,6 +22,38 @@ If there are many issues, they can be fixed with:
 
 Please see instructions in ```client/README.md```.
 
+### ...set up multi layers vectorial layers for the streams in the local server
+
+Suppose all streams you want are in the ```my_streams.geojson``` file. Suppose thata the atribute ```name``` of this file is ```myFeatureName``` and each stream has at least two attributes: ```stream_id``` and ```horton_order``` (names self-explanatory).
+
+First, these streams need to be converted into protobuffer format and saved in a new folder ```my_streams_tiled```:
+
+```
+$ ogr2ogr -f MVT my_streams_tiled my_streams.geojson -dsco MINZOOM=0 -dsco MAXZOOM=18 -dsco COMPRESS=NO
+```
+
+The, the local tiles server must be activated for access at ```http://localhost:8082/``` running a script with the following Python code:
+
+```
+#!/usr/bin/env python3
+from http.server import HTTPServer, SimpleHTTPRequestHandler, test
+import sys
+
+class CORSRequestHandler (SimpleHTTPRequestHandler):
+    def end_headers (self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        SimpleHTTPRequestHandler.end_headers(self)
+
+if _name_ == '_main_':
+    test(CORSRequestHandler, HTTPServer, port=int(sys.argv[1]) if len(sys.argv) > 1 else 8082)
+```
+
+Before starting the frontend server, the subfields of ```stream_network``` in the ```public/settings.config``` file must be changed, specially (for our case example):
+
+- ```layer_names```: ["myFeatureName"];
+- ```vector_attributes.id```: "stream_id";
+- ```vector_attributes.stream_order```: "horton_order".
+
 ### ...deploy:
 
 [Heroku](https://heroku.com/) is used as the cloud storage and service provider of the project.
