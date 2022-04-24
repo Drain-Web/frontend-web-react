@@ -13,7 +13,8 @@ const ConsFixed = createContext({
     parameters: {},
     parameterGroups: {},
     thresholdValueSets: {},
-    thresholdGroup: {}
+    thresholdGroup: {},
+    networkTimeseriesMatrix: {} // TODO: temp code
   }
 })
 

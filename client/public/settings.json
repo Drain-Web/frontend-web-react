@@ -1,12 +1,14 @@
 {
-  "apiBaseUrl": "https://hydro-web.herokuapp.com/",
+  "apiBaseUrl": "https://wb-trca-api.herokuapp.com/",
+  "apiBaseUrl_": "http://127.0.0.1:8000/",
+  "startingTab": "tabOverview",
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
-  "generalLocationIcon": "./img/drop.svg",
+  "generalLocationIcon": "./img/drop_white.svg",
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
   "stream_network": {
     "type": "multi_tiles",
-    "url": "http://localhost:8082/trca_tiles_full/{z}/{x}/{y}.pbf",
+    "url": "https://wb-trca-api.herokuapp.com/protobuf_server/trca_tiles_full/{z}/{x}/{y}",
     "layer_names": ["order01plus", "order02plus", "order03plus", "order04plus", "order05plus"],
     "default_color": "#5599FF",
     "vector_attributes": {
@@ -29,8 +31,8 @@
           "parameterGroups": {
             "Discharge": {
               "parameters": {
-                "obs": "Q.obs",
-                "sim": "Q.sim"
+                "obs": "Qo",
+                "sim": "Qs"
               },
               "ranges": [null,   0.2,       0.4,       0.6,       0.8,     null],
               "colors": ["#770000", "#FFAAAA", "#777777", "#AAAAFF",  "#000077"],
@@ -46,9 +48,9 @@
           "noValueIcon": null,
           "parameterGroups": {
             "Discharge": {
-			        "parameters": {
-                "obs": "Q.obs",
-                "sim": "Q.sim"
+			  "parameters": {
+                "obs": "Qo",
+                "sim": "Qs"
               },
               "ranges": [null,   0.1,       0.2,       0.4,       0.6,    null],
               "colors": ["#AAAAFF", "#000077", "#777777", "#770000", "#FFAAAA"],

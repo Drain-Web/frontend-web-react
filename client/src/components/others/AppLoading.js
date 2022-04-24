@@ -30,6 +30,7 @@ const AppLoading = () => {
       {wasLoaded('threshold value sets', consFixed['thresholdValueSets'])}
       {wasLoaded('parameters', consFixed['parameters'])}
       {wasLoaded('parameter groups', consFixed['parameterGroups'])}
+      {wasLoaded('network timeseries matrix', consFixed.networkTimeseriesMatrix) /* TODO: temp code */} 
       <br />
       <Spinner
         animation="border"

@@ -14,6 +14,10 @@ const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 
 const loadConsFixed = ( settings ) => {
+  /* ** CONS *********************************************************************************** */
+  // TODO: temp code
+  const NETWORK_TIMESERIES_MATRIX_URL = "https://wb-trca-api.herokuapp.com/netflow_server/waves1_24hrs"
+
   /* ** SET HOOKS ****************************************************************************** */
   
   const { consFixed } = useContext(ConsFixed)
@@ -114,6 +118,15 @@ const loadConsFixed = ( settings ) => {
     for (const tg of dataThresholdGroups.thresholdGroups) {
       thresholdGroupsData[tg.id] = tg;
     }
+  }
+
+  // TODO: temp code
+  // load network timeseries matrix
+  const { data: dataNetworkTimeseriesMatrix, error: errorNetworkTimeseriesMatrix } = useSWR(
+    NETWORK_TIMESERIES_MATRIX_URL, fetcher
+  )
+  if (dataNetworkTimeseriesMatrix && !errorNetworkTimeseriesMatrix) {
+    consFixed.networkTimeseriesMatrix = dataNetworkTimeseriesMatrix
   }
 
   // TODO: consider errorMessages
