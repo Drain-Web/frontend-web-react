@@ -1,4 +1,3 @@
-import ConsCache from './ConsCache'
 import consCacheLib from './consCacheLib'
 import consFixedLib from './consFixedLib'
 
@@ -99,6 +98,37 @@ const getTimeSerieUrl = (varsState) => {
 
 const getTimeSeriesPlotData = (varsState) => {
   return varsState.domObjects.timeSeriesData.plotData
+}
+
+/* TODO: continue from here
+ */
+
+const getVectorGridAnimationCurrentFrameIdx = (varsState) => {
+  return varsState.vectorGridAnimation.currentFrameIdx
+}
+
+const getVectorGridAnimationPlaySpeed = (varsState) => {
+  return varsState.vectorGridAnimation.playSpeed
+}
+
+const getVectorGridAnimationIsRunning = (varsState) => {
+  return varsState.vectorGridAnimation.isRunning
+}
+
+const setVectorGridAnimationCurrentFrameIdx = (newFrameIdx, varsState) => {
+  varsState.vectorGridAnimation.currentFrameIdx = newFrameIdx
+}
+
+const setVectorGridAnimationPlaySpeed = (newPlaySpeed, varsState) => {
+  varsState.vectorGridAnimation.playSpeed = newPlaySpeed
+}
+
+const setVectorGridAnimationIsRunning = (newIsRunning, varsState) => {
+  varsState.vectorGridAnimation.isRunning = newIsRunning
+}
+
+const toggleVectorGridAnimationIsRunning = (varsState) => {
+  varsState.vectorGridAnimation.isRunning = !varsState.vectorGridAnimation.isRunning
 }
 
 //
@@ -766,6 +796,9 @@ const varsStateLib = {
   getPanelTabsShow: getPanelTabsShow,
   getTimeSerieUrl: getTimeSerieUrl,
   getTimeSeriesPlotData: getTimeSeriesPlotData,
+  getVectorGridAnimationCurrentFrameIdx: getVectorGridAnimationCurrentFrameIdx,
+  getVectorGridAnimationPlaySpeed: getVectorGridAnimationPlaySpeed,
+  getVectorGridAnimationIsRunning: getVectorGridAnimationIsRunning,
   hideAllLocationIcons: hideAllLocationIcons,
   hideMainMenuControl: hideMainMenuControl,
   hidePanelTabs: hidePanelTabs,
@@ -792,10 +825,14 @@ const varsStateLib = {
   setTimeSeriesPlotThresholdsArray: setTimeSeriesPlotThresholdsArray,
   setTimeSeriesPlotModelEvaluationMetrics: setTimeSeriesPlotModelEvaluationMetrics,
   setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
+  setVectorGridAnimationCurrentFrameIdx: setVectorGridAnimationCurrentFrameIdx,
+  setVectorGridAnimationPlaySpeed: setVectorGridAnimationPlaySpeed,
+  setVectorGridAnimationIsRunning: setVectorGridAnimationIsRunning,
   setUniformIcon: setUniformIcon,
   showMainMenuControl: showMainMenuControl,
   showPanelTabs: showPanelTabs,
   toggleMainMenuControl: toggleMainMenuControl,
+  toggleVectorGridAnimationIsRunning: toggleVectorGridAnimationIsRunning,
   updateLocationIcons: updateLocationIcons
 }
 

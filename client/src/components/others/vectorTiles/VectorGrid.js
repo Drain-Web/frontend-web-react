@@ -4,6 +4,8 @@ import L from "leaflet";
 import "leaflet.vectorgrid";
 
 import ConsFixed from "../../contexts/ConsFixed";
+import VarsState from "../../contexts/VarsState";
+import varsStateLib from "../../contexts/varsStateLib";
 
 // TODO: check if it is really needed
 const ATTRIBUTION = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">MapBox</a>'
@@ -38,7 +40,8 @@ const VectorGrid = ({ settings }) => {
   
   const { layerContainer, map } = useLeafletContext();
   const { consFixed } = useContext(ConsFixed)
-  const [ networkTimeIdx, setNetworkTimeIdx ] = useState(0) // TODO: temp code
+  const { varsState, setVarState } = useContext(VarsState) // TODO: temp code
+  // const [ networkTimeIdx, setNetworkTimeIdx ] = useState(0) // TODO: temp code
   const [ trueVGrid, setTrueVGrid ] = useState()
 
   // TODO: temp code
@@ -47,12 +50,18 @@ const VectorGrid = ({ settings }) => {
   useEffect(() => {
     const itvTime = 1000  // update time: 1 second
     const itvFunc = () => {
-      console.log('This will run every second. Now it is time', networkTimeIdx, '.')
-      setNetworkTimeIdx((networkTimeIdx == 23) ? 0 : networkTimeIdx + 1)
+      // only do anything if player is running
+      if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return }
+
+      // go to the next step
+      const curNetworkTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
+      const newNetworkTimeIdx =  (curNetworkTimeIdx + 1) % 24  // TODO: remove hard code
+      varsStateLib.setVectorGridAnimationCurrentFrameIdx(newNetworkTimeIdx, varsState)
+      setVarState(Math.random())
     }
     const interval = setInterval(itvFunc, itvTime);
     return () => clearInterval(interval);
-  }, [networkTimeIdx]);
+  }, [varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)]);
 
   /* ** FUNCTIONS **************************************************************************** */
 
@@ -130,12 +139,13 @@ const VectorGrid = ({ settings }) => {
     if (!trueVGrid) { return }
 
     // for...of (imperative code) tends to be faster than forEach or map (declarative code)
+    const networkTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
     for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix)) {
       const v = consFixed.networkTimeseriesMatrix[curLinkId][networkTimeIdx]
       const c = getColorFromValue(v)
       trueVGrid.setFeatureStyle(curLinkId, { color: c })
     }
-  }, [networkTimeIdx]);
+  }, [varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)]);
 
   return null
 

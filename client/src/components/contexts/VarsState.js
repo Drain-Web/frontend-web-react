@@ -46,6 +46,13 @@ const VarsState = createContext({
     // NOTE: old 'activePointFeature'
     activeLocation: null,
 
+    // for the VectorGridAnimation
+    vectorGridAnimation: {
+      currentFrameIdx: 0,
+      playSpeed: '01h',  // "15m", "30m", "01h", "06h", "01d"
+      isRunning: true
+    },
+
     // 'domObjects' stores the visual states of DOM objects
     domObjects: {
       mainMenuControl: {

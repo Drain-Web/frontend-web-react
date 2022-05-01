@@ -2,6 +2,7 @@ import { LayersControl, ZoomControl, useMap } from "react-leaflet";
 import React, { useEffect, useContext } from "react";
 
 // import components
+import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
 import MainMenuControl from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
@@ -78,6 +79,7 @@ const MapControler = ({ settings }) => {
         {/* <FlexContainer> */}
         {/* add the main left menu */}
         <MainMenuControl settings={settings} position="leaflet-right" />
+        <VectorGridPlayer settings={settings} />
         {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
