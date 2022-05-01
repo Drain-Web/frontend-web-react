@@ -4869,6 +4869,11 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
+dateformat@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-5.0.3.tgz#fe2223eff3cc70ce716931cb3038b59a9280696e"
+  integrity sha512-Kvr6HmPXUMerlLcLF+Pwq3K7apHpYmGDVqrxcDasBg86UcKeTSNWbEzU8bwdXnxnR44FtMhJAxI4Bov6Y/KUfA==
+
 debounce@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.2.1.tgz#38881d8f4166a5c5848020c11827b834bcb3e0a5"
@@ -10948,6 +10953,14 @@ react-app-rewired@^2.1.11:
   integrity sha512-zRIqJUPsCoPnfYtea3xgPbKR42vx0NoH5oo8R8FELXqzkjJHa39V6zD8CAdkLJoYL8V3JScWHAfKMZOzi1Ydmw==
   dependencies:
     semver "^5.6.0"
+
+react-bootstrap-range-slider@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/react-bootstrap-range-slider/-/react-bootstrap-range-slider-3.0.4.tgz#121a815e20d28d20f82ac94a22dd038b3f138e4d"
+  integrity sha512-Yw6ELrhTmzVh3sG4FamhRc/bApRdfGyOJZla4y8dKppiIZSSu46QkSSxWo4uzgsD7EItjnfY66EsjT3eD3U7fQ==
+  dependencies:
+    classnames "^2.3.1"
+    prop-types "^15.7.2"
 
 react-bootstrap@2.0.0-beta.4:
   version "2.0.0-beta.4"
