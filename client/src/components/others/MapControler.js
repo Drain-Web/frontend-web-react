@@ -1,5 +1,5 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 
 // import components
 import MainMenuControl from "./MainMenuControl";
@@ -71,6 +71,44 @@ const MapControler = ({ settings }) => {
     varsStateLib.getMainMenuControlActiveTab(varsState),
   ]);
 
+  const baseUrl =
+    "http://192.168.100.123:8082/river_network_rounded_date/{z}/{x}/{y}.pbf";
+
+  const [url, setUrl] = useState(
+    "http://192.168.100.123:8082/river_network_rounded/{z}/{x}/{y}.pbf"
+  );
+
+  const urls = [
+    "20210112000000",
+    "20210112010000",
+    "20210112030000",
+    "20210112020000",
+    "20210111150000",
+    "20210111160000",
+    "20210111170000",
+    "20210111190000",
+    "20210111180000",
+    "20210111240000",
+    "20210111200000",
+    "20210111210000",
+    "20210111230000",
+    "20210111220000",
+  ];
+  var index = 0;
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setUrl(baseUrl.replace("date", urls[index++ % urls.length])),
+      2000
+    );
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [url]);
+
+  console.log(url);
+
   return (
     <>
       <div>
@@ -82,7 +120,6 @@ const MapControler = ({ settings }) => {
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
-
           {/* adds base layer */}
           <BaseLayers baseLayerData={baseLayersData} />
 
@@ -103,7 +140,7 @@ const MapControler = ({ settings }) => {
             <></>
           )} */}
 
-          <VectorGrid settings={settings} />
+          <VectorGrid settings={settings} url={url} />
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
