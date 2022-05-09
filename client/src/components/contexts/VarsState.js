@@ -50,6 +50,7 @@ const VarsState = createContext({
     vectorGridAnimation: {
       currentFrameIdx: 0,
       playSpeed: '01h',  // "15m", "30m", "01h", "06h", "01d"
+      interval: 1000,  // update time in milliseconds
       isRunning: true
     },
 

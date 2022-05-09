@@ -111,6 +111,14 @@ const getVectorGridAnimationPlaySpeed = (varsState) => {
   return varsState.vectorGridAnimation.playSpeed
 }
 
+const getVectorGridAnimationInterval = (varsState) => {
+  return varsState.vectorGridAnimation.interval
+}
+
+const getVectorGridAnimationTimeResolution = (varsState) => {
+  return varsState.vectorGridAnimation.timeResolution
+}
+
 const getVectorGridAnimationIsRunning = (varsState) => {
   return varsState.vectorGridAnimation.isRunning
 }
@@ -121,6 +129,14 @@ const setVectorGridAnimationCurrentFrameIdx = (newFrameIdx, varsState) => {
 
 const setVectorGridAnimationPlaySpeed = (newPlaySpeed, varsState) => {
   varsState.vectorGridAnimation.playSpeed = newPlaySpeed
+}
+
+const setVectorGridAnimationInterval = (newInterval, varsState) => {
+  varsState.vectorGridAnimation.interval = newInterval
+}
+
+const setVectorGridAnimationTimeResolution = (newTimeResolution, varsState) => {
+  varsState.vectorGridAnimation.timeResolution = newTimeResolution
 }
 
 const setVectorGridAnimationIsRunning = (newIsRunning, varsState) => {
@@ -798,7 +814,9 @@ const varsStateLib = {
   getTimeSeriesPlotData: getTimeSeriesPlotData,
   getVectorGridAnimationCurrentFrameIdx: getVectorGridAnimationCurrentFrameIdx,
   getVectorGridAnimationPlaySpeed: getVectorGridAnimationPlaySpeed,
+  getVectorGridAnimationTimeResolution: getVectorGridAnimationTimeResolution,
   getVectorGridAnimationIsRunning: getVectorGridAnimationIsRunning,
+  getVectorGridAnimationInterval: getVectorGridAnimationInterval,
   hideAllLocationIcons: hideAllLocationIcons,
   hideMainMenuControl: hideMainMenuControl,
   hidePanelTabs: hidePanelTabs,
@@ -827,7 +845,9 @@ const varsStateLib = {
   setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
   setVectorGridAnimationCurrentFrameIdx: setVectorGridAnimationCurrentFrameIdx,
   setVectorGridAnimationPlaySpeed: setVectorGridAnimationPlaySpeed,
+  setVectorGridAnimationTimeResolution: setVectorGridAnimationTimeResolution,
   setVectorGridAnimationIsRunning: setVectorGridAnimationIsRunning,
+  setVectorGridAnimationInterval: setVectorGridAnimationInterval,
   setUniformIcon: setUniformIcon,
   showMainMenuControl: showMainMenuControl,
   showPanelTabs: showPanelTabs,

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { DomEvent } from "leaflet";
-import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
+import { Col, Container, Row, CloseButton } from "react-bootstrap";
 import RangeSlider from 'react-bootstrap-range-slider';
 import dateFormat, { masks } from "dateformat";
 
@@ -16,14 +16,14 @@ const indexToDatetime = (idx, initDatetimeStr, timeStepStr) => {
     const timeUnit = timeStepStr[2];
     const timeDelta = timeStep * idx
     const nextDatetime = new Date(initDatetimeStr);
-    
+
     // walk in time
     if (timeUnit === "m") {
-        nextDatetime.setTime(nextDatetime.getTime() + (timeDelta*60000));
+        nextDatetime.setTime(nextDatetime.getTime() + (timeDelta * 60000));
     } else if (timeUnit === "h") {
         nextDatetime.setHours(nextDatetime.getHours() + timeDelta);
     } else if (timeUnit === "d") {
-        nextDatetime.setHours(nextDatetime.getHours() + (timeDelta*24));
+        nextDatetime.setHours(nextDatetime.getHours() + (timeDelta * 24));
     } else {
         console.log("3rd character of", timeStepStr, "should be 'm', 'h' or 'd'. Is:", timeUnit)
         return null
@@ -37,9 +37,8 @@ const PlayerButton = (innerHTML, onClickFunction) => {
         <div
             className={`${ownStyles.controlButton}`}
             onClick={onClickFunction}
-        >
-            {innerHTML}
-        </div>
+            dangerouslySetInnerHTML={{ __html: innerHTML}}
+        />
     )
 }
 
@@ -92,7 +91,7 @@ const PlayerButtonStop = (varsState, setVarState) => {
 }
 
 const PlayerButtonPlay = (varsState, setVarState) => {
-    // only show if playing
+    // only show if not playing
     if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
 
     // define inner HTML and function
@@ -107,7 +106,7 @@ const PlayerButtonPlay = (varsState, setVarState) => {
 }
 
 const PlayerButtonNext = (varsState, setVarState) => {
-    // only show if playing
+    // only show if not playing
     if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
 
     // define inner HTML and function
@@ -124,7 +123,7 @@ const PlayerButtonNext = (varsState, setVarState) => {
 }
 
 const PlayerButtonToEnd = (varsState, setVarState) => {
-    // only show if playing
+    // only show if not playing
     if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
 
     // define inner HTML and function
@@ -138,12 +137,45 @@ const PlayerButtonToEnd = (varsState, setVarState) => {
     return PlayerButton(innerHTML, onClickFunction)
 }
 
+const PlayerButtonFaster = (varsState, setVarState) => {
+    // only show if playing
+    if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+
+    // define inner HTML and function
+    const innerHTML = `▶<sup><strong>+</strong></sup> `
+    const onClickFunction = () => {
+        const oldPlaySpeed = varsStateLib.getVectorGridAnimationInterval(varsState)
+        const newPlaySpeed = oldPlaySpeed / 2
+        varsStateLib.setVectorGridAnimationInterval(newPlaySpeed, varsState)
+        setVarState(Math.random());
+    }
+
+    // render
+    return PlayerButton(innerHTML, onClickFunction)
+}
+
+const PlayerButtonSlower = (varsState, setVarState) => {
+    // only show if playing
+    if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+
+    // define inner HTML and function
+    const innerHTML = `▶<sub><strong>-</strong></sub>`
+    const onClickFunction = () => {
+        const oldPlaySpeed = varsStateLib.getVectorGridAnimationInterval(varsState)
+        const newPlaySpeed = oldPlaySpeed * 2
+        varsStateLib.setVectorGridAnimationInterval(newPlaySpeed, varsState)
+        setVarState(Math.random());
+    }
+
+    // render
+    return PlayerButton(innerHTML, onClickFunction)
+}
+
 /* ** MAIN PLAYER ****************************************************************************** */
 const VectorGridPlayer = ({ settings }) => {
-    // TODO: remove hard-coded
+    // TODO: remove hard-codedimport
     const dateFormatStr = "HH:MM dd-mm-yyyy (Z)"
     const initDateTime = "2022-02-14T22:00:00"
-    const timeUnit = "01h"
 
     /* ** SET HOOKS **************************************************************************** */
     // Get global states and set local states
@@ -154,16 +186,37 @@ const VectorGridPlayer = ({ settings }) => {
         DomEvent.disableClickPropagation(divRef.current);
     })
 
-    /* ** RENDER ******************************************************************************* */
+    /* ** GET VARIABLES ************************************************************************ */
+    
+    const timeUnit = varsStateLib.getVectorGridAnimationTimeResolution(varsState)
     const curTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
+
+    let curDateStr = null
+    if (timeUnit) {
+        curDateStr = dateFormat(indexToDatetime(curTimeIdx, initDateTime, timeUnit), dateFormatStr)
+    } else {
+        curDateStr = "Loading..."
+    }
+
+    /* ** RENDER ******************************************************************************* */
     return (
         <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar`} ref={divRef}>
             <Container className={`${ownStyles.content}`} >
-                <Row><Col>
-                    <span className={`${ownStyles.dateTimeSting}`} >
-                        {dateFormat(indexToDatetime(curTimeIdx, initDateTime, timeUnit), dateFormatStr)}
-                    </span>
-                </Col></Row>
+                <Row>
+                    <Col xs={2} md={2} lg={2}>
+                        <span>
+                            { (timeUnit ? "(".concat(timeUnit, ")") : "") }
+                        </span>
+                    </Col>
+                    <Col xs={8} md={8} lg={8}>
+                        <span className={`${ownStyles.dateTimeSting} col-6`} >
+                            {curDateStr}
+                        </span>
+                    </Col>
+                    <Col xs={2} md={2} lg={2}>
+                        <CloseButton onClick={() => { console.log("Close me.") }} />
+                    </Col>
+                </Row>
                 <Row><Col>
                     <RangeSlider
                         className={`${ownStyles.timelineRange}`}
@@ -175,19 +228,26 @@ const VectorGridPlayer = ({ settings }) => {
                         onChange={changeEvent => console.log("Changed to:", changeEvent.target.value)}
                     />
                 </Col></Row>
-                <Row><Col>
-                    {PlayerButtonToBegin(varsState, setVarState)}
-                    {PlayerButtonPrev(varsState, setVarState)}
-                    {PlayerButtonStop(varsState, setVarState)}
-                    {PlayerButtonPlay(varsState, setVarState)}
-                    {PlayerButtonNext(varsState, setVarState)}
-                    {PlayerButtonToEnd(varsState, setVarState)}
-                </Col></Row>
+                <Row className={`${ownStyles.noGutterX}`}>
+                    <Col xs={3} md={3} lg={3}>
+                        &nbsp;
+                    </Col>
+                    <Col xs={6} md={6} lg={6}>
+                        {PlayerButtonToBegin(varsState, setVarState)}
+                        {PlayerButtonPrev(varsState, setVarState)}
+                        {PlayerButtonStop(varsState, setVarState)}
+                        {PlayerButtonPlay(varsState, setVarState)}
+                        {PlayerButtonNext(varsState, setVarState)}
+                        {PlayerButtonToEnd(varsState, setVarState)}
+                    </Col>
+                    <Col xs={3} md={3} lg={3}>
+                        {PlayerButtonSlower(varsState, setVarState)}
+                        {PlayerButtonFaster(varsState, setVarState)}
+                    </Col>
+                </Row>
             </Container>
         </div>
     );
 }
-
-// <div className={`d-inline-block w-100 text-cente`}>
 
 export default VectorGridPlayer;

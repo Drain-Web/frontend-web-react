@@ -12,6 +12,49 @@ import { apiUrl } from "./api.js"
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
+/* ** TODO: temp code ON *********************************************************************** */
+
+// Given an array of size L1 and a size L2, L2 > L1, creates a new array of size L2 interpolated
+// param data: Array of size L1
+// param fitCount: L2, integer
+// FROM: https://stackoverflow.com/questions/26941168/javascript-interpolate-an-array-of-numbers
+const interpolateArray = (data, fitCount) => {
+
+  const linearInterpolate = (before, after, atPoint) => {
+    return before + (after - before) * atPoint;
+  }
+
+  const newData = new Array();
+  const springFactor = new Number((data.length - 1) / (fitCount - 1));
+  newData[0] = data[0]; // for new allocation
+  for (let i = 1; i < fitCount - 1; i++) {
+    const tmp = i * springFactor;
+    const before = new Number(Math.floor(tmp)).toFixed();
+    const after = new Number(Math.ceil(tmp)).toFixed();
+    const atPoint = tmp - before;
+    newData[i] = linearInterpolate(data[before], data[after], atPoint);
+  }
+  newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+  return newData;
+};
+
+
+// TODO: test this one
+// 
+// 
+// return: new dictionary with same keys
+const interpolateAllArraysInDict = (arrayObj, newLength) => {
+  const retDict = {}
+
+  for (const [key, originalValues] of Object.entries(arrayObj)) {
+    retDict[key] = interpolateArray(originalValues, newLength)
+  }
+
+  return retDict
+}
+
+/* ** TODO: temp code OFF ********************************************************************** */
+
 
 const loadConsFixed = ( settings ) => {
   /* ** CONS *********************************************************************************** */
@@ -126,7 +169,12 @@ const loadConsFixed = ( settings ) => {
     NETWORK_TIMESERIES_MATRIX_URL, fetcher
   )
   if (dataNetworkTimeseriesMatrix && !errorNetworkTimeseriesMatrix) {
-    consFixed.networkTimeseriesMatrix = dataNetworkTimeseriesMatrix
+    
+    // get all the timeseries in hourly resolution
+    consFixed.networkTimeseriesMatrix['01h'] = dataNetworkTimeseriesMatrix
+    consFixed.networkTimeseriesMatrix['30m'] = interpolateAllArraysInDict(dataNetworkTimeseriesMatrix, 48)
+    consFixed.networkTimeseriesMatrix['15m'] = interpolateAllArraysInDict(dataNetworkTimeseriesMatrix, 96)
+
   }
 
   // TODO: consider errorMessages

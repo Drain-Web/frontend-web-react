@@ -53,33 +53,37 @@ const MainMenuControl = ({ settings, position }) => {
     marginLeft: showMe ? 1 : -18 * remValue
   })
 
-  const OpenCloseButton = () => {
-    if (varsStateLib.getMainMenuControlShow(varsState)) {
+  const OpenCloseButtonOnly = () => {
+
+    const createCloseButton = () => {
       return (
-        <div className="close-button">
-          <CloseButton
+        <CloseButton
             onClick={() => {
               varsStateLib.toggleMainMenuControl(varsState);
               setShowMe(varsStateLib.getMainMenuControlShow(varsState));
             }}
           />
-        </div>
-      );
-    } else {
-      return (
-        <div className="open-button">
-          <Button
-            onClick={() => {
-              varsStateLib.hidePanelTabs(varsState);
-              setVarState(Math.random());
-            }}
-          >
-            -
-          </Button>
-        </div>
-      );
+      )
     }
-  };
+
+    const createOpenButton = () => {
+      return (
+        <Button
+          onClick={() => {
+            varsStateLib.hidePanelTabs(varsState);
+            setVarState(Math.random());
+          }}
+        >
+          -
+        </Button>)
+    }
+
+    if (varsStateLib.getMainMenuControlShow(varsState)) {
+      return createCloseButton()
+    } else {
+      return createOpenButton()
+    }
+  }
 
   /* ** MAIN RENDER ************************************************************************** */
 
@@ -89,8 +93,11 @@ const MainMenuControl = ({ settings, position }) => {
       <animated.div className={ownStyles.content} style={contentProps}>
         <Container className="h-100" ref={divRef}>
           <Row>
-            <Col>
+            <Col xs={10} md={10} lg={10} >
               <h1>{consFixed.region.systemInformation.name}</h1>
+            </Col>
+            <Col xs={2} md={2} lg={2} className="text-right" >
+              <OpenCloseButtonOnly />
             </Col>
           </Row>
           <Row>
@@ -148,8 +155,8 @@ const MainMenuControl = ({ settings, position }) => {
         </Container>
       </animated.div>
 
-      <OpenCloseButton />
-      {/* <div
+      {/* 
+      <div
         className={ownStyles.buttonSlide}
         onClick={() => {
           varsStateLib.toggleMainMenuControl(varsState);

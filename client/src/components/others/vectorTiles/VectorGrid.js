@@ -35,20 +35,44 @@ const getColorFromValue = (flowValue) => {
   return retColor
 }
 
+const getGradColorFromValue = (flowValue) => {
+  const d2h = (d) => { return (+d).toString(16).padStart(2, '0') }
+
+  const r = d2h(Math.round(255 * flowValue/10))
+  const g = d2h(Math.round(255 * (1 - (flowValue/20))))
+  const b = d2h(Math.round(255 * (1 - (flowValue/10))))
+  return "#".concat(r, g, b)
+}
+
+// TODO: temp code
+const zoomToTimeResolution = (zoomLevel) => {
+  if (zoomLevel < 12) {
+    return '01h'
+  } else if ((zoomLevel == 12) || (zoomLevel == 13) || (zoomLevel == 14)) {
+    return '30m'
+  } else {
+    return '15m'
+  }
+}
+
 const VectorGrid = ({ settings }) => {
   /* ** SET HOOKS **************************************************************************** */
   
   const { layerContainer, map } = useLeafletContext();
   const { consFixed } = useContext(ConsFixed)
   const { varsState, setVarState } = useContext(VarsState) // TODO: temp code
-  // const [ networkTimeIdx, setNetworkTimeIdx ] = useState(0) // TODO: temp code
   const [ trueVGrid, setTrueVGrid ] = useState()
-
+  /*
+  const [ timeResolution, setTimeResolution ] = useState(
+    zoomToTimeResolution(varsStateLib.getMapZoomLevel(varsState))
+  )
+  */
+  
   // TODO: temp code
   // every time 'networkTimeIdx' is changed (useEffect), function itvFunc is scheduled to be
   //   called after 1000 milliseconds (1 second) and... HA! it will change 'networkTimeIdx'!
   useEffect(() => {
-    const itvTime = 1000  // update time: 1 second
+    const itvTime = varsStateLib.getVectorGridAnimationInterval(varsState)
     const itvFunc = () => {
       // only do anything if player is running
       if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return }
@@ -126,6 +150,7 @@ const VectorGrid = ({ settings }) => {
   // create layer at the beginning of the execution
   useEffect(() => {
     container.addLayer(vectorGrid);
+    vectorGrid.setZIndex(200);
     setTrueVGrid(vectorGrid)
     return () => {
       container.removeLayer(vectorGrid);
@@ -140,12 +165,29 @@ const VectorGrid = ({ settings }) => {
 
     // for...of (imperative code) tends to be faster than forEach or map (declarative code)
     const networkTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
-    for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix)) {
-      const v = consFixed.networkTimeseriesMatrix[curLinkId][networkTimeIdx]
-      const c = getColorFromValue(v)
+    const timeResolution = varsStateLib.getVectorGridAnimationTimeResolution(varsState)
+    let printed = false
+    for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix[timeResolution])) {
+      const v = consFixed.networkTimeseriesMatrix[timeResolution][curLinkId][networkTimeIdx]
+      // const c = getColorFromValue(v)
+      const c = getGradColorFromValue(v)
+      if (!printed) {
+        // console.log(v, "->", c)
+        // console.log("trueVGrid.getDataLayerNames():", trueVGrid.getDataLayerNames())
+        printed = true
+      }
       trueVGrid.setFeatureStyle(curLinkId, { color: c })
     }
   }, [varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)]);
+
+  // TODO: temp code
+  // update the temporal resolution on zoom change
+  useEffect(() => {
+    const newZoomLevel = varsStateLib.getMapZoomLevel(varsState)
+    const newTimeResolution = zoomToTimeResolution(newZoomLevel)
+    varsStateLib.setVectorGridAnimationTimeResolution(newTimeResolution, varsState)
+    setVarState(Math.random())
+  }, [varsStateLib.getMapZoomLevel(varsState)])
 
   return null
 

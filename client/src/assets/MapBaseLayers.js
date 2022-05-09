@@ -19,5 +19,11 @@ export const baseLayersData = [
     name: 'NASA Gibs Blue Marble',
     checked: false,
     maxNativeZoom: 12
+  },
+  {
+    url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    name: 'World Imagery',
+    checked: false,
+    maxNativeZoom: 17
   }
 ]
