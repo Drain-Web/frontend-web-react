@@ -14,7 +14,8 @@ const ConsFixed = createContext({
     parameterGroups: {},
     thresholdValueSets: {},
     thresholdGroup: {},
-    networkTimeseriesMatrix: {} // TODO: temp code
+    networkTimeseriesMatrix: {}, // TODO: temp code
+    loaded: false
   }
 })
 

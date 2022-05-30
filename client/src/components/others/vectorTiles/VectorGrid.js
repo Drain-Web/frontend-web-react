@@ -2,10 +2,14 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useLeafletContext } from "@react-leaflet/core";
 import L from "leaflet";
 import "leaflet.vectorgrid";
+import { useRecoilValue } from 'recoil';
 
+// contexts
 import ConsFixed from "../../contexts/ConsFixed";
-import VarsState from "../../contexts/VarsState";
-import varsStateLib from "../../contexts/varsStateLib";
+
+// atoms
+import atsVarStateLib from '../../atoms/atsVarStateLib';
+import { atVarStateVectorGridAnimation } from '../../atoms/atsVarState';
 
 // TODO: check if it is really needed
 const ATTRIBUTION = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">MapBox</a>'
@@ -44,48 +48,21 @@ const getGradColorFromValue = (flowValue) => {
   return "#".concat(r, g, b)
 }
 
-// TODO: temp code
-const zoomToTimeResolution = (zoomLevel) => {
-  if (zoomLevel < 12) {
-    return '01h'
-  } else if ((zoomLevel == 12) || (zoomLevel == 13) || (zoomLevel == 14)) {
-    return '30m'
-  } else {
-    return '15m'
-  }
-}
-
 const VectorGrid = ({ settings }) => {
   /* ** SET HOOKS **************************************************************************** */
   
   const { layerContainer, map } = useLeafletContext();
   const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState) // TODO: temp code
   const [ trueVGrid, setTrueVGrid ] = useState()
   /*
   const [ timeResolution, setTimeResolution ] = useState(
     zoomToTimeResolution(varsStateLib.getMapZoomLevel(varsState))
   )
   */
-  
-  // TODO: temp code
-  // every time 'networkTimeIdx' is changed (useEffect), function itvFunc is scheduled to be
-  //   called after 1000 milliseconds (1 second) and... HA! it will change 'networkTimeIdx'!
-  useEffect(() => {
-    const itvTime = varsStateLib.getVectorGridAnimationInterval(varsState)
-    const itvFunc = () => {
-      // only do anything if player is running
-      if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return }
 
-      // go to the next step
-      const curNetworkTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
-      const newNetworkTimeIdx =  (curNetworkTimeIdx + 1) % 24  // TODO: remove hard code
-      varsStateLib.setVectorGridAnimationCurrentFrameIdx(newNetworkTimeIdx, varsState)
-      setVarState(Math.random())
-    }
-    const interval = setInterval(itvFunc, itvTime);
-    return () => clearInterval(interval);
-  }, [varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)]);
+  const atomVarStateVectorGridAnimation = useRecoilValue(atVarStateVectorGridAnimation)
+
+  // const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
 
   /* ** FUNCTIONS **************************************************************************** */
 
@@ -100,7 +77,7 @@ const VectorGrid = ({ settings }) => {
     // 7 -> 6
 
     const horton = properties[settings.stream_network.vector_attributes.stream_order];
-    const linkId = properties.OBJECTID // TODO: temp code
+    const linkId = properties.OBJECTID                        // TODO: temp code
     const linkTs = consFixed.networkTimeseriesMatrix[linkId]  // TODO: temp code
     let color = null;
     let weight = 0;
@@ -164,8 +141,8 @@ const VectorGrid = ({ settings }) => {
     if (!trueVGrid) { return }
 
     // for...of (imperative code) tends to be faster than forEach or map (declarative code)
-    const networkTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
-    const timeResolution = varsStateLib.getVectorGridAnimationTimeResolution(varsState)
+    const networkTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
+    const timeResolution = atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
     let printed = false
     for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix[timeResolution])) {
       const v = consFixed.networkTimeseriesMatrix[timeResolution][curLinkId][networkTimeIdx]
@@ -178,16 +155,18 @@ const VectorGrid = ({ settings }) => {
       }
       trueVGrid.setFeatureStyle(curLinkId, { color: c })
     }
-  }, [varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)]);
+  }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)]);
 
   // TODO: temp code
   // update the temporal resolution on zoom change
+  /*
   useEffect(() => {
     const newZoomLevel = varsStateLib.getMapZoomLevel(varsState)
     const newTimeResolution = zoomToTimeResolution(newZoomLevel)
     varsStateLib.setVectorGridAnimationTimeResolution(newTimeResolution, varsState)
     setVarState(Math.random())
   }, [varsStateLib.getMapZoomLevel(varsState)])
+  */
 
   return null
 

@@ -1,5 +1,6 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
 import React, { useEffect, useContext } from "react";
+import { cloneDeep } from 'lodash';
 
 // import components
 import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
@@ -10,43 +11,65 @@ import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
-// import GeoJsonLayer from "./vectorTiles/GeoJsonLayerRiverNetwork";
 import VectorGrid from "./vectorTiles/VectorGrid";
-// import SideNavBarMap from "./SideNavBar/SideNavBarMap";
+
+// import recoil to replace contexts
+import { useRecoilValue } from "recoil";
 
 // import contexts
 import ConsCache from "../contexts/ConsCache";
 import ConsFixed from "../contexts/ConsFixed";
 import consFixedLib from "../contexts/consFixedLib";
-import VarsState from "../contexts/VarsState";
-import varsStateLib from "../contexts/varsStateLib";
+
+import atsVarStateLib from "../atoms/atsVarStateLib";
+import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
+         atVarStateDomMapLegend } from "../atoms/atsVarState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
 
 const MapControler = ({ settings }) => {
+  // ** SET HOOKS ******************************************************************************
   // this specific component is needed to allow useMap()
   const map = useMap();
 
   // load contexts
   const { consCache } = useContext(ConsCache);
   const { consFixed } = useContext(ConsFixed);
-  const { varsState, setVarState } = useContext(VarsState);
+  // const { varsState, setVarState } = useContext(VarsState);
+
+  const atomVarStateContext = useRecoilValue(atVarStateContext)
+  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
+  const atomVarStateLocations = useRecoilValue(atVarStateLocations)
+  const atomVarStateDomMapLegend = useRecoilValue(atVarStateDomMapLegend)
+
+  const atmVarStateContext = cloneDeep(atomVarStateContext)
+  const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
+  const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+  const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
+
+  atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)
 
   // when varsState.context is changed, update location icons
   useEffect(() => {
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings);
-    setVarState(Math.random());
-  }, [varsState.context, varsStateLib.getMainMenuControlActiveTab(varsState)]);
+    atsVarStateLib.updateLocationIcons(atmVarStateDomMainMenuControl, atmVarStateLocations,
+                                       atmVarStateContext, atmVarStateDomMapLegend,
+                                       consCache, consFixed, settings)
+
+  }, [atomVarStateContext,
+      atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
+  ]);
 
   // when varsState.context is changed, update map view window
   useEffect(() => {
+
     let mapExtent = null;
 
-    if (varsStateLib.inMainMenuControlActiveTabOverview(varsState)) {
+    if (atsVarStateLib.inMainMenuControlActiveTabOverview(atmVarStateDomMainMenuControl)) {
       mapExtent = consFixedLib.getRegionData(consFixed).map.defaultExtent;
-    } else if (varsStateLib.inMainMenuControlActiveTabFilters(varsState)) {
-      const filterId = varsStateLib.getContextFilterId(varsState);
+    } else if (atsVarStateLib.inMainMenuControlActiveTabFilters(atmVarStateDomMainMenuControl)) {
+
+      const filterId = atsVarStateLib.getContextFilterId(atmVarStateContext);
       const filterData = consFixedLib.getFilterData(filterId, consFixed);
 
       // basic check
@@ -56,6 +79,7 @@ const MapControler = ({ settings }) => {
 
       //
       mapExtent = filterData.map.defaultExtent;
+
     } else {
       return null;
     }
@@ -67,10 +91,12 @@ const MapControler = ({ settings }) => {
 
     map.fitBounds(mapBounds);
   }, [
-    varsState.context,
-    varsStateLib.getContextFilterId(varsState),
-    varsStateLib.getMainMenuControlActiveTab(varsState),
+    atomVarStateContext,
+    atsVarStateLib.getContextFilterId(atomVarStateContext),
+    atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
   ]);
+
+  // ** MAIN RENDER  ***************************************************************************
 
   return (
     <>
@@ -79,7 +105,11 @@ const MapControler = ({ settings }) => {
         {/* <FlexContainer> */}
         {/* add the main left menu */}
         <MainMenuControl settings={settings} position="leaflet-right" />
+
+        {/*
+        // TODO: bring back */}
         <VectorGridPlayer settings={settings} />
+        
         {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
@@ -105,7 +135,10 @@ const MapControler = ({ settings }) => {
             <></>
           )} */}
 
+          {/*
+          // TODO: bring back */}
           <VectorGrid settings={settings} />
+
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />

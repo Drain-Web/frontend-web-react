@@ -1,6 +1,9 @@
-import React, { useContext, useState } from "react"
+import React, { useContext } from "react"
 import axios from "axios"
 import useSWR from "swr"
+
+//
+import atsVarStateLib from "../components/atoms/atsVarStateLib.js";
 
 // import contexts
 import ConsFixed from '../components/contexts/ConsFixed.js'
@@ -178,7 +181,7 @@ const loadConsFixed = ( settings ) => {
   }
 
   // TODO: consider errorMessages
-
+  consFixed.loaded = (!isStillLoadingConsFixed(consFixed))
   return consFixed
 }
 
@@ -201,12 +204,13 @@ const isStillLoadingConsFixedValue = (value) => {
 const isStillLoadingConsFixed = (consFixed) => {
   let allLoaded = true
   for (const k in consFixed) {
+    if (k === "loaded") { continue }
     allLoaded = isStillLoadingConsFixedValue(consFixed[k]) ? false : allLoaded
   }
   return !allLoaded
 }
 
-//
+// DEPRECATED: used to update VarsStateContext. Replace by 'setAtVarStateLocation()'
 const setVarsStateLocations = (consFixed, settings, varsState) => {
   if (Object.keys(varsState.locations).length != 0) { return false }
 
@@ -215,7 +219,22 @@ const setVarsStateLocations = (consFixed, settings, varsState) => {
   return true
 }
 
-//
+// Uses Recoil atoms
+const setAtVarStateLocation = (consFixed, settings, atomVarStateLocations) => {
+
+  if (Object.keys(atomVarStateLocations).length != 0) { return false }
+  if (Object.keys(consFixed.locations).length == 0) { return false }
+
+  console.log("consFixed.locations:", consFixed.locations)
+  const locationIds = consFixed.locations.locations.map(loc => loc['locationId']);
+
+  console.log(locationIds, "->", atomVarStateLocations)
+  atsVarStateLib.addLocations(locationIds, settings['generalLocationIcon'], true,
+                              atomVarStateLocations);
+  return true
+}
+
+// DEPRECATED: used to update VarsStateContext. Replace by 'setAtVarStateLocation()'
 const setVarsStateContext = (consFixed, settings, varsState) => {
   if (varsState.context.filterId) { return false }
 
@@ -233,13 +252,38 @@ const setVarsStateContext = (consFixed, settings, varsState) => {
   return true
 }
 
+// Updates the values of the atoms to match content of consFixed.
+// Should not be called frequently.
+const setAtsStartingValues = (consFixed, settings, atomVarStateContext,
+                              atomVarStateDomTimeSeriesData,
+                              atomVarStateDomMainMenuControl) => {
+  if (atomVarStateContext.filterId) { return false }
+  // if (!consFixed.region.defaultFilter) { return false }
+
+  atsVarStateLib.setContextFilterId(consFixed.region.defaultFilter, atomVarStateContext,
+                                    atomVarStateDomTimeSeriesData)
+
+  if (!settings.startingTab) {
+    atsVarStateLib.setMainMenuControlActiveTabAsFilters(atomVarStateDomMainMenuControl)
+    console.log('-Setting active tab as filter')
+  } else {
+    atsVarStateLib.setMainMenuControlActiveTab(settings.startingTab,
+                                               atomVarStateDomMainMenuControl)
+    console.log('-Setting active tab as:', settings.startingTab)
+  }
+
+  atsVarStateLib.setContextIcons('uniform', {}, atomVarStateContext)
+
+  return true
+}
+
 //
 const appLoad = {
   "isStillLoadingConsFixed": isStillLoadingConsFixed,
   "isStillLoadingConsFixedValue": isStillLoadingConsFixedValue,
   "loadConsFixed": loadConsFixed,
-  "setVarsStateLocations": setVarsStateLocations,
-  "setVarsStateContext": setVarsStateContext
+  setAtVarStateLocation: setAtVarStateLocation,
+  setAtsStartingValues: setAtsStartingValues
 }
 
 export default appLoad

@@ -4,11 +4,18 @@ import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { useSpring, animated } from "react-spring";
 import useRemValue from "use-rem-value";
 import { Button, CloseButton } from "react-bootstrap";
+import { useRecoilState } from "recoil";
+import { cloneDeep } from 'lodash';
 
 // import custom components
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
 // import OpenCloseButton from "./mainMenuControl/OpenCloseButton";
+
+// import atoms
+import atsVarStateLib from "../atoms/atsVarStateLib"
+import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations } from
+  "../atoms/atsVarState";
 
 // import contexts
 import ConsFixed from "../contexts/ConsFixed";
@@ -22,11 +29,14 @@ import ownStyles from "../../style/MainMenuControl.module.css";
  * Map menu that allows selection of filters and more.
  */
 
-/* ** OBJ - Bootstrap div ******************************************************************** */
+// ** OBJ - Bootstrap div **********************************************************************
 
 const MainMenuControl = ({ settings, position }) => {
-  /* ** SET HOOKS **************************************************************************** */
+  // ** SET HOOKS ******************************************************************************
   const { consFixed } = useContext(ConsFixed);
+
+  const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] = 
+    useRecoilState(atVarStateDomMainMenuControl)
 
   // Get global states and set local states
   const { varsState, setVarState } = useContext(VarsState);
@@ -85,7 +95,20 @@ const MainMenuControl = ({ settings, position }) => {
     }
   }
 
-  /* ** MAIN RENDER ************************************************************************** */
+  // ** FUNCTIONS ******************************************************************************
+
+  const tabOnSelect = (selectedTab) => {
+    // varsStateLib.setMainMenuControlActiveTab(selectedTab, varsState)
+    console.log("Setting change...")
+    const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl);
+    atsVarStateLib.setMainMenuControlActiveTab(selectedTab, atmVarStateDomMainMenuControl)
+    setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
+    console.log(" ...change set.")
+  }
+
+  // ** MAIN RENDER ****************************************************************************
+
+  // activeKey1={varsStateLib.getMainMenuControlActiveTab(varsState)}
 
   // build content of the menu
   const menuContent = (
@@ -108,17 +131,9 @@ const MainMenuControl = ({ settings, position }) => {
           <Row>
             <Tabs
               className="mb-2"
-              defaultActiveKey={varsStateLib.getMainMenuControlActiveTab(
-                varsState
-              )}
-              activeKey={varsStateLib.getMainMenuControlActiveTab(varsState)}
-              onSelect={(selectedTab) => {
-                varsStateLib.setMainMenuControlActiveTab(
-                  selectedTab,
-                  varsState
-                )
-                setVarState(Math.random())
-              }}
+              defaultActiveKey={atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)}
+              activeKey={atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl) }
+              onSelect={tabOnSelect}
             >
               <Tab
                 eventKey="tabOverview"

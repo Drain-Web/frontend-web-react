@@ -10,9 +10,14 @@ import IconsUniformSubform from './IconsUniformSubform'
 import IconsViewSelectBox from './IconsViewSelectBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
 
+// import recoil to replace contexts
+import { useRecoilValue } from "recoil";
+
+// import atms
+import { atVarStateContext } from '../../atoms/atsVarState'
+
 // import contexts
-import VarsState from "../../contexts/VarsState";
-import varsStateLib from "../../contexts/varsStateLib";
+import atsVarStateLib from '../../atoms/atsVarStateLib'
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
@@ -77,9 +82,9 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
   /* ** SET HOOKS **************************************************************************** */
 
   // Get global states and set local states
-  const { varsState } = useContext(VarsState)
-  const [stateFilterId, setStateFilterId] = useState(varsStateLib.getContextFilterId(varsState))
-  const setStateIconType = useState(varsStateLib.getContextIconsType(varsState))[1]
+  const atomVarStateContext = useRecoilValue(atVarStateContext)
+  const [stateFilterId, setStateFilterId] = useState(atsVarStateLib.getContextFilterId(atomVarStateContext))
+  const setStateIconType = useState(atsVarStateLib.getContextIconsType(atomVarStateContext))[1]
 
   /* ** DEFS ********************************************************************************* */
 
@@ -88,7 +93,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     const newGeoFilterId = event.target.value
     const curEvtFilterId = stateFilterId.split('.')[0]
     const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
-    varsStateLib.setContextFilterId(newFilterId, varsState)
+    atsVarStateLib.setContextFilterId(newFilterId, atomVarStateContext)
     setStateFilterId(newFilterId)
   }
 
@@ -97,7 +102,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     const curGeoFilterId = stateFilterId.split('.')[1]
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
-    varsStateLib.setContextFilterId(newFilterId, varsState)
+    atsVarStateLib.setContextFilterId(newFilterId, atomVarStateContext)
     setStateFilterId(newFilterId)
   }
 
@@ -105,7 +110,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     // Triggered when the icon type select box is changed
     console.log('Updated icon type')
     const newIconView = event.target.value
-    varsStateLib.setContextIcons(newIconView, {}, varsState)
+    atsVarStateLib.setContextIcons(newIconView, {}, atomVarStateContext)
     setStateIconType(newIconView)
   }
 
@@ -119,7 +124,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
           <Col>
             <SubFilterSelectBox
               idTitleList={retGeo}
-              selectedId={varsStateLib.getContextFilterGeoId(varsState)}
+              selectedId={atsVarStateLib.getContextFilterGeoId(atomVarStateContext)}
               onChangeFunction={changeGeoSubFilter}
               label='Sub-Area'
             />
@@ -128,7 +133,7 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
         <Row className={ownStyles['row-padding-top']}><Col>
           <SubFilterSelectBox
             idTitleList={retEvt}
-            selectedId={varsStateLib.getContextFilterEvtId(varsState)}
+            selectedId={atsVarStateLib.getContextFilterEvtId(atomVarStateContext)}
             onChangeFunction={changeEventSubFilter}
             label='Event'
           />

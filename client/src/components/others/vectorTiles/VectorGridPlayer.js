@@ -3,9 +3,14 @@ import { DomEvent } from "leaflet";
 import { Col, Container, Row, CloseButton } from "react-bootstrap";
 import RangeSlider from 'react-bootstrap-range-slider';
 import dateFormat, { masks } from "dateformat";
+import { useRecoilState } from "recoil";
+import { cloneDeep } from 'lodash';
 
+// context and atoms
+import { atVarStateVectorGridAnimation } from "../../atoms/atsVarState";
 import varsStateLib from "../../contexts/varsStateLib";
-import VarsState from "../../contexts/VarsState";
+
+import atsVarStateLib from "../../atoms/atsVarStateLib";
 
 // import CSS styles
 import ownStyles from "../../../style/VectorGridPlayer.module.css";
@@ -43,128 +48,152 @@ const PlayerButton = (innerHTML, onClickFunction) => {
 }
 
 /* ** PLAYER BUTTONS *************************************************************************** */
-const PlayerButtonToBegin = (varsState, setVarState) => {
+const PlayerButtonToBegin = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if not playing
-    if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "|◀"
     const onClickFunction = () => {
-        varsStateLib.setVectorGridAnimationCurrentFrameIdx(0, varsState)
-        setVarState(Math.random());
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        atsVarStateLib.setVectorGridAnimationCurrentFrameIdx(0, atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonPrev = (varsState, setVarState) => {
+const PlayerButtonPrev = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if not playing
-    if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "◁"
     const onClickFunction = () => {
-        const curFrameIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        const curFrameIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atmVarStateVectorGridAnimation)
         const nextFrameIdx = Math.max(0, (curFrameIdx - 1)) // TODO: emove hard coded
-        varsStateLib.setVectorGridAnimationCurrentFrameIdx(nextFrameIdx, varsState)
-        setVarState(Math.random());
+        atsVarStateLib.setVectorGridAnimationCurrentFrameIdx(nextFrameIdx, atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonStop = (varsState, setVarState) => {
+const PlayerButtonStop = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if playing
-    if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "◼"
     const onClickFunction = () => {
-        varsStateLib.toggleVectorGridAnimationIsRunning(varsState)
-        setVarState(Math.random());
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        atsVarStateLib.toggleVectorGridAnimationIsRunning(atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonPlay = (varsState, setVarState) => {
+const PlayerButtonPlay = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if not playing
-    if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "▶"
     const onClickFunction = () => {
-        varsStateLib.toggleVectorGridAnimationIsRunning(varsState)
-        setVarState(Math.random());
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        atsVarStateLib.toggleVectorGridAnimationIsRunning(atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonNext = (varsState, setVarState) => {
+const PlayerButtonNext = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if not playing
-    if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "▷"
     const onClickFunction = () => {
-        const curFrameIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        const curFrameIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atmVarStateVectorGridAnimation)
         const nextFrameIdx = (curFrameIdx + 1) % 24 // TODO: emove hard coded
-        varsStateLib.setVectorGridAnimationCurrentFrameIdx(nextFrameIdx, varsState)
-        setVarState(Math.random());
+        atsVarStateLib.setVectorGridAnimationCurrentFrameIdx(nextFrameIdx, atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonToEnd = (varsState, setVarState) => {
+const PlayerButtonToEnd = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if not playing
-    if (varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = "▶| "
     const onClickFunction = () => {
-        varsStateLib.setVectorGridAnimationCurrentFrameIdx(23, varsState)
-        setVarState(Math.random());
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        atsVarStateLib.setVectorGridAnimationCurrentFrameIdx(23, atmVarStateVectorGridAnimation)  // TODO: emove hard coded
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonFaster = (varsState, setVarState) => {
+const PlayerButtonFaster = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if playing
-    if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = `▶<sup><strong>+</strong></sup> `
     const onClickFunction = () => {
-        const oldPlaySpeed = varsStateLib.getVectorGridAnimationInterval(varsState)
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        const oldPlaySpeed = atsVarStateLib.getVectorGridAnimationInterval(atmVarStateVectorGridAnimation)
         const newPlaySpeed = oldPlaySpeed / 2
-        varsStateLib.setVectorGridAnimationInterval(newPlaySpeed, varsState)
-        setVarState(Math.random());
+        atsVarStateLib.setVectorGridAnimationInterval(newPlaySpeed, atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonSlower = (varsState, setVarState) => {
+const PlayerButtonSlower = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
     // only show if playing
-    if (!varsStateLib.getVectorGridAnimationIsRunning(varsState)) { return (null) }
+    if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+        return (null)
+    }
 
     // define inner HTML and function
     const innerHTML = `▶<sub><strong>-</strong></sub>`
     const onClickFunction = () => {
-        const oldPlaySpeed = varsStateLib.getVectorGridAnimationInterval(varsState)
+        const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+        const oldPlaySpeed = atsVarStateLib.getVectorGridAnimationInterval(atmVarStateVectorGridAnimation)
         const newPlaySpeed = oldPlaySpeed * 2
-        varsStateLib.setVectorGridAnimationInterval(newPlaySpeed, varsState)
-        setVarState(Math.random());
+        atsVarStateLib.setVectorGridAnimationInterval(newPlaySpeed, atmVarStateVectorGridAnimation)
+        setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
     }
 
     // render
@@ -178,18 +207,21 @@ const VectorGridPlayer = ({ settings }) => {
     const initDateTime = "2022-02-14T22:00:00"
 
     /* ** SET HOOKS **************************************************************************** */
-    // Get global states and set local states
-    const { varsState, setVarState } = useContext(VarsState);
+    
+    // Get atoms
+    const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
+        useRecoilState(atVarStateVectorGridAnimation)
 
+    // Avoid click propagation
     const divRef = useRef(null);
     useEffect(() => {
         DomEvent.disableClickPropagation(divRef.current);
     })
 
     /* ** GET VARIABLES ************************************************************************ */
-    
-    const timeUnit = varsStateLib.getVectorGridAnimationTimeResolution(varsState)
-    const curTimeIdx = varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)
+
+    const timeUnit =   atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
+    const curTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
 
     let curDateStr = null
     if (timeUnit) {
@@ -222,7 +254,7 @@ const VectorGridPlayer = ({ settings }) => {
                         className={`${ownStyles.timelineRange}`}
                         min={0}
                         max={24}
-                        value={varsStateLib.getVectorGridAnimationCurrentFrameIdx(varsState)}
+                        value={atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)}
                         tooltip={`off`}
                         disabled={false}
                         onChange={changeEvent => console.log("Changed to:", changeEvent.target.value)}
@@ -233,16 +265,16 @@ const VectorGridPlayer = ({ settings }) => {
                         &nbsp;
                     </Col>
                     <Col xs={6} md={6} lg={6}>
-                        {PlayerButtonToBegin(varsState, setVarState)}
-                        {PlayerButtonPrev(varsState, setVarState)}
-                        {PlayerButtonStop(varsState, setVarState)}
-                        {PlayerButtonPlay(varsState, setVarState)}
-                        {PlayerButtonNext(varsState, setVarState)}
-                        {PlayerButtonToEnd(varsState, setVarState)}
+                        {PlayerButtonToBegin(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonPrev(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonStop(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonPlay(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonNext(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonToEnd(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
                     </Col>
                     <Col xs={3} md={3} lg={3}>
-                        {PlayerButtonSlower(varsState, setVarState)}
-                        {PlayerButtonFaster(varsState, setVarState)}
+                        {PlayerButtonSlower(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonFaster(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
                     </Col>
                 </Row>
             </Container>

@@ -1,19 +1,22 @@
 import React, { Fragment, useContext } from 'react'
 import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
 
-// import contexts
-import VarsState from '../contexts/VarsState'
-import varsStateLib from '../contexts/varsStateLib'
+// import recoil to replace contexts
+import { useRecoilValue } from "recoil";
 
-const displayPolygon = (polygonId, varsState) => {
+// import atms
+import { atVarStateContext, atVarStateDomMainMenuControl } from '../atoms/atsVarState'
+import atsVarStateLib from '../atoms/atsVarStateLib';
+
+const displayPolygon = (polygonId, atomVarStateContext, atomVarStateDomMainMenuControl) => {
   /* Check if a given polygon should be displayed or not */
 
-  if (varsStateLib.inMainMenuControlActiveTabActiveFeatureInfo(varsState) &&
-      (varsStateLib.getLastActiveTab(varsState) === 'tabOverview')) {
+  if (atsVarStateLib.inMainMenuControlActiveTabActiveFeatureInfo(atomVarStateDomMainMenuControl) &&
+      (atsVarStateLib.getLastActiveTab(atomVarStateDomMainMenuControl) === 'tabOverview')) {
     return true
   } else {
-    return ((varsStateLib.getContextFilterGeoId(varsState) === polygonId) ||
-            varsStateLib.inMainMenuControlActiveTabOverview(varsState))
+    return ((atsVarStateLib.getContextFilterGeoId(atomVarStateContext) === polygonId) ||
+             atsVarStateLib.inMainMenuControlActiveTabOverview(atomVarStateDomMainMenuControl))
   }
 }
 
@@ -39,7 +42,8 @@ const PolygonLayer = ({
   /* ** SET HOOKS ****************************************************************************** */
 
   // retireves context data
-  const { varsState } = useContext(VarsState)
+  const atomVarStateContext = useRecoilValue(atVarStateContext)
+  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
 
   /* ** MAIN RENDER  *************************************************************************** */
   return (
@@ -52,7 +56,7 @@ const PolygonLayer = ({
 
             /* build polygons */
             return (
-              (displayPolygon(poly.id, varsState) && polygon)
+              (displayPolygon(poly.id, atomVarStateContext, atomVarStateDomMainMenuControl) && polygon)
                 ? <Polygon
                     pathOptions={{
                       color: poly.lineColor ? poly.lineColor : color,
