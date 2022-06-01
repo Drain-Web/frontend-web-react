@@ -1,0 +1,115 @@
+.mainContainer {
+  /* background-color: #f6f6f6; */
+  left: 1vh;
+  height: 8vh;
+  border-right-width: 0 !important;
+  border-left-width: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  border-width: 20px;
+  border-color: #000;
+  border-color: #444444;
+  border-width: 1px;
+  border-style: solid;
+  margin-left: 19rem;
+  margin-bottom: 1rem;
+}
+
+.controlButton {
+  font-weight: bold;
+  width: 25px;
+  display: inline-block;
+  cursor: pointer;
+  color: #000;
+  border-width: 2px;
+  border-color: rgb(224, 224, 224);
+  border-style: solid;
+}
+
+.controlButton:hover {
+  color: #666666
+}
+
+.mainContainer h1 {
+  font-size: 1.3rem;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.mainContainer hr {
+  margin: 0.7rem 0;
+}
+
+.mainContainer select {
+  -webkit-appearance: menulist-button !important;
+  -moz-appearance: menulist-button !important;
+}
+
+div.content {
+  background-color: #FFFFFF;
+  opacity: 1;
+  width: 18rem;
+  float: right;
+  height: 8vh;
+  border-bottom-right-radius: 20px !important;
+  border-bottom-left-radius: 20px !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  border-width: 2px;
+  border-color: rgb(224, 224, 224);
+  overflow-y: auto;
+  border-style: solid;
+  text-align: center;
+}
+
+.timelineRange {
+  width: 90%
+}
+
+.noGutterX {
+  --bs-gutter-x: 0rem !important;
+}
+
+/* div.buttonSlide {
+  background-color: #ffffff;
+  font-size: x-large;
+  height: 2.2rem;
+  width: 2.2rem;
+  float: left;
+  text-align: center;
+  cursor: pointer;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+} */
+
+.close-button {
+  position: relative;
+  right: 10px;
+  top: 10px;
+}
+
+.open-button {
+  position: relative;
+  right: 10px;
+  top: 10px;
+}
+
+div.row-padding-top {
+  padding-top: 0.5rem;
+}
+
+label.in-div {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+div.labeled-content {
+  padding-top: 1rem;
+  padding-bottom: 0rem;
+  height: auto;
+}
+
+span.dateTimeSting {
+  font: 1.4vh "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useRecoilValue } from "recoil";
 
 // import custom components
 import AppLoading from "./components/others/AppLoading";
@@ -8,9 +7,6 @@ import AppOnInit from "./AppOnInit";
 // import contexts
 import ConsCache from "./components/contexts/ConsCache";
 import ConsFixed from "./components/contexts/ConsFixed";
-
-// import contexts
-import { atVarStateContext } from "./components/atoms/atsVarState";
 
 // import libs
 import appLoad from "./libs/appLoad.js";
@@ -21,8 +17,6 @@ const AppOnLoad = ({ settings }) => {
   // Contexts
   const consCache = useState(ConsCache._currentValue.consCache)[0];
   const consFixed = useState(appLoad.loadConsFixed(settings))[0];
-
-  const atomVarStateContext = useRecoilValue(atVarStateContext)
 
   // ** MAIN RENDER ****************************************************************************
 

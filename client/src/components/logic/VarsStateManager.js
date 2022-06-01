@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { cloneDeep } from 'lodash';
 
 // import recoil to replace contexts
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import {
     atVarStateContext, atVarStateLocations, atVarStateDomTimeSeriesData,
@@ -71,6 +71,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
 
             // only do anything if player is running
             if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+                console.log("Not running:", JSON.stringify(atomVarStateVectorGridAnimation))
                 return
             }
 
@@ -79,6 +80,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
             const newNetworkTimeIdx = (curNetworkTimeIdx + 1) % 24  // TODO: remove hard code
             atsVarStateLib.setVectorGridAnimationCurrentFrameIdx(newNetworkTimeIdx,
                                                                  atmVarStateVectorGridAnimation)
+            
             setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
         }
         const interval = setInterval(itvFunc, itvTime);
@@ -86,7 +88,8 @@ const VarsStateManager = ({ settings, consFixed }) => {
 
     }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation),
         atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation),
-        atsVarStateLib.getVectorGridAnimationInterval(atomVarStateVectorGridAnimation)]);
+        atsVarStateLib.getVectorGridAnimationInterval(atomVarStateVectorGridAnimation),
+        atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)]);
 
     // ** ConsFixed ****************************************************************************
 

@@ -206,7 +206,7 @@ const VectorGridPlayer = ({ settings }) => {
     const dateFormatStr = "HH:MM dd-mm-yyyy (Z)"
     const initDateTime = "2022-02-14T22:00:00"
 
-    /* ** SET HOOKS **************************************************************************** */
+    // ** SET HOOKS ****************************************************************************
     
     // Get atoms
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 

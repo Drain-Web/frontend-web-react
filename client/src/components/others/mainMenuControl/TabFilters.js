@@ -1,5 +1,6 @@
-import React, { useContext, useState } from 'react'
+import React from 'react'
 import { Col, Container, Form, Row } from 'react-bootstrap'
+import { cloneDeep } from 'lodash';
 
 // import custom components
 import IconsAlertsSubform from './IconsAlertsSubform'
@@ -11,19 +12,17 @@ import IconsViewSelectBox from './IconsViewSelectBox'
 import { SubFilterSelectBox } from './SubFilterSelectBox'
 
 // import recoil to replace contexts
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 
 // import atms
 import { atVarStateContext } from '../../atoms/atsVarState'
-
-// import contexts
 import atsVarStateLib from '../../atoms/atsVarStateLib'
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
 
 
-/* ** AUX FUNCS ****************************************************************************** */
+// ** AUX FUNCS ********************************************************************************
 
 const identifyGeoEvents = (filtersData) => {
   // Function that identifies unique geo units and events
@@ -35,7 +34,7 @@ const identifyGeoEvents = (filtersData) => {
     const curFilterIdSplit = curFilter.id.split('.')
     const curFilterNameSplit = curFilter.description.split('@')
     if ((curFilterIdSplit.length !== 2) || (curFilterNameSplit.length !== 2)) {
-      console.log('Unable to parse filter "' + curFilter.id + '":' + curFilter.description + '.')
+      console.log('Cannot parse filter "' + curFilter.id + '":' + curFilter.description + '.')
       continue
     }
     const [curEvtId, curGeoId] = curFilterIdSplit
@@ -79,42 +78,47 @@ const getByFilterIdFromDict = (dict, filterId) => {
 
 export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thresholdGroups,
   settings}) => {
-  /* ** SET HOOKS **************************************************************************** */
+  // ** SET HOOKS ******************************************************************************
 
   // Get global states and set local states
-  const atomVarStateContext = useRecoilValue(atVarStateContext)
-  const [stateFilterId, setStateFilterId] = useState(atsVarStateLib.getContextFilterId(atomVarStateContext))
-  const setStateIconType = useState(atsVarStateLib.getContextIconsType(atomVarStateContext))[1]
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
 
-  /* ** DEFS ********************************************************************************* */
+  // ** DEFS ***********************************************************************************
 
   const changeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
+    console.log('Changed geo subfilter')
     const newGeoFilterId = event.target.value
-    const curEvtFilterId = stateFilterId.split('.')[0]
+    const curEvtFilterId = curFilterId.split('.')[0]
     const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
-    atsVarStateLib.setContextFilterId(newFilterId, atomVarStateContext)
-    setStateFilterId(newFilterId)
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
 
   const changeEventSubFilter = (event) => {
     // Triggered when the event selectbox is changed
-    const curGeoFilterId = stateFilterId.split('.')[1]
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
+    console.log('Changed event subfilter')
+    const curGeoFilterId = curFilterId.split('.')[1]
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
-    atsVarStateLib.setContextFilterId(newFilterId, atomVarStateContext)
-    setStateFilterId(newFilterId)
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
 
   const updateIconType = (event) => {
     // Triggered when the icon type select box is changed
-    console.log('Updated icon type')
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
     const newIconView = event.target.value
-    atsVarStateLib.setContextIcons(newIconView, {}, atomVarStateContext)
-    setStateIconType(newIconView)
+    console.log('Updated icon type to:', event.target.value)
+    atsVarStateLib.setContextIcons(newIconView, {}, atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
 
-  /* ** MAIN RENDER ************************************************************************** */
+  // ** MAIN RENDER ****************************************************************************
 
   const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
   return (

@@ -8,10 +8,15 @@ import {
   LayerGroup
 } from "react-leaflet";
 
+import { useRecoilState } from "recoil";
+
+import { atVarStateActiveLocation } from "../atoms/atsVarState";
+
 // import contexts
 import VarsState from "../contexts/VarsState";
 import consFixedLib from "../contexts/consFixedLib";
 import varsStateLib from "../contexts/varsStateLib";
+import atsVarStateLib from "../atoms/atsVarStateLib";
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
 
@@ -74,7 +79,7 @@ const createTooltip = (locationInfo) => {
 }
 
 const createMarker = (locationId, locationInfo, locationIcon, iconSize,
-  varsState, setVarState) => {
+  atomVarStateActiveLocation, setAtVarStateActiveLocation, atmVarStateDomMainMenuControl) => {
   return (
     <Fragment key={locationId}>
       <Marker
@@ -82,12 +87,12 @@ const createMarker = (locationId, locationInfo, locationIcon, iconSize,
         icon={newIcon(locationIcon.icon, iconSize)}
         eventHandlers={{
           click: () => {
-            const previousLocation = varsStateLib.getActiveLocation(varsState)
+            const previousLocation = atVarStateActiveLocation
             if ((!previousLocation) || (previousLocation.locationId !== locationId)) {
-              const curActiveTab = varsStateLib.getMainMenuControlActiveTab(varsState)
-              varsStateLib.pushIntoActiveTabHistory(curActiveTab, varsState)
-              varsStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(varsState)
-              varsStateLib.setActiveLocation(locationInfo, varsState)
+              const curActiveTab = atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)
+              atsVarStateLib.pushIntoActiveTabHistory(curActiveTab, atmVarStateDomMainMenuControl)
+              atsVarStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(atmVarStateDomMainMenuControl)
+              setAtVarStateActiveLocation(locationInfo)
             } else {
               varsStateLib.setActiveLocation(null, varsState)
               const lastActiveTab = varsStateLib.pullFromActiveTabHistory(varsState)
@@ -123,6 +128,9 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
   // load contexts
   const { varsState, setVarState } = useContext(VarsState)
 
+  const [atomVarStateActiveLocation, setAtVarStateActiveLocation] =
+    useRecoilState(atVarStateActiveLocation)
+
   // refresh icons whenever something in the varsState['locations'] changes
   useEffect(() => {
     console.log('Do I need to use it?')
@@ -141,7 +149,7 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
               if (!curLocationIcon.display) { return (null) }
 
               return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
-                varsState, setVarState))
+                atomVarStateActiveLocation, setAtVarStateActiveLocation))
             })
           }
         </LayerGroup>

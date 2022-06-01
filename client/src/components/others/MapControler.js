@@ -3,7 +3,6 @@ import React, { useEffect, useContext } from "react";
 import { cloneDeep } from 'lodash';
 
 // import components
-import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
 import MainMenuControl from "./MainMenuControl";
 import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
@@ -12,6 +11,8 @@ import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
 import VectorGrid from "./vectorTiles/VectorGrid";
+import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
+import VectorGridLegend from "./vectorTiles/VectorGridLegend";
 
 // import recoil to replace contexts
 import { useRecoilValue } from "recoil";
@@ -36,7 +37,6 @@ const MapControler = ({ settings }) => {
   // load contexts
   const { consCache } = useContext(ConsCache);
   const { consFixed } = useContext(ConsFixed);
-  // const { varsState, setVarState } = useContext(VarsState);
 
   const atomVarStateContext = useRecoilValue(atVarStateContext)
   const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
@@ -143,6 +143,7 @@ const MapControler = ({ settings }) => {
         <SearchField />
         <ZoomControl position="bottomright" />
         <MapLegend settings={settings} position="left" />
+        <VectorGridLegend settings={settings} />
       </div>
       {/* </FlexContainer> */}
     </>

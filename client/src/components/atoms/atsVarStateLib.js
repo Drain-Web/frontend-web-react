@@ -34,6 +34,18 @@ const getContextFilterId = (atVarStateContext) => {
 }
 
 //
+const getContextIconsArgs = (iconsType, atVarStateContext) => {
+  let iconArgsKey
+  if (!iconsType) {
+    iconArgsKey = getContextIconsType(atVarStateContext)
+    iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconArgsKey]
+  } else {
+    iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
+  }
+  return atVarStateContext.icons[iconArgsKey]
+}
+
+//
 const getContextIconsType = (atVarStateContext) => {
   return atVarStateContext.icons.iconType
 }
@@ -74,17 +86,18 @@ const setUniformIcon = (iconUrl, atVarStateLocations) => {
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].icon = iconUrl }
 }
 
-// ** PUBLIC FUNCTIONS - MainMenuControl *******************************************************
+// ** PUBLIC FUNCTIONS - ActiveLocations *******************************************************
 
-//
-const setMainMenuControlActiveTab = (newActiveTabId, atVarStateDomMainMenuControl) => {
-  atVarStateDomMainMenuControl.activeTab = newActiveTabId
+// TODO: this should go to VarsStateManager listening to activeLocation atom
+// TODO: continue from here
+const setActiveLocation = (newActiveLocation, atVarStateDomMainMenuControl, 
+                           setAtVarStateActiveLocation) => {
+  setAtVarStateActiveLocation(newActiveLocation)
+  if (newActiveLocation) {
+    _updateTimeSerieUrlByLocationId(newActiveLocation, varsState)  // fix it
+  }
 }
 
-//
-const setMainMenuControlActiveTabAsFilters = (atVarStateDomMainMenuControl) => {
-  atVarStateDomMainMenuControl.activeTab = 'tabFilters'
-}
 
 // ** PUBLIC FUNCTIONS - DomMainMenuControl ****************************************************
 
@@ -112,6 +125,26 @@ const inMainMenuControlActiveTabFilters = (atVarStateDomMainMenuControl) => {
 //
 const inMainMenuControlActiveTabOverview = (atVarStateDomMainMenuControl) => {
   return (atVarStateDomMainMenuControl.activeTab === 'tabOverview')
+}
+
+//
+const pushIntoActiveTabHistory = (activeTabId, atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.activeTabsHistory.push(activeTabId)
+}
+
+//
+const setMainMenuControlActiveTab = (newActiveTabId, atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.activeTab = newActiveTabId
+}
+
+//
+const setMainMenuControlActiveTabAsActiveFeatureInfo = (atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.activeTab = 'tabActiveFeatureInfo'
+}
+
+//
+const setMainMenuControlActiveTabAsFilters = (atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.activeTab = 'tabFilters'
 }
 
 // ** PUBLIC FUNCTIONS - DomTimeSeriesData *****************************************************
@@ -238,7 +271,8 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
                                      atVarStateDomMapLegend, consCache, settings)
       console.log('Should have updated by Evaluation')  // TODO: remove it
     } else if (contextIconType === 'alerts') {
-      _updateLocationIconsAlerts(atVarStateDomMapLegend, consCache, consFixed, settings)
+      _updateLocationIconsAlerts(atVarStateContext, atVarStateLocations, atVarStateDomMapLegend,
+                                 consCache, consFixed, settings)
       console.log('Should have updated by Alerts')  // TODO: remove it
     } else if (contextIconType === 'comparison') {
       _updateLocationIconsComparison(atVarStateDomMapLegend, consCache, consFixed, settings)
@@ -303,6 +337,16 @@ const _updateLocationIconsUniform = (atVarStateContext, atVarStateLocations,
 }
 
 
+// Set the time series url to fetch data
+const _updateTimeSerieUrlByLocationId = (locationId, atVarStateDomTimeSeriesData) => {
+  const currentUrl = getTimeSerieUrl(atVarStateDomTimeSeriesData)
+  if (!currentUrl) { return }
+
+  const newUrl = _replaceUrlParam(currentUrl, 'location', locationId)
+  setTimeSerieUrl(newUrl, atVarStateDomTimeSeriesData)
+}
+
+
 // 
 const _updateTimeSerieUrlByFilterId = (filterId, atVarStateDomTimeSeriesData) => {
   const currentUrl = getTimeSerieUrl(atVarStateDomTimeSeriesData)
@@ -310,6 +354,116 @@ const _updateTimeSerieUrlByFilterId = (filterId, atVarStateDomTimeSeriesData) =>
 
   const newUrl = _replaceUrlParam(currentUrl, 'filter', filterId)
   setTimeSerieUrl(newUrl, atVarStateDomTimeSeriesData)
+}
+
+//
+const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations, 
+                                    atVarStateDomMapLegend, consCache, consFixed, settings) => {
+  // get all timeseries of filterId of selected ParameterGroup and ModuleInstanceId
+  const filterId = getContextFilterId(atVarStateContext)
+  const moduleInstanceId = getContextIconsArgs('alerts', atVarStateContext).moduleInstanceId
+  const thresholdGroupId = getContextIconsArgs('alerts', atVarStateContext).thresholdGroupId
+
+  // get timeseries
+  const consideredTimeseries = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!consideredTimeseries) {
+    console.warn("No timeseries found for filter '" + filterId + "' on cache.")
+    return
+  }
+
+  // get all possible parameters
+  const allParameterIds = consCacheLib.getParameterIdsByThresholdGroupId(thresholdGroupId,
+    consCache)
+
+  // get all info about thresh group
+  const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
+  const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
+
+  // get the value function of the thresh levels
+  const thresholdLevelFunction = {}
+  for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
+    const curThreshLevelId = curThreshLevelObj.id
+    thresholdLevelFunction[curThreshLevelId] =
+      consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed).valueFunction
+  }
+
+  // TODO: double check if it needs to be moved somewhere
+  const getThresholdLevel = (timeseriesData, locationData, thresholdGroupData,
+      threshLevelFunctions) => {
+    let lastThreshLevelObj = true
+
+    // iterate threshold level by threshold level
+    for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
+      const curThreshLevelId = curThreshLevelObj.id
+      const curThreshLevelFunction = threshLevelFunctions[curThreshLevelId]
+
+      if ((curThreshLevelFunction.charAt(0) === '@') &&
+          (curThreshLevelFunction.charAt(curThreshLevelFunction.length - 1) === '@')) {
+        // get the value of the attribute in the location info
+        const curAttrId = curThreshLevelFunction.substring(1, curThreshLevelFunction.length - 1)
+        const curAttrObj = _getObjectFromArrayById(curAttrId, locationData.attributes)
+        if (!curAttrObj) { return null }
+        const curAttrValue = parseFloat(curAttrObj.number)
+
+        // if time series exceeds this value, continue checking a higher. If not, return it
+        if (timeseriesData.maxValue < curAttrValue) { break }
+        lastThreshLevelObj = curThreshLevelObj
+      }
+      else
+      {
+        console.warn("Unexpected threshold value function:", curThreshLevelFunction)
+      }
+    }
+    return lastThreshLevelObj
+  }
+
+  // define icons to be updated
+  const locationIdsIcons = {}
+  for (const curTimeseriesId of consideredTimeseries) {
+    const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
+    if (allParameterIds.has(curTimeseriesData.header.parameterId) &&
+        (curTimeseriesData.header.moduleInstanceId === moduleInstanceId)) {
+      // define the threshold level
+      const curLocationId = curTimeseriesData.header.location_id
+      const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
+      const thresholdLevel = getThresholdLevel(curTimeseriesData, curLocationData,
+        thresholdGroupData, thresholdLevelFunction)
+
+      // set the icon properly
+      let selectedIcon = null
+      if (!thresholdLevel) {
+        selectedIcon = thresholdGroupBase.unknownIcon
+      } else if (typeof thresholdLevel === 'boolean') {
+        selectedIcon = thresholdGroupBase.noWarningIcon
+      } else {
+        selectedIcon = thresholdLevel.upWarningLevelId.iconName
+      }
+      locationIdsIcons[curTimeseriesData.header.location_id] = selectedIcon
+      atVarStateLocations[curTimeseriesData.header.location_id].icon = selectedIcon
+    }
+  }
+
+  // update varsState location by location
+  for (const locationId in atVarStateLocations) {
+    atVarStateLocations[locationId].display = locationId in locationIdsIcons
+  }
+
+  // define items in legend
+  const [iconsLegendSeq, iconsLegend] = [[], {}]
+  iconsLegendSeq.push('No alerts')
+  iconsLegend['No alerts'] = thresholdGroupBase.noWarningIcon
+  for (const curThresholdLevel of thresholdGroupData.threshold_levels) {
+    const curName = curThresholdLevel.upWarningLevelId.name
+    iconsLegendSeq.push(curName)
+    iconsLegend[curName] = curThresholdLevel.upWarningLevelId.iconName
+  }
+  iconsLegendSeq.push('Unknown')
+  iconsLegend.Unknown = thresholdGroupBase.unknownIcon
+
+  // update legend
+  setMapLegendSubtitle('Alerts:', atVarStateDomMapLegend)
+  setMapLegendIcons(iconsLegend, iconsLegendSeq, atVarStateDomMapLegend)
+  setMapLegendVisibility(true, atVarStateDomMapLegend)
 }
 
 // ** NAMESPACE ********************************************************************************
@@ -334,10 +488,12 @@ const atsVarStateLib = {
   inMainMenuControlActiveTabActiveFeatureInfo: inMainMenuControlActiveTabActiveFeatureInfo,
   inMainMenuControlActiveTabFilters: inMainMenuControlActiveTabFilters,
   inMainMenuControlActiveTabOverview: inMainMenuControlActiveTabOverview,
+  pushIntoActiveTabHistory: pushIntoActiveTabHistory,
   setContextFilterId: setContextFilterId,
   setContextIcons: setContextIcons,
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
   setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
+  setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMapZoomLevel: setMapZoomLevel,
   setTimeSerieUrl: setTimeSerieUrl,
   setUniformIcon: setUniformIcon,
