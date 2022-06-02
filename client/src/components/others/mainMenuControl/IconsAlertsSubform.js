@@ -2,6 +2,10 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Col, Form, Row, FloatingLabel } from 'react-bootstrap'
 import { apiUrl } from '../../../libs/api.js'
 import axios from 'axios'
+import { cloneDeep } from 'lodash';
+
+// import recoil to replace contexts
+import { useRecoilState, useRecoilValue } from "recoil";
 
 // import contexts
 import ConsCache from "../../contexts/ConsCache";
@@ -12,6 +16,9 @@ import varsStateLib from "../../contexts/varsStateLib";
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
+import atsVarStateLib from '../../atoms/atsVarStateLib.js';
+import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
+  atVarStateDomMapLegend } from "../../atoms/atsVarState";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
@@ -30,16 +37,30 @@ const IconsAlertsSubform = ( { settings } ) => {
   const { consCache } = useContext(ConsCache)
   const { consFixed } = useContext(ConsFixed)
   const { varsState, setVarState } = useContext(VarsState)
+  
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
+  const atomVarStateLocations = useRecoilValue(atVarStateLocations)
+  const atomVarStateDomMapLegend = useRecoilValue(atVarStateDomMapLegend)
 
+  // TODO: consider using the atoms directly
   const [selectedThresholdGroup, setSelectedThresholdGroup] =
     useState(varsStateLib.getContextIconsArgs('alerts', varsState).thresholdGroupId)
   const [selectedModuleInstanceId, setSelectedModuleInstanceId] =
     useState(varsStateLib.getContextIconsArgs('alerts', varsState).moduleInstanceId)
 
+  const atmVarStateContext = cloneDeep(atomVarStateContext)
+
+  // TODO: move to VarsStateManager
   // react on change
   useEffect(() => {
     // only triggers when "evaluation" is selected and the selected metric is not null
-    if (varsStateLib.getContextIconsType(varsState) !== 'alerts') { return (null) }
+    // if (varsStateLib.getContextIconsType(varsState) !== 'alerts') { return (null) }
+    if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== 'alerts') { return (null) }
+
+    const selectedThresholdGroupX = atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).thresholdGroupId
+    const selectedModuleInstanceIdX = atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).moduleInstanceId
+    
     if (!selectedThresholdGroup)   { return (null) }
     if (!selectedModuleInstanceId) { return (null) }
 
@@ -49,7 +70,7 @@ const IconsAlertsSubform = ( { settings } ) => {
       "v1",
       "timeseries",
       {
-        filter: varsStateLib.getContextFilterId(varsState),
+        filter: atsVarStateLib.getContextFilterId(atomVarStateContext),
         showStatistics: true,
         onlyHeaders: true
       }
@@ -57,8 +78,10 @@ const IconsAlertsSubform = ( { settings } ) => {
 
     // 2. define callback function that updates the icons
     const callbackFunc = (urlRequested) => {
-      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-      setVarState(Math.random())
+      atsVarStateLib.updateLocationIcons(atomVarStateDomMainMenuControl, atomVarStateLocations,
+                                         atomVarStateContext, atomVarStateDomMapLegend,
+                                         consCache, consFixed, settings)
+      // TODO - set updates
     }
     
     // 3. call URL and then callback, or callback directly
@@ -82,26 +105,30 @@ const IconsAlertsSubform = ( { settings } ) => {
       setVarState(Math.random())
     }
 
-  }, [varsStateLib.getContextIconsType(varsState), 
-      varsStateLib.getContextFilterId(varsState),
-      varsStateLib.getContextIconsArgs('alerts', varsState),
+  }, [atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext),
+      atsVarStateLib.getContextFilterId(atomVarStateContext),
+      atsVarStateLib.getContextIconsType(atomVarStateContext),
       selectedThresholdGroup, selectedModuleInstanceId])
 
-  /* ** BUILD COMPONENT ********************************************************************** */
+  // ** BUILD COMPONENT ************************************************************************
 
-  if (varsStateLib.getContextIconsType(varsState) != "alerts") { return (null) }
+  // 
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) != "alerts") { return (null) }
+  // if (varsStateLib.getContextIconsType(varsState) != "alerts") { return (null) }
 
   //
   const changeSelectedThresholdGroup = (selectedItem) => {
-    varsStateLib.setContextIcons('alerts', { thresholdGroupId: selectedItem.target.value }, 
-                                 varsState)
+    atsVarStateLib.setContextIcons('alerts', { thresholdGroupId: selectedItem.target.value },
+                                   atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
     setSelectedThresholdGroup(selectedItem.target.value)
   }
 
   // 
   const changeSelectedModuleInstanceId = (selectedItem) => {
-    varsStateLib.setContextIcons('alerts', { moduleInstanceId: selectedItem.target.value },
-                                 varsState)
+    atsVarStateLib.setContextIcons('alerts', { moduleInstanceId: selectedItem.target.value },
+                                   atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
     setSelectedModuleInstanceId(selectedItem.target.value)
   }
 
@@ -111,12 +138,20 @@ const IconsAlertsSubform = ( { settings } ) => {
     thresholdGroupOptions.push(<option value={curId} key={curId}>{curThreshGroup.name}</option>)
   }
 
+  /*
   // if no thresholdGroup selected, select one
   if (!selectedThresholdGroup) {
     const thresholdGroup = Object.keys(consFixed.thresholdGroup)[0]
-    varsStateLib.setContextIcons('alerts', { thresholdGroupId: thresholdGroup }, varsState)
+    console.log("Will set A...")
+    atsVarStateLib.setContextIcons('alerts', { thresholdGroupId: thresholdGroup }, atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
     setSelectedThresholdGroup(thresholdGroup)
+    console.log(" ...set A.")
     return <></>
+  }
+  */
+  if (!selectedThresholdGroup) {
+    return(<></>)
   }
 
   // build options for module instance ids
@@ -127,12 +162,20 @@ const IconsAlertsSubform = ( { settings } ) => {
       {curModuleInstancesId}</option>)
   }
 
+  /*
   // 
   if (!selectedModuleInstanceId) {
     const moduleInstanceInstanceId = Array.from(moduleInstancesIds)[0]
-    varsStateLib.setContextIcons('alerts', { moduleInstanceId: moduleInstanceInstanceId }, varsState)
+    console.log("Will set B...")
+    atsVarStateLib.setContextIcons('alerts', { moduleInstanceId: moduleInstanceInstanceId }, atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
     setSelectedModuleInstanceId(moduleInstanceInstanceId)
+    console.log(" ...set B.")
     return <></>
+  }
+  */
+  if (!selectedModuleInstanceId) {
+    return(<></>)
   }
   
   return (

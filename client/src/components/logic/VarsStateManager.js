@@ -7,7 +7,8 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import {
     atVarStateContext, atVarStateLocations, atVarStateDomTimeSeriesData,
     atVarStateDomMainMenuControl,
-    atVarStateDomMap, atVarStateVectorGridAnimation
+    atVarStateDomMap, atVarStateVectorGridAnimation,
+    atVarStateDomTimeseriesPanel
 } from "../atoms/atsVarState";
 import atsVarStateLib from "../atoms/atsVarStateLib";
 
@@ -28,6 +29,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
     const [atomVarStateDomMap, setAtVarStateDomMap] = useRecoilState(atVarStateDomMap)
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
         useRecoilState(atVarStateVectorGridAnimation)
+    const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
 
     // TODO: move it to a shared library
     // const atmVarStateLocations = cloneDeep(atomVarStateLocations);
@@ -57,6 +59,12 @@ const VarsStateManager = ({ settings, consFixed }) => {
                                                             atmVarStateVectorGridAnimation)
         setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
       }, [atsVarStateLib.getMapZoomLevel(atomVarStateDomMap)])
+
+    // ** VarStateDomTimeseriesPanel ***********************************************************
+
+    useEffect(() => {
+        console.log("Captured change in VarStateDomTimeseriesPanel")
+    }, [atsVarStateLib.getPanelTabsShow(atomVarStateDomTimeseriesPanel)])
 
     // ** VarStateVectorGridAnimation **********************************************************
 
@@ -109,6 +117,15 @@ const VarsStateManager = ({ settings, consFixed }) => {
             setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
         }
     }, [consFixed.loaded]);
+
+    // ** Icons
+
+    // 
+    useEffect(() => {
+
+        console.log("Should do second updates here!")
+
+    }, [atomVarStateContext])
 
     // ** No-hook functions ********************************************************************
 

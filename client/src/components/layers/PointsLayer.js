@@ -1,21 +1,16 @@
-import React, { useContext, useEffect, Fragment } from "react";
+import React, { useEffect, Fragment } from "react";
 import { Icon } from "leaflet";
-import {
-  Marker,
-  Polygon,
-  Tooltip,
-  LayersControl,
-  LayerGroup
-} from "react-leaflet";
+import { Marker, Polygon, Tooltip, LayersControl, LayerGroup } from "react-leaflet";
+import { cloneDeep } from 'lodash';
 
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { atVarStateActiveLocation } from "../atoms/atsVarState";
+// context and atoms
+import { atVarStateLocations, atVarStateActiveLocation, atVarStateDomMainMenuControl } from
+  "../atoms/atsVarState";
 
 // import contexts
-import VarsState from "../contexts/VarsState";
 import consFixedLib from "../contexts/consFixedLib";
-import varsStateLib from "../contexts/varsStateLib";
 import atsVarStateLib from "../atoms/atsVarStateLib";
 
 // ids should be removed later, just used to keep the same current functionalities while creating basic components (a.k.a. machetazo)
@@ -79,7 +74,8 @@ const createTooltip = (locationInfo) => {
 }
 
 const createMarker = (locationId, locationInfo, locationIcon, iconSize,
-  atomVarStateActiveLocation, setAtVarStateActiveLocation, atmVarStateDomMainMenuControl) => {
+    atomVarStateActiveLocation, setAtVarStateActiveLocation,
+    atmVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl) => {
   return (
     <Fragment key={locationId}>
       <Marker
@@ -89,27 +85,28 @@ const createMarker = (locationId, locationInfo, locationIcon, iconSize,
           click: () => {
             const previousLocation = atVarStateActiveLocation
             if ((!previousLocation) || (previousLocation.locationId !== locationId)) {
-              const curActiveTab = atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)
+              const curActiveTab = atsVarStateLib.getMainMenuControlActiveTab(atmVarStateDomMainMenuControl)
               atsVarStateLib.pushIntoActiveTabHistory(curActiveTab, atmVarStateDomMainMenuControl)
               atsVarStateLib.setMainMenuControlActiveTabAsActiveFeatureInfo(atmVarStateDomMainMenuControl)
               setAtVarStateActiveLocation(locationInfo)
+              setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
             } else {
-              varsStateLib.setActiveLocation(null, varsState)
-              const lastActiveTab = varsStateLib.pullFromActiveTabHistory(varsState)
+              setAtVarStateActiveLocation(null)
+              const lastActiveTab = atsVarStateLib.pullFromActiveTabHistory(atmVarStateDomMainMenuControl)
               if (lastActiveTab) {
-                varsStateLib.setMainMenuControlActiveTab(lastActiveTab, varsState)
+                atsVarStateLib.setMainMenuControlActiveTab(lastActiveTab, atmVarStateDomMainMenuControl)
+                setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
               }
             }
-            setVarState(Math.random())
           }
         }}
       >
         {createTooltip(locationInfo)}
       </Marker>
-      {createMarkerPolygon(locationInfo, varsStateLib.getActiveLocation(varsState))}
+      {createMarkerPolygon(locationInfo, atomVarStateActiveLocation)}
     </Fragment>
   )
-}
+}  // varsState.locations
 
 // regular location icon
 const newIcon = (newIconUrl, iconSize) => {
@@ -120,36 +117,41 @@ const newIcon = (newIconUrl, iconSize) => {
   })
 }
 
-/* ** COMPONENT ****************************************************************************** */
+// ** COMPONENT ********************************************************************************
 
 const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
-  /* ** SET HOOKS **************************************************************************** */
+  // ** SET HOOKS ******************************************************************************
 
   // load contexts
-  const { varsState, setVarState } = useContext(VarsState)
-
+  const atomVarStateLocations = useRecoilValue(atVarStateLocations)
   const [atomVarStateActiveLocation, setAtVarStateActiveLocation] =
     useRecoilState(atVarStateActiveLocation)
+  const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] =
+    useRecoilState(atVarStateDomMainMenuControl)
 
   // refresh icons whenever something in the varsState['locations'] changes
   useEffect(() => {
     console.log('Do I need to use it?')
-  }, [varsState.locations])
+  }, [atomVarStateLocations])
 
-  /* ** MAIN RENDER  *************************************************************************** */
+  const atmVarStateActiveLocation = cloneDeep(atomVarStateActiveLocation)
+  const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
+
+  // ** MAIN RENDER  ***************************************************************************
   return (
     <>
       <LayersControl.Overlay checked name={layerName}>
         <LayerGroup name={layerName}>
           {
-            Object.keys(varsState.locations).map((curLocationId, idx) => {
-              const curLocationIcon = varsState.locations[curLocationId]
+            Object.keys(atomVarStateLocations).map((curLocationId, idx) => {
+              const curLocationIcon = atomVarStateLocations[curLocationId]
               const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
 
               if (!curLocationIcon.display) { return (null) }
 
               return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
-                atomVarStateActiveLocation, setAtVarStateActiveLocation))
+                atmVarStateActiveLocation, setAtVarStateActiveLocation,
+                atmVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl))
             })
           }
         </LayerGroup>

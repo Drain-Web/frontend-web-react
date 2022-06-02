@@ -131,8 +131,8 @@ const MainMenuControl = ({ settings, position }) => {
           <Row>
             <Tabs
               className="mb-2"
-              defaultActiveKey={atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)}
-              activeKey={atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl) }
+              defaultActiveKey={atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)}
+              activeKey={atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl) }
               onSelect={tabOnSelect}
             >
               <Tab

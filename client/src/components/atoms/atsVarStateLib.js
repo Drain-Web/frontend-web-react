@@ -147,7 +147,34 @@ const setMainMenuControlActiveTabAsFilters = (atVarStateDomMainMenuControl) => {
   atVarStateDomMainMenuControl.activeTab = 'tabFilters'
 }
 
+// ** PUBLIC FUNCTIONS - DomTimeseriesPanel ****************************************************
+
+//
+const getPanelTabsShow = (atVarStateDomTimeseriesPanel) => {
+  return atVarStateDomTimeseriesPanel.show
+}
+
+//
+const hidePanelTabs = (atVarStateDomTimeseriesPanel) => {
+  atVarStateDomTimeseriesPanel.show = false
+}
+
+//
+const showPanelTabs = (atVarStateDomTimeseriesPanel) => {
+  atVarStateDomTimeseriesPanel.show = true
+}
+
 // ** PUBLIC FUNCTIONS - DomTimeSeriesData *****************************************************
+
+//
+const getTimeSeriesPlotData = (atVarStateDomTimeSeriesData) => {
+  return atVarStateDomTimeSeriesData.plotData
+}
+
+// 
+const getTimeSeriesPlotAvailableVariables = (atVarStateDomTimeSeriesData) => {
+  return atVarStateDomTimeSeriesData.availableVariables
+}
 
 // 
 const getTimeSerieUrl = (atVarStateDomTimeSeriesData) => {
@@ -163,6 +190,12 @@ const setContextFilterId = (newFilterId, atVarStateContext, atVarStateDomTimeSer
 // 
 const setTimeSerieUrl = (timeSerieUrl, atVarStateDomTimeSeriesData) => {
   atVarStateDomTimeSeriesData.timeSerieUrl = timeSerieUrl
+}
+
+// 
+const setTimeSeriesPlotAvailableVariables = (newAvailableVariables,
+  atVarStateDomTimeSeriesData) => {
+atVarStateDomTimeSeriesData.availableVariables = newAvailableVariables
 }
 
 // ** PUBLIC FUNCTION - DomMap *****************************************************************
@@ -475,16 +508,21 @@ const atsVarStateLib = {
   getContextFilterEvtId: getContextFilterEvtId,
   getContextFilterGeoId: getContextFilterGeoId,
   getContextFilterId: getContextFilterId,
+  getContextIconsArgs: getContextIconsArgs,
   getContextIconsType: getContextIconsType,
   getLastActiveTab: getLastActiveTab,
   getMapZoomLevel: getMapZoomLevel,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
+  getPanelTabsShow: getPanelTabsShow,
+  getTimeSeriesPlotAvailableVariables: getTimeSeriesPlotAvailableVariables,
+  getTimeSeriesPlotData: getTimeSeriesPlotData,
   getTimeSerieUrl: getTimeSerieUrl,
   getVectorGridAnimationCurrentFrameIdx: getVectorGridAnimationCurrentFrameIdx,
   getVectorGridAnimationInterval: getVectorGridAnimationInterval,
   getVectorGridAnimationIsRunning: getVectorGridAnimationIsRunning, 
   getVectorGridAnimationTimeResolution: getVectorGridAnimationTimeResolution,
   hideAllLocationIcons: hideAllLocationIcons,
+  hidePanelTabs: hidePanelTabs,
   inMainMenuControlActiveTabActiveFeatureInfo: inMainMenuControlActiveTabActiveFeatureInfo,
   inMainMenuControlActiveTabFilters: inMainMenuControlActiveTabFilters,
   inMainMenuControlActiveTabOverview: inMainMenuControlActiveTabOverview,
@@ -495,11 +533,13 @@ const atsVarStateLib = {
   setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMapZoomLevel: setMapZoomLevel,
+  setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
   setTimeSerieUrl: setTimeSerieUrl,
   setUniformIcon: setUniformIcon,
   setVectorGridAnimationCurrentFrameIdx: setVectorGridAnimationCurrentFrameIdx,
   setVectorGridAnimationInterval: setVectorGridAnimationInterval,
   setVectorGridAnimationTimeResolution: setVectorGridAnimationTimeResolution,
+  showPanelTabs: showPanelTabs,
   toggleVectorGridAnimationIsRunning: toggleVectorGridAnimationIsRunning,
   updateLocationIcons: updateLocationIcons
 }

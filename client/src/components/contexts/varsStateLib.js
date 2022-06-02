@@ -96,6 +96,7 @@ const getTimeSerieUrl = (varsState) => {
   return varsState.domObjects.timeSeriesData.timeSerieUrl
 }
 
+//
 const getTimeSeriesPlotData = (varsState) => {
   return varsState.domObjects.timeSeriesData.plotData
 }

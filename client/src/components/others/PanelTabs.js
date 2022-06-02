@@ -1,10 +1,11 @@
-import React, { Suspense, useEffect, useRef, useContext } from "react";
+import React, { Suspense, useEffect,useState, useRef, useContext } from "react";
 import Draggable from "react-draggable";
 import { DomEvent } from "leaflet";
 import Spinner from "react-bootstrap/Spinner";
 import { Tab, Tabs } from "react-bootstrap";
 import { apiUrl } from "../../libs/api.js";
 import { Scrollbars } from "react-custom-scrollbars";
+import { cloneDeep } from 'lodash';
 import axios from "axios";
 
 // import components
@@ -17,11 +18,18 @@ import MetricsTable from "./MetricsTable";
 import ConsCache from '../contexts/ConsCache.js'
 import consCacheLib from '../contexts/consCacheLib'
 import ConsFixed from '../contexts/ConsFixed.js'
-import VarsState from "../contexts/VarsState";
-import varsStateLib from "../contexts/varsStateLib";
+
+// context and atoms
+import atsVarStateLib from "../atoms/atsVarStateLib";
+import { atVarStateActiveLocation,
+         atVarStateContext,
+         atVarStateDomTimeSeriesData,
+         atVarStateDomTimeseriesPanel }
+  from "../atoms/atsVarState";
 
 // import styles
 import "../../style/Panel.css";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
@@ -48,15 +56,14 @@ const showLoading = () => {
 }
 
 //
-const showTimeseriesPlot = (parameterGroupId, varsState) => {
-  const tsData = varsState.domObjects.timeSeriesData
+const showTimeseriesPlot = (parameterGroupId, timeSeriesData) => {
   return (
     <TimeSeriesPlot
-      plotData={tsData.plotData[parameterGroupId]}
-      plotArray={tsData.plotArrays[parameterGroupId]}
-      availableVariables={tsData.availableVariables[parameterGroupId]}
-      unitsVariables={tsData.unitsVariables[parameterGroupId]}
-      thresholdsArray={tsData.thresholdsArray[parameterGroupId]}
+      plotData={timeSeriesData.plotData[parameterGroupId]}
+      plotArray={timeSeriesData.plotArrays[parameterGroupId]}
+      availableVariables={timeSeriesData.availableVariables[parameterGroupId]}
+      unitsVariables={timeSeriesData.unitsVariables[parameterGroupId]}
+      thresholdsArray={timeSeriesData.thresholdsArray[parameterGroupId]}
     />
   )
 }
@@ -91,14 +98,14 @@ const metricMatrixTab = (id, consCache) => {
 }
 
 //
-const timeseriesTab = (parameterGroupId, varsState) => {
+const timeseriesTab = (parameterGroupId, timeSeriesData) => {
   return (
     <Tab
       eventKey={parameterGroupId}
       title={parameterGroupId}
       key={parameterGroupId}
     >
-      {showTimeseriesPlot(parameterGroupId, varsState)}
+      {showTimeseriesPlot(parameterGroupId, timeSeriesData)}
     </Tab>
   );
 }
@@ -154,11 +161,12 @@ const listMetricsAndParameters = (settings) => {
 
 
 // 
-const getParametersAndModuleInstanceIds = (varsState, parameterGroupId) => {
+const getParametersAndModuleInstanceIds = (atomVarStateDomTimeSeriesData, parameterGroupId) => {
   /*
    * return {"parameterId": [moduleInstanceId, ...]}
    */
-  const plotData = varsStateLib.getTimeSeriesPlotData(varsState)
+  // const plotData = varsStateLib.getTimeSeriesPlotData(varsState)
+  const plotData = atsVarStateLib.getTimeSeriesPlotData(atomVarStateDomTimeSeriesData)
 
   if (!plotData) { return null }
   if (!plotData[parameterGroupId]) { return null }
@@ -185,9 +193,9 @@ const getParametersAndModuleInstanceIds = (varsState, parameterGroupId) => {
 
 //
 const DraggableTimeseriesDiv = ({ settings }) => {
+  // ** SET HOOKS ******************************************************************************
   const divRef = useRef(null)
   const { consCache } = useContext(ConsCache)
-  const { varsState, setVarState } = useContext(VarsState)
 
   useEffect(() => {
     if (divRef.current !== null) {
@@ -195,34 +203,45 @@ const DraggableTimeseriesDiv = ({ settings }) => {
     }
   })
 
-  // ${position}
+  const atomVarStateDomTimeSeriesData = useRecoilValue(atVarStateDomTimeSeriesData)
+  const [ atomVarStateDomTimeseriesPanel, setAtVarStateDomTimeseriesPanel ] = 
+    useRecoilState(atVarStateDomTimeseriesPanel)
+
+  const atmVarStateDomTimeseriesPanel = cloneDeep(atomVarStateDomTimeseriesPanel);
+
+  // ** MAIN RENDER  ***************************************************************************
+
+  const timeSeriesPlotAvailableVariables = atsVarStateLib.getTimeSeriesPlotAvailableVariables(atomVarStateDomTimeSeriesData)
+
+  console.log("atsVarStateLib.getTimeSerieUrl:", atsVarStateLib.getTimeSerieUrl(atomVarStateDomTimeSeriesData))
+
   return (
     <div
       className={`${
-        varsStateLib.getPanelTabsShow(varsState) ? "Panel" : "Panel hide"
+        atsVarStateLib.getPanelTabsShow(atomVarStateDomTimeseriesPanel) ? "Panel" : "Panel hide"
       }`}
       ref={divRef}
     >
       {/* <Draggable bounds='parent'> */}
       {/* <Draggable> */}
       <div className="Panel-content">
-        {varsStateLib.getTimeSerieUrl(varsState) && (
+        {atsVarStateLib.getTimeSerieUrl(atomVarStateDomTimeSeriesData) && (
           <Suspense fallback={showLoading()}>
             <div>
               <LoadTimeSeriesData settings={settings} />
-              {varsState.domObjects.timeSeriesData.availableVariables && (
+              {timeSeriesPlotAvailableVariables && (
                 <Tabs
                   defaultActiveKey={
-                    varsState.domObjects.timeSeriesData.availableVariables[0]
+                    timeSeriesPlotAvailableVariables[0]
                   }
                   id="uncontrolled-tab-example"
                   className="mb-3"
                 >
                   {
                     /* Add one tab per time series */
-                    Object.keys(
-                      varsState.domObjects.timeSeriesData.availableVariables
-                    ).map((parameterGroupId) => timeseriesTab(parameterGroupId, varsState))
+                    Object.keys(timeSeriesPlotAvailableVariables).map(
+                      (parameterGroupId) => timeseriesTab(parameterGroupId, atomVarStateDomTimeSeriesData)
+                    )
                   }
                   {metricMatrixTab('', consCache)}
                 </Tabs>
@@ -235,8 +254,8 @@ const DraggableTimeseriesDiv = ({ settings }) => {
       <div className='close-button'>
         <CloseButton
           onClick={() => {
-            varsStateLib.hidePanelTabs(varsState)
-            setVarState(Math.random())
+            atsVarStateLib.hidePanelTabs(atmVarStateDomTimeseriesPanel)
+            setAtVarStateDomTimeseriesPanel(atmVarStateDomTimeseriesPanel)
           }}
         />
       </div>
@@ -248,13 +267,21 @@ const DraggableTimeseriesDiv = ({ settings }) => {
 
 const PanelTabs = ({ position, settings }) => {
   const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState)
+  const setVarState = useState(null)[1];
 
+  const atomVarStateContext = useRecoilValue(atVarStateContext)
+  const atomVarStateActiveLocation = useRecoilValue(atVarStateActiveLocation)
+  const atomVarStateDomTimeSeriesData = useRecoilValue(atVarStateDomTimeSeriesData)
+  const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
+
+  // TODO - move to VarsStateManager
   // updates matrix table if needed
   useEffect(() => {
+
     // only does something if the tab is being shown
-    if (!varsStateLib.getPanelTabsShow(varsState)) { return }
+    if (!atsVarStateLib.getPanelTabsShow(atomVarStateDomTimeseriesPanel)) { 
+      return
+    }
 
     // and only if there is at least one evaluation metric available
     const evaluationMetrics = listMetrics(settings)
@@ -272,7 +299,7 @@ const PanelTabs = ({ position, settings }) => {
     const obsParameterId = parameterGroupDict.parameterIdObs
 
     // get parameters available
-    const parametersAndModules = getParametersAndModuleInstanceIds(varsState, parameterGroupId)
+    const parametersAndModules = getParametersAndModuleInstanceIds(atomVarStateDomTimeSeriesData, parameterGroupId)
     if ((!parametersAndModules) || (!parametersAndModules[simParameterId]) || (!parametersAndModules[obsParameterId])) {
       consCacheLib.setEvaluationsLastRequestUrl(null, consCache)
       setVarState(Math.random())
@@ -288,13 +315,13 @@ const PanelTabs = ({ position, settings }) => {
     // build URL to be requested
     const urlTimeseriesCalcRequest = apiUrl(
       settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
-        filter: varsStateLib.getContextFilterId(varsState),
+        filter: atsVarStateLib.getContextFilterId(atomVarStateContext),
         calcs: evaluationMetrics.join(','),
         simParameterId: simParameterId,
         obsParameterId: obsParameterId,
         obsModuleInstanceId: parametersAndModules[obsParameterId],
         simModuleInstanceIds: parametersAndModules[simParameterId].join(','),
-        locationId: varsStateLib.getActiveLocation(varsState).locationId
+        locationId: atomVarStateActiveLocation.locationId
       }
     )
 
@@ -312,10 +339,10 @@ const PanelTabs = ({ position, settings }) => {
         callbackFunc(extras.url)
       })
     }
-  }, [varsStateLib.getContextFilterId(varsState),
-      varsStateLib.getActiveLocation(varsState),
-      varsStateLib.getPanelTabsShow(varsState),
-      varsStateLib.getTimeSeriesPlotData(varsState)])
+  }, [atsVarStateLib.getContextFilterId(atomVarStateContext),
+      atomVarStateActiveLocation,
+      atsVarStateLib.getPanelTabsShow(atomVarStateDomTimeseriesPanel),
+      atsVarStateLib.getTimeSeriesPlotData(atomVarStateDomTimeSeriesData)])
 
   /* TimeSeriesPlot */
   return <DraggableTimeseriesDiv settings={settings} />

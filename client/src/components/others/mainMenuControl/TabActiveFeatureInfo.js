@@ -2,10 +2,15 @@ import React, { useContext, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import { apiUrl } from "../../../libs/api.js";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { cloneDeep } from "lodash";
 
 // import contexts
-import varsStateLib from "../../contexts/varsStateLib";
-import VarsState from "../../contexts/VarsState";
+import atsVarStateLib from "../../atoms/atsVarStateLib.js";
+import { atVarStateActiveLocation, atVarStateContext, atVarStateDomTimeseriesPanel,
+         atVarStateDomTimeSeriesData, atVarStateDomMainMenuControl}
+  from "../../atoms/atsVarState";
+
 
 const getInstructionsDiv = (isOpen, setIsOpen) => {
   //
@@ -43,7 +48,10 @@ const getInstructionsDiv = (isOpen, setIsOpen) => {
 }
 
 //
-const getLocationInfoDiv = (activeLocation, settings, varsState, setVarState) => {
+const getLocationInfoDiv = (activeLocation, settings, atomVarStateContext, 
+                            atmVarStateDomTimeseriesPanel, setAtVarStateDomTimeseriesPanel,
+                            atmVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData,
+                            atVarStateDomMainMenuControl) => {
   //
 
   const onButtonClick = () => {
@@ -52,13 +60,19 @@ const getLocationInfoDiv = (activeLocation, settings, varsState, setVarState) =>
       'v1',
       'timeseries',
       {
-        filter: varsStateLib.getContextFilterId(varsState),
+        filter: atsVarStateLib.getContextFilterId(atomVarStateContext),
         location: activeLocation.locationId
       }
     )
-    varsStateLib.showPanelTabs(varsState)
-    varsStateLib.setTimeSerieUrl(timeseriesUrl, varsState)
-    setVarState(Math.random())
+
+    // show panel tab
+    atsVarStateLib.showPanelTabs(atmVarStateDomTimeseriesPanel)
+    setAtVarStateDomTimeseriesPanel(atmVarStateDomTimeseriesPanel)
+    
+    // put url to load
+    console.log("PASSING 2:", JSON.stringify(atmVarStateDomTimeSeriesData))
+    atsVarStateLib.setTimeSerieUrl(timeseriesUrl, atmVarStateDomTimeSeriesData)
+    setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
 
   const getButtonObj = () => {
@@ -87,21 +101,39 @@ const getLocationInfoDiv = (activeLocation, settings, varsState, setVarState) =>
         <span className='popupsubtitle'>Latitude: </span>
         <span className='popuptext'>{activeLocation.y}</span>
       </p>
-      {!(varsStateLib.getLastActiveTab(varsState) === 'tabOverview') ? getButtonObj() : (<></>)}
+      {
+        !(atsVarStateLib.getLastActiveTab(atVarStateDomMainMenuControl) === 'tabOverview') ?
+          getButtonObj() :
+          (<></>)
+      }
     </div>
   )
 }
 
-//
+// 
 export const TabActiveFeatureInfo = ({ settings }) => {
-  // get context
-  const { varsState, setVarState } = useContext(VarsState)
-  const activeLocation = varsStateLib.getActiveLocation(varsState)
+  // ** SET HOOKS ******************************************************************************
 
+  // get atoms
+  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
+  const atomVarStateActiveLocation = useRecoilValue(atVarStateActiveLocation)
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+  const [atomVarStateDomTimeseriesPanel, setAtVarStateDomTimeseriesPanel] = useRecoilState(atVarStateDomTimeseriesPanel)
+  const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] = useRecoilState(atVarStateDomTimeSeriesData)
+
+  // internal state
   const [isOpen, setIsOpen] = useState(false)
 
-  if (activeLocation) {
-    return getLocationInfoDiv(activeLocation, settings, varsState, setVarState)
+  const atmVarStateDomTimeseriesPanel = cloneDeep(atomVarStateDomTimeseriesPanel)
+  const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
+
+  // ** MAIN RENDER  ***************************************************************************
+  if (atomVarStateActiveLocation) {
+    console.log("PASSING 1:", JSON.stringify(atmVarStateDomTimeSeriesData))
+    return getLocationInfoDiv(atomVarStateActiveLocation, settings, atomVarStateContext,
+                              atmVarStateDomTimeseriesPanel, setAtVarStateDomTimeseriesPanel,
+                              atmVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData,
+                              atomVarStateDomMainMenuControl)
   } else {
     return getInstructionsDiv(isOpen, setIsOpen)
   }
