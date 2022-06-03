@@ -243,8 +243,8 @@ const PlayerButtonSlower = (atomVarStateVectorGridAnimation, setAtVarStateVector
 /* ** MAIN PLAYER ****************************************************************************** */
 const VectorGridPlayer = ({ settings }) => {
     // TODO: remove hard-codedimport
-    const dateFormatStr = "HH:MM dd-mm-yyyy (Z)"
-    const initDateTime = "2022-02-14T22:00:00"
+    const dateFormatStr = "HH:MM dd-mm-yyyy" //(Z)
+    const initDateTime = "2012-07-08T22:00:00"
 
     // ** SET HOOKS ****************************************************************************
 
@@ -267,7 +267,7 @@ const VectorGridPlayer = ({ settings }) => {
 
     let curDateStr = null
     if (timeUnit) {
-        curDateStr = dateFormat(indexToDatetime(curTimeIdx, initDateTime, timeUnit), dateFormatStr)
+        curDateStr = dateFormat(indexToDatetime(curTimeIdx, initDateTime, timeUnit), dateFormatStr) + " (EST)"
     } else {
         curDateStr = "Loading..."
     }
