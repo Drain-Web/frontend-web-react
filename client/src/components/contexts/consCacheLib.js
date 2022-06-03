@@ -105,6 +105,7 @@ const getLocationIdOfTimeseriesId = (timeseriesId, consCache) => {
 
 //
 const getModuleInstancesOfThreshouldGroup = (threshouldGroupId, consCache) => {
+  console.log("Looking for", threshouldGroupId, "in", JSON.stringify(consCache.indexes.moduleInstanceIdsByThresholdGroupId))
   return consCache.indexes.moduleInstanceIdsByThresholdGroupId[threshouldGroupId]
 }
 
@@ -154,6 +155,8 @@ const storeEvaluationResponseData = (requestUrl, responseData, consCache) => {
 
 //
 const storeTimeseriesData = (tsData, consCache, consFixed) => {
+  console.log("Storing timeseries data...")
+
   // add indexes
   _addToIndex('timeseriesIdsByLocationId', tsData.header.location_id, tsData.id, consCache)
   _addToIndex('timeseriesIdsByParameterId', tsData.header.parameterId, tsData.id, consCache)

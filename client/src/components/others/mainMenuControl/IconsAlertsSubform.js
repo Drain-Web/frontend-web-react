@@ -150,7 +150,14 @@ const IconsAlertsSubform = ( { settings } ) => {
     return <></>
   }
   */
+  /*
   if (!selectedThresholdGroup) {
+    console.log("Hide by no selectedThresholdGroup.")
+    return(<></>)
+  }
+  */
+  if (! atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).thresholdGroupId ) {
+    console.log("Hide by no selectedThresholdGroup even now.")
     return(<></>)
   }
 
@@ -175,6 +182,7 @@ const IconsAlertsSubform = ( { settings } ) => {
   }
   */
   if (!selectedModuleInstanceId) {
+    console.log("Hide by no selectedModuleInstanceId.")
     return(<></>)
   }
   

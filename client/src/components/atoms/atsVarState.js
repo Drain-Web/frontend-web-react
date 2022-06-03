@@ -98,6 +98,11 @@ const atVarStateDomMapLegend = atom({
 
 // ** VECTOR GRID ANIMATION ********************************************************************
 
+const atVarStateVectorGridMode = atom({
+  key: 'atVarStateVectorGridMode',
+  default: 'static'  // can be: 'static', 'animated'. TODO: make it variable.
+})
+
 const atVarStateVectorGridAnimation = atom({
   key: 'atVarStateVectorGridAnimation',
   default: {
@@ -114,4 +119,4 @@ const atVarStateVectorGridAnimation = atom({
 export { atVarStateContext, atVarStateLocations, atVarStateActiveLocation,
          atVarStateDomMainMenuControl, atVarStateDomTimeSeriesData, 
          atVarStateDomTimeseriesPanel, atVarStateDomMap, atVarStateDomMapLegend,
-         atVarStateVectorGridAnimation }
+         atVarStateVectorGridAnimation, atVarStateVectorGridMode }

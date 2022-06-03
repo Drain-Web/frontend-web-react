@@ -9,13 +9,13 @@ import ConsFixed from "../../contexts/ConsFixed";
 
 // atoms
 import atsVarStateLib from '../../atoms/atsVarStateLib';
-import { atVarStateVectorGridAnimation } from '../../atoms/atsVarState';
+import { atVarStateVectorGridAnimation, atVarStateVectorGridMode } from '../../atoms/atsVarState';
 
 // TODO: check if it is really needed
 const ATTRIBUTION = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">MapBox</a>'
 
 // TODO: temp code
-const getColorFromValue = (flowValue) => {
+const getColorFromValueOld = (flowValue) => {
   let retColor = "#990000"
   if (flowValue == 1) {
     retColor = "#AAAAFF"
@@ -39,6 +39,25 @@ const getColorFromValue = (flowValue) => {
   return retColor
 }
 
+const getColorFromValue = (flowValue) => {
+  let retColor = "#00AA00"
+  if (flowValue < 2) {
+    retColor = "#5555FF"
+  } else if (flowValue < 2.8) {
+    retColor = "#5522BB"
+  } else if (flowValue < 3.6) {
+    retColor = "#550099"
+  } else if (flowValue < 4.4) {
+    retColor = "#AA00AA"
+  } else if (flowValue < 5.2) {
+    retColor = "#DD0055"
+  } else {
+    retColor = "#990022"
+  }
+  return retColor
+}
+// , , , , , 
+
 const getGradColorFromValue = (flowValue) => {
   const d2h = (d) => { return (+d).toString(16).padStart(2, '0') }
 
@@ -61,6 +80,7 @@ const VectorGrid = ({ settings }) => {
   */
 
   const atomVarStateVectorGridAnimation = useRecoilValue(atVarStateVectorGridAnimation)
+  const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
 
   // const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
 
@@ -140,22 +160,38 @@ const VectorGrid = ({ settings }) => {
     // only applies if the vector grid was loaded
     if (!trueVGrid) { return }
 
-    // for...of (imperative code) tends to be faster than forEach or map (declarative code)
-    const networkTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
-    const timeResolution = atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
-    let printed = false
-    for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix[timeResolution])) {
-      const v = consFixed.networkTimeseriesMatrix[timeResolution][curLinkId][networkTimeIdx]
-      // const c = getColorFromValue(v)
-      const c = getGradColorFromValue(v)
-      if (!printed) {
-        // console.log(v, "->", c)
-        // console.log("trueVGrid.getDataLayerNames():", trueVGrid.getDataLayerNames())
-        printed = true
+    if (atomVarStateVectorGridMode === "static") {
+      // if in static mode, print a single color
+      const timeResolution = atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
+      for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix[timeResolution])) {
+        trueVGrid.setFeatureStyle(curLinkId, { color: "#275095" })
       }
-      trueVGrid.setFeatureStyle(curLinkId, { color: c })
+
+    } else if (atomVarStateVectorGridMode === "animated") {
+      // if in animated mode, print the instant color of each link
+
+      // for...of (imperative code) tends to be faster than forEach or map (declarative code)
+      const networkTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
+      const timeResolution = atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
+      let printed = false
+      for (const curLinkId of Object.keys(consFixed.networkTimeseriesMatrix[timeResolution])) {
+        const v = consFixed.networkTimeseriesMatrix[timeResolution][curLinkId][networkTimeIdx]
+        // const c = getGradColorFromValue(v)  // before: getColorFromValue(v)
+        const c = getColorFromValue(v)
+        if (!printed) {
+          printed = true
+        }
+        trueVGrid.setFeatureStyle(curLinkId, { color: c })
+      }
+      
+    } else {
+      // 
+      console.log('Unexpected value for VarStateVectorGridMode:', atomVarStateVectorGridMode)
+
     }
-  }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)]);
+  }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation),
+      atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation),
+      atomVarStateVectorGridMode]);
 
   // TODO: temp code
   // update the temporal resolution on zoom change

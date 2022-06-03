@@ -4,11 +4,16 @@ import { cloneDeep } from 'lodash';
 // import recoil to replace contexts
 import { useRecoilState, useRecoilValue } from "recoil";
 
+// caches
+import ConsCache from "../contexts/ConsCache";
+import consCacheLib from "../contexts/consCacheLib";
+
+// atoms
 import {
     atVarStateContext, atVarStateLocations, atVarStateDomTimeSeriesData,
     atVarStateDomMainMenuControl,
     atVarStateDomMap, atVarStateVectorGridAnimation,
-    atVarStateDomTimeseriesPanel
+    atVarStateDomTimeseriesPanel, atVarStateVectorGridMode
 } from "../atoms/atsVarState";
 import atsVarStateLib from "../atoms/atsVarStateLib";
 
@@ -30,12 +35,10 @@ const VarsStateManager = ({ settings, consFixed }) => {
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
         useRecoilState(atVarStateVectorGridAnimation)
     const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
+    const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
 
-    // TODO: move it to a shared library
-    // const atmVarStateLocations = cloneDeep(atomVarStateLocations);
-    // const atmVarStateContext = cloneDeep(atomVarStateContext)
-    // const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData);
-    // const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl);
+    // contexts
+    const { consCache } = useContext(ConsCache)
 
     // ** SET HOOKS ****************************************************************************
 
@@ -66,6 +69,25 @@ const VarsStateManager = ({ settings, consFixed }) => {
         console.log("Captured change in VarStateDomTimeseriesPanel")
     }, [atsVarStateLib.getPanelTabsShow(atomVarStateDomTimeseriesPanel)])
 
+    // ** VarStateVectorGridMode ***************************************************************
+
+    useEffect(() => {
+        
+        if (atomVarStateVectorGridMode === 'static') {
+            if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+                const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+                atsVarStateLib.vectorGridAnimationStop(atmVarStateVectorGridAnimation)
+                setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
+            }
+
+        } else if (atomVarStateVectorGridMode === 'animated') {
+            const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
+            atsVarStateLib.vectorGridAnimationPlay(atmVarStateVectorGridAnimation)
+            setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
+        }
+
+    }, [atomVarStateVectorGridMode])
+
     // ** VarStateVectorGridAnimation **********************************************************
 
     // TODO: temp code
@@ -77,8 +99,11 @@ const VarsStateManager = ({ settings, consFixed }) => {
         const itvFunc = () => {
             const curNetworkTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
 
-            // only do anything if player is running
-            if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
+            // only do anything if mode is animated and player is running
+            if (atomVarStateVectorGridMode !== "animated") {
+                console.log("Not animated:", atomVarStateVectorGridMode)
+                return
+            } else if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
                 console.log("Not running:", JSON.stringify(atomVarStateVectorGridAnimation))
                 return
             }
@@ -97,7 +122,8 @@ const VarsStateManager = ({ settings, consFixed }) => {
     }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation),
         atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation),
         atsVarStateLib.getVectorGridAnimationInterval(atomVarStateVectorGridAnimation),
-        atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)]);
+        atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation),
+        atomVarStateVectorGridMode]);
 
     // ** ConsFixed ****************************************************************************
 
@@ -123,9 +149,44 @@ const VarsStateManager = ({ settings, consFixed }) => {
     // 
     useEffect(() => {
 
+        if (atsVarStateLib.getContextIconsType(atomVarStateContext) === "alerts") {
+            const contextIconsArgs = atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext)
+            let selectedThresholdGroup = contextIconsArgs.thresholdGroupId
+            const selectedModuleInstanceId = contextIconsArgs.moduleInstanceId
+
+            // if no thresholdGroup selected, select one
+            if (!selectedThresholdGroup) {
+                const atmVarStateContext = cloneDeep(atomVarStateContext)
+                selectedThresholdGroup = Object.keys(consFixed.thresholdGroup)[0]
+                console.log("Will set As...")
+                atsVarStateLib.setContextIcons('alerts',
+                                               { thresholdGroupId: selectedThresholdGroup },
+                                               atmVarStateContext)
+                setAtVarStateContext(atmVarStateContext)
+                console.log(" ...set thresh group as:", selectedThresholdGroup)
+            }
+
+            // if no moduleInstanceId selected, select one
+            if (!selectedModuleInstanceId) {
+                const moduleInstancesIds = consCacheLib.getModuleInstancesOfThreshouldGroup(selectedThresholdGroup, consCache)
+                const atmVarStateContext = cloneDeep(atomVarStateContext)
+                console.log("Modules from", selectedThresholdGroup, ":", moduleInstancesIds)
+                const moduleInstanceInstanceId = Array.from(moduleInstancesIds)[0]
+                console.log("Will set Bs...")
+                atsVarStateLib.setContextIcons('alerts', { moduleInstanceId: moduleInstanceInstanceId }, atmVarStateContext)
+                setAtVarStateContext(atmVarStateContext)
+                console.log(" ...set Bs.")
+
+                return <></>
+            }
+
+        } else {
+            console.log("Not refactored yet:", atsVarStateLib.getContextIconsType(atomVarStateContext))
+        }
+
         console.log("Should do second updates here!")
 
-    }, [atomVarStateContext])
+    }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
 
     // ** No-hook functions ********************************************************************
 

@@ -24,7 +24,7 @@ import consFixedLib from "../contexts/consFixedLib";
 
 import atsVarStateLib from "../atoms/atsVarStateLib";
 import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
-         atVarStateDomMapLegend } from "../atoms/atsVarState";
+         atVarStateDomMapLegend, atVarStateVectorGridMode } from "../atoms/atsVarState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -42,6 +42,7 @@ const MapControler = ({ settings }) => {
   const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
   const atomVarStateLocations = useRecoilValue(atVarStateLocations)
   const atomVarStateDomMapLegend = useRecoilValue(atVarStateDomMapLegend)
+  const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
 
   const atmVarStateContext = cloneDeep(atomVarStateContext)
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
@@ -135,15 +136,20 @@ const MapControler = ({ settings }) => {
             <></>
           )} */}
 
-          {/*
-          // TODO: bring back */}
-          <VectorGrid settings={settings} />
+          <VectorGrid 
+            layerName="Flow animation"
+            settings={settings}
+          />
 
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
         <MapLegend settings={settings} position="left" />
-        <VectorGridLegend settings={settings} />
+        
+        { (atomVarStateVectorGridMode === 'animated') ? 
+          (<VectorGridLegend settings={settings} />) : 
+          (<></>) }
+        
       </div>
       {/* </FlexContainer> */}
     </>

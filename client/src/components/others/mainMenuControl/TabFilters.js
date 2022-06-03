@@ -15,7 +15,7 @@ import { SubFilterSelectBox } from './SubFilterSelectBox'
 import { useRecoilState } from "recoil";
 
 // import atms
-import { atVarStateContext } from '../../atoms/atsVarState'
+import { atVarStateContext, atVarStateDomTimeSeriesData } from '../../atoms/atsVarState'
 import atsVarStateLib from '../../atoms/atsVarStateLib'
 
 // import CSS styles
@@ -82,31 +82,38 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
 
   // Get global states and set local states
   const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+  const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] = useRecoilState(atVarStateDomTimeSeriesData)
 
   // ** DEFS ***********************************************************************************
 
   const changeGeoSubFilter = (event) => {
     // Triggered when the subregion selectbox is changed
     const atmVarStateContext = cloneDeep(atomVarStateContext)
+    const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
     const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
-    console.log('Changed geo subfilter')
+    console.log('Changed geo subfilter to:', event.target.value)
     const newGeoFilterId = event.target.value
     const curEvtFilterId = curFilterId.split('.')[0]
     const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
-    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext)
+    console.log(' Setting:', newFilterId)
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext, atmVarStateDomTimeSeriesData)
     setAtVarStateContext(atmVarStateContext)
+    setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
 
   const changeEventSubFilter = (event) => {
     // Triggered when the event selectbox is changed
     const atmVarStateContext = cloneDeep(atomVarStateContext)
+    const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
     const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
-    console.log('Changed event subfilter')
+    console.log('Changed event subfilter to:', event.target.value)
     const curGeoFilterId = curFilterId.split('.')[1]
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
-    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext)
+    console.log(' Setting:', newFilterId, 'to', JSON.stringify(atmVarStateContext))
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext, atmVarStateDomTimeSeriesData)
     setAtVarStateContext(atmVarStateContext)
+    setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
 
   const updateIconType = (event) => {
@@ -144,7 +151,10 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
           {/* TODO: move default icon view to settings file */}
-          <IconsViewSelectBox onChange={updateIconType} label="Location icons" />
+          <IconsViewSelectBox 
+            onChange={updateIconType}
+            label="Location icons"
+          />
         </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
           <IconsUniformSubform settings={settings} />

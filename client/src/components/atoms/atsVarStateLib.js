@@ -281,6 +281,14 @@ const toggleVectorGridAnimationIsRunning = (atVarStateVectorGridAnimation) => {
   atVarStateVectorGridAnimation.isRunning = !atVarStateVectorGridAnimation.isRunning
 }
 
+const vectorGridAnimationPlay = (atVarStateVectorGridAnimation) => {
+  atVarStateVectorGridAnimation.isRunning = true
+}
+
+const vectorGridAnimationStop = (atVarStateVectorGridAnimation) => {
+  atVarStateVectorGridAnimation.isRunning = false
+}
+
 // ** PUBLIC FUNCTIONS - General ***************************************************************
 
 // Updates the 'locations' content considering the rest of the object
@@ -541,7 +549,9 @@ const atsVarStateLib = {
   setVectorGridAnimationTimeResolution: setVectorGridAnimationTimeResolution,
   showPanelTabs: showPanelTabs,
   toggleVectorGridAnimationIsRunning: toggleVectorGridAnimationIsRunning,
-  updateLocationIcons: updateLocationIcons
+  updateLocationIcons: updateLocationIcons,
+  vectorGridAnimationPlay: vectorGridAnimationPlay,
+  vectorGridAnimationStop: vectorGridAnimationStop
 }
 
 export default atsVarStateLib

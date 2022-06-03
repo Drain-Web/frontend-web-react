@@ -7,8 +7,7 @@ import { useRecoilState } from "recoil";
 import { cloneDeep } from 'lodash';
 
 // context and atoms
-import { atVarStateVectorGridAnimation } from "../../atoms/atsVarState";
-import varsStateLib from "../../contexts/varsStateLib";
+import { atVarStateVectorGridMode, atVarStateVectorGridAnimation } from "../../atoms/atsVarState";
 
 import atsVarStateLib from "../../atoms/atsVarStateLib";
 
@@ -42,14 +41,40 @@ const PlayerButton = (innerHTML, onClickFunction) => {
         <div
             className={`${ownStyles.controlButton}`}
             onClick={onClickFunction}
-            dangerouslySetInnerHTML={{ __html: innerHTML}}
+            dangerouslySetInnerHTML={{ __html: innerHTML }}
         />
     )
 }
 
 /* ** PLAYER BUTTONS *************************************************************************** */
-const PlayerButtonToBegin = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonAnimation = (atomVarStateVectorGridMode, setAtVarStateVectorGridMode) => {
+    // only show if is in static mode
+    if (atomVarStateVectorGridMode === 'animated') { return (null) }
+
+    // define inner HTML and function
+    const innerHTML = ('<img src="img/vectorplayer_icons/animation.png" style="height: 100%; width: 100%; object-fit: contain" />')
+    const onClickFunction = () => { setAtVarStateVectorGridMode('animated') }
+
+    // render
+    return PlayerButton(innerHTML, onClickFunction)
+}
+
+const PlayerButtonStatic = (atomVarStateVectorGridMode, setAtVarStateVectorGridMode) => {
+    // only show if is in animation mode
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
+
+    const innerHTML = '<img src="img/vectorplayer_icons/static.png" style="height: 100%; width: 100%; object-fit: contain" />'
+    const onClickFunction = () => { setAtVarStateVectorGridMode('static') }
+
+    // render
+    return PlayerButton(innerHTML, onClickFunction)
+}
+
+const PlayerButtonToBegin = (atomVarStateVectorGridAnimation,
+                             setAtVarStateVectorGridAnimation,
+                             atomVarStateVectorGridMode) => {
     // only show if not playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -66,8 +91,11 @@ const PlayerButtonToBegin = (atomVarStateVectorGridAnimation, setAtVarStateVecto
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonPrev = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonPrev = (atomVarStateVectorGridAnimation,
+                          setAtVarStateVectorGridAnimation,
+                          atomVarStateVectorGridMode) => {
     // only show if not playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -86,8 +114,11 @@ const PlayerButtonPrev = (atomVarStateVectorGridAnimation, setAtVarStateVectorGr
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonStop = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonStop = (atomVarStateVectorGridAnimation,
+                          setAtVarStateVectorGridAnimation,
+                          atomVarStateVectorGridMode) => {
     // only show if playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (!atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -104,8 +135,11 @@ const PlayerButtonStop = (atomVarStateVectorGridAnimation, setAtVarStateVectorGr
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonPlay = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonPlay = (atomVarStateVectorGridAnimation,
+                          setAtVarStateVectorGridAnimation,
+                          atomVarStateVectorGridMode) => {
     // only show if not playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -122,8 +156,11 @@ const PlayerButtonPlay = (atomVarStateVectorGridAnimation, setAtVarStateVectorGr
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonNext = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonNext = (atomVarStateVectorGridAnimation,
+                          setAtVarStateVectorGridAnimation,
+                          atomVarStateVectorGridMode) => {
     // only show if not playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -142,8 +179,11 @@ const PlayerButtonNext = (atomVarStateVectorGridAnimation, setAtVarStateVectorGr
     return PlayerButton(innerHTML, onClickFunction)
 }
 
-const PlayerButtonToEnd = (atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation) => {
+const PlayerButtonToEnd = (atomVarStateVectorGridAnimation,
+                           setAtVarStateVectorGridAnimation,
+                           atomVarStateVectorGridMode) => {
     // only show if not playing
+    if (atomVarStateVectorGridMode === 'static') { return (null) }
     if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
         return (null)
     }
@@ -207,10 +247,12 @@ const VectorGridPlayer = ({ settings }) => {
     const initDateTime = "2022-02-14T22:00:00"
 
     // ** SET HOOKS ****************************************************************************
-    
+
     // Get atoms
-    const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
+    const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] =
         useRecoilState(atVarStateVectorGridAnimation)
+    const [atomVarStateVectorGridMode, setAtVarStateVectorGridMode] =
+        useRecoilState(atVarStateVectorGridMode)
 
     // Avoid click propagation
     const divRef = useRef(null);
@@ -220,7 +262,7 @@ const VectorGridPlayer = ({ settings }) => {
 
     /* ** GET VARIABLES ************************************************************************ */
 
-    const timeUnit =   atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
+    const timeUnit = atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation)
     const curTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
 
     let curDateStr = null
@@ -237,12 +279,20 @@ const VectorGridPlayer = ({ settings }) => {
                 <Row>
                     <Col xs={2} md={2} lg={2}>
                         <span>
-                            { (timeUnit ? "(".concat(timeUnit, ")") : "") }
+                            {
+                                (timeUnit && (atomVarStateVectorGridMode === "animated")) ? 
+                                "(".concat(timeUnit, ")") : 
+                                (" ")
+                            }
                         </span>
                     </Col>
                     <Col xs={8} md={8} lg={8}>
                         <span className={`${ownStyles.dateTimeSting} col-6`} >
-                            {curDateStr}
+                            {   
+                                (atomVarStateVectorGridMode === "animated") ?
+                                curDateStr :
+                                "Drainage network"
+                            }
                         </span>
                     </Col>
                     <Col xs={2} md={2} lg={2}>
@@ -250,27 +300,32 @@ const VectorGridPlayer = ({ settings }) => {
                     </Col>
                 </Row>
                 <Row><Col>
-                    <RangeSlider
-                        className={`${ownStyles.timelineRange}`}
-                        min={0}
-                        max={24}
-                        value={atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)}
-                        tooltip={`off`}
-                        disabled={false}
-                        onChange={changeEvent => console.log("Changed to:", changeEvent.target.value)}
-                    />
+                    {
+                        (atomVarStateVectorGridMode === "animated") ?
+                        (<RangeSlider
+                            className={`${ownStyles.timelineRange}`}
+                            min={0}
+                            max={24}
+                            value={atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)}
+                            tooltip={`off`}
+                            disabled={false}
+                            onChange={changeEvent => console.log("Changed to:", changeEvent.target.value)}
+                        />) :
+                        (<br />)
+                    }
                 </Col></Row>
                 <Row className={`${ownStyles.noGutterX}`}>
                     <Col xs={3} md={3} lg={3}>
-                        &nbsp;
+                        {PlayerButtonAnimation(atomVarStateVectorGridMode, setAtVarStateVectorGridMode)}
+                        {PlayerButtonStatic(atomVarStateVectorGridMode, setAtVarStateVectorGridMode)}
                     </Col>
                     <Col xs={6} md={6} lg={6}>
-                        {PlayerButtonToBegin(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
-                        {PlayerButtonPrev(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
-                        {PlayerButtonStop(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
-                        {PlayerButtonPlay(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
-                        {PlayerButtonNext(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
-                        {PlayerButtonToEnd(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}
+                        {PlayerButtonToBegin(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
+                        {PlayerButtonPrev(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
+                        {PlayerButtonStop(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
+                        {PlayerButtonPlay(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
+                        {PlayerButtonNext(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
+                        {PlayerButtonToEnd(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation, atomVarStateVectorGridMode)}
                     </Col>
                     <Col xs={3} md={3} lg={3}>
                         {PlayerButtonSlower(atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation)}

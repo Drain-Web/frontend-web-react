@@ -144,7 +144,42 @@ const MainMenuControl = ({ settings, position }) => {
                   <span className="popuptitle">About</span>
                 </p>
                 <span className="popuptext">
-                  <p>Here comes some information about the app.</p>
+                  <p>Four major stream systems compose the GTA.</p>
+                  <p><strong style={{color: "#900090"}}>Humber River:</strong></p>
+                  <ul>
+                    <li>Area: 911 km<sup>2</sup></li>
+                    <li>
+                      Land cover:
+                      <ul>
+                        <li>45% urban</li>
+                        <li>47% rural</li>
+                        <li>8% forest</li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <p><strong style={{color: "#6060B0"}}>Don River:</strong></p>
+                  <ul>
+                    <li>Area: 360 km<sup>2</sup></li>
+                    <li>
+                      Land cover:
+                      <ul>
+                        <li>92% urban</li>
+                        <li>8% rural</li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <p><strong style={{color: "#909000"}}>Mimico and Etobicoke Creeks:</strong></p>
+                  <ul>
+                    <li>Area: 244 km<sup>2</sup></li>
+                    <li>
+                      Land cover:
+                      <ul>
+                        <li>80% urban</li>
+                        <li>20% rural</li>
+                      </ul>
+                    </li>
+                  </ul>
+
                 </span>
               </Tab>
 
