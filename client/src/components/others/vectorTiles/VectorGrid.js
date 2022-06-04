@@ -16,29 +16,28 @@ const VectorGrid = ({ settings, url }) => {
   const { varsState, setVarState } = useContext(VarsState);
 
   function getColor(value) {
-    if (value <= 0.91) {
-      return "#462EB9";
-    } else if (value <= 10) {
-      return "#3F63CF";
-    } else if (value <= 30) {
-      return "#4C90C0";
-    } else if (value <= 60) {
-      return "#63AC9A";
-    } else if (value <= 120) {
-      return "#83BA70";
-    } else if (value <= 150) {
-      return "#AABD52";
-    } else if (value <= 220) {
-      return "#CEB541";
-    } else if (value <= 350) {
-      return "#CEB541";
-    } else if (value <= 480) {
-      return "#E49938";
-    } else if (value <= 520) {
-      return "#E4632E";
-    } else if (value <= 99999) {
-      return "#DB2122";
+    if (value <= 0.5) {
+      return "#0000FF";
+    } else if (value <= 1) {
+      return "#00FF00";
+    } else if (value <= 1.5) {
+      return "#FFFF00";
+    } else if (value <= 2) {
+      return "#FFA500";
+    } else if (value <= 2.5) {
+      return "#FF0000";
+    } else if (value <= 3) {
+      return "#6a0dad";
+    } else {
+      return "#964B00";
     }
+    // } else if (value <= 480) {
+    //   return "#E49938";
+    // } else if (value <= 520) {
+    //   return "#E4632E";
+    // } else if (value <= 99999) {
+    //   return "#DB2122";
+    // }
   }
 
   function styleFunction(properties) {
@@ -50,24 +49,28 @@ const VectorGrid = ({ settings, url }) => {
     // 5 -> 8
     // 6 -> 7
     // 7 -> 6
-    var horton =
-      properties[settings.stream_network.vector_attributes.stream_order];
+    var horton = properties["ORD_STRA"];
+    // console.log(horton + varsState.domObjects.map.zoomLevel);
     let color = null;
     let weight = 0;
+    let opacity = 0;
 
-    if (horton + varsState.domObjects.map.zoomLevel >= 12) {
+    if (horton + varsState.domObjects.map.zoomLevel >= 10) {
       weight =
-        1 * 1.3 ** horton + (1 * varsState.domObjects.map.zoomLevel) / 12;
+        0.5 * 1.3 ** horton + (1 * varsState.domObjects.map.zoomLevel) / 12;
       //horton;
-      color = getColor(properties["acum"]); //settings.stream_network.default_color
+      color = getColor(properties["Q"]); //settings.stream_network.default_color
+      opacity = 1;
     } else {
       weight = 0;
       color = "r";
+      opacity = 0;
     }
 
     return {
       weight: weight,
       color: color,
+      opacity: opacity,
     };
   }
 
@@ -84,13 +87,18 @@ const VectorGrid = ({ settings, url }) => {
     vectorTileLayerStyles: vectorStyleFunctions,
     interactive: true,
     getFeatureId: function (f) {
-      const returnId =
-        f.properties[settings.stream_network.vector_attributes.id];
+      console.log(f);
+      const returnId = f.properties["OBJECTID"];
       return returnId;
     },
   };
 
-  const vectorGrid = L.vectorGrid.protobuf(url, options);
+  const vectorGrid = L.vectorGrid
+    .protobuf(url, options)
+    .on("click", function (e) {
+      console.log(e.layer);
+      L.DomEvent.stop(e);
+    });
   const container = layerContainer || map;
 
   useEffect(() => {

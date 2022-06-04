@@ -75,7 +75,7 @@ const MapControler = ({ settings }) => {
     "http://192.168.100.123:8082/river_network_rounded_date/{z}/{x}/{y}.pbf";
 
   const [url, setUrl] = useState(
-    "http://192.168.100.123:8082/river_network_rounded/{z}/{x}/{y}.pbf"
+    "http://192.168.100.123:443/prueba/mvt/{z}/{x}/{y}.pbf"
   );
 
   const urls = [
@@ -107,7 +107,7 @@ const MapControler = ({ settings }) => {
     };
   }, [url]);
 
-  console.log(url);
+  // console.log(url);
 
   return (
     <>
@@ -121,6 +121,7 @@ const MapControler = ({ settings }) => {
         <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
           {/* adds base layer */}
+
           <BaseLayers baseLayerData={baseLayersData} />
 
           {/* adds layer of points as a react component */}
@@ -139,8 +140,12 @@ const MapControler = ({ settings }) => {
           ) : (
             <></>
           )} */}
-
-          <VectorGrid settings={settings} url={url} />
+          <VectorGrid
+            settings={settings}
+            url={
+              "http://192.168.100.123:8082/resultados_simulacion/20220330220000/{z}/{x}/{y}.pbf"
+            }
+          />
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
