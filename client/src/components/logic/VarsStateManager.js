@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { cloneDeep } from 'lodash';
+import axios from "axios"
+import useSWR from "swr"
 
 // import recoil to replace contexts
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -49,6 +51,28 @@ const VarsStateManager = ({ settings, consFixed }) => {
             setAtVarStateLocations(atmVarStateLocations)
         }
     }, [atomVarStateDomTimeSeriesData]);
+
+    /*
+    // when timeseries URL is changed, 
+    useEffect(() => {
+
+        const newUrl = atsVarStateLib.getTimeSeriesUrl(atomVarStateDomTimeSeriesData)
+        const fetcher = (url) => axios.get(url).then((res) => res.data)
+        console.log("~~New TimeSeriesData URL:", newUrl)
+
+        // TODO: check if URL is in the cache
+        if (true) {
+            // TODO: URL response not in the cache -> trigger request
+            const { data: apiData, error } = useSWR(newUrl, fetcher, { suspense: true })
+            if (error) { console.log("~~~ Got Error.") }
+            if (!apiData) { console.log("~~~ Got no API data.") }
+
+        } else {
+            // TODO: already there, trigger update in the tab
+        }
+
+    }, [atsVarStateLib.getTimeSeriesUrl(atomVarStateDomTimeSeriesData)])
+    */
 
     // ** VarStateDomMap ***********************************************************************
 

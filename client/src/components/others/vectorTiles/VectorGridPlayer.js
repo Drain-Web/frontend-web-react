@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DomEvent } from "leaflet";
-import { Col, Container, Row, CloseButton } from "react-bootstrap";
+import { Col, Container, Row, CloseButton, Button } from "react-bootstrap";
 import RangeSlider from 'react-bootstrap-range-slider';
-import dateFormat, { masks } from "dateformat";
+import dateFormat from "dateformat";
 import { useRecoilState } from "recoil";
 import { cloneDeep } from 'lodash';
 
@@ -249,6 +249,7 @@ const VectorGridPlayer = ({ settings }) => {
     // ** SET HOOKS ****************************************************************************
 
     // Get atoms
+    const [isVisible, setIsVisible] = useState(true)
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] =
         useRecoilState(atVarStateVectorGridAnimation)
     const [atomVarStateVectorGridMode, setAtVarStateVectorGridMode] =
@@ -256,9 +257,7 @@ const VectorGridPlayer = ({ settings }) => {
 
     // Avoid click propagation
     const divRef = useRef(null);
-    useEffect(() => {
-        DomEvent.disableClickPropagation(divRef.current);
-    })
+    useEffect(() => { DomEvent.disableClickPropagation(divRef.current); })
 
     /* ** GET VARIABLES ************************************************************************ */
 
@@ -273,6 +272,15 @@ const VectorGridPlayer = ({ settings }) => {
     }
 
     /* ** RENDER ******************************************************************************* */
+
+    // TODO: create an way to 'reopen' it
+    // check if it is shown
+    if (!isVisible) {
+        return (<div className={`leaflet-control leaflet-bar`} ref={divRef}>
+            <Button onClick={() => { setIsVisible(true) }} > + </Button>
+        </div>)
+    }
+
     return (
         <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar`} ref={divRef}>
             <Container className={`${ownStyles.content}`} >
@@ -296,7 +304,7 @@ const VectorGridPlayer = ({ settings }) => {
                         </span>
                     </Col>
                     <Col xs={2} md={2} lg={2}>
-                        <CloseButton onClick={() => { console.log("Close me.") }} />
+                        <CloseButton onClick={() => { setIsVisible(false) }} />
                     </Col>
                 </Row>
                 <Row><Col>

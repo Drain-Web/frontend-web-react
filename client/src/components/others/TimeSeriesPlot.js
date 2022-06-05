@@ -77,14 +77,10 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
         };
       });
 
-    console.log(plotArrayAux);
-
     setAvailableVariables(
       plotArrayAux
         .map((serie) => serie.name.slice(0, 1))
         .filter((v, i, a) => a.indexOf(v) === i)
-      // .sort()
-      // .reverse()
     );
 
     setUnitsVariables(
@@ -97,7 +93,7 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
     setPlotArray(plotArrayAux);
   };
 
-  useEffect(() => getPlotData(), [timeSeriesUrl]);
+  useEffect(getPlotData, [timeSeriesUrl]);
 
   return (
     <>

@@ -2,21 +2,14 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 
+// ** AUX FUNCTIONS ****************************************************************************
+
 // 
 const createBasicPlotLayoutDict = (plotData) => {
   return {
     title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
-    font: {
-      family: "Arial",
-      size: 16
-    },
-    legend: {
-      x: 1.05,
-      y: 1.00,
-      font: {
-        size: 12
-      }
-    },
+    font: { family: "Arial", size: 16 },
+    legend: { x: 1.05, y: 1.00, font: { size: 12 } },
     showlegend: true
   }
 }
@@ -44,6 +37,8 @@ const getPlotLayoutDict2vars = (availableVariables, unitsVariables, baseDict) =>
 }
 
 
+// ** COMPONENT ********************************************************************************
+
 const TimeSeriesPlotLayouts = ({
   plotArray,
   plotData,
@@ -51,23 +46,19 @@ const TimeSeriesPlotLayouts = ({
   unitsVariables,
   thresholdsArray
 }) => {
-  const updatemenus = [
-    {
+  const updatemenus = [{
       visible: true,
       anchor: "top",
-      buttons: [
-        {
-          method: "restyle",
-          args: [{ "line.color": "red" }],
-          label: "red",
-        },
-        {
-          method: "restyle",
-          args: [{ "line.color": "blue" }],
-          label: "blue",
-        },
-      ],
-    },
+      buttons: [{
+        method: "restyle",
+        args: [{ "line.color": "red" }],
+        label: "red",
+      }, {
+        method: "restyle",
+        args: [{ "line.color": "blue" }],
+        label: "blue",
+      }
+    ]}
   ];
 
   // build layout attributes dictionary

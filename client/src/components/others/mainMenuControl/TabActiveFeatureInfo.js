@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import { apiUrl } from "../../../libs/api.js";
@@ -70,7 +70,6 @@ const getLocationInfoDiv = (activeLocation, settings, atomVarStateContext,
     setAtVarStateDomTimeseriesPanel(atmVarStateDomTimeseriesPanel)
     
     // put url to load
-    console.log("PASSING 2:", JSON.stringify(atmVarStateDomTimeSeriesData))
     atsVarStateLib.setTimeSerieUrl(timeseriesUrl, atmVarStateDomTimeSeriesData)
     setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
@@ -129,7 +128,6 @@ export const TabActiveFeatureInfo = ({ settings }) => {
 
   // ** MAIN RENDER  ***************************************************************************
   if (atomVarStateActiveLocation) {
-    console.log("PASSING 1:", JSON.stringify(atmVarStateDomTimeSeriesData))
     return getLocationInfoDiv(atomVarStateActiveLocation, settings, atomVarStateContext,
                               atmVarStateDomTimeseriesPanel, setAtVarStateDomTimeseriesPanel,
                               atmVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData,

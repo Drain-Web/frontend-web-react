@@ -1,14 +1,21 @@
 import React, { useEffect, useState, useContext } from "react"
 import { apiUrl } from '../../../libs/api.js'
-import useSWR from "swr"
+import { cloneDeep } from 'lodash';
 import axios from "axios"
+import useSWR from "swr"
 
-import VarsState from "../../contexts/VarsState"
-import varsStateLib from "../../contexts/varsStateLib"
+// import recoil to replace contexts
+import { useRecoilState, useRecoilValue } from "recoil";
+
 import ConsFixed from "../../contexts/ConsFixed";
 import consFixedLib from "../../contexts/consFixedLib"
 import ConsCache from "../../contexts/ConsCache"
 import consCacheLib from "../../contexts/consCacheLib"
+
+// atoms
+import { atVarStateDomTimeSeriesData, atVarStateActiveLocation, atVarStateContext } 
+  from "../../atoms/atsVarState.js";
+import atsVarStateLib from "../../atoms/atsVarStateLib";
 
 function filterByValue(array, string) {
   return array.filter((o) =>
@@ -18,21 +25,58 @@ function filterByValue(array, string) {
   );
 }
 
+// ** SUPPORT FUNCTION  ************************************************************************
+
+//
+const rearrangeSeries = (series) => {
+  const objData = {}
+
+  objData.datetime = series.events.map((timeStep) => {
+    return timeStep.date + ' ' + timeStep.time
+  })
+
+  objData.value = series.events.map((timeStep) => {
+    return timeStep.value
+  })
+
+  objData.properties = series.header
+  objData.thresholdValueSets = series.thresholdValueSets
+
+  return objData
+}
+
+
 const LoadTimeSeriesData = ({ settings }) => {
 
+  // ** GET ATOMS AND CONTEXTS *****************************************************************
+
   // Get global states and set local states
-  const { varsState, setVarState } = useContext(VarsState)
   const { consCache } = useContext(ConsCache)
   const { consFixed } = useContext(ConsFixed)
   const setPlotData = useState(null)[1]
 
+  // get atoms
+  const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] =
+    useRecoilState(atVarStateDomTimeSeriesData)
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+  const [atomVarStateActiveLocation, setAtVarStateActiveLocation] = 
+    useRecoilState(atVarStateActiveLocation)
+    
   const fetcher = (url) => axios.get(url).then((res) => res.data)
 
-  const { data: apiData, error } = useSWR(varsStateLib.getTimeSerieUrl(varsState), fetcher, {
-    suspense: true
-  })
+  // performs the HTTP request
+  const { data: apiData, error } = useSWR(
+    atsVarStateLib.getTimeSeriesUrl(atomVarStateDomTimeSeriesData), fetcher, { suspense: true })
 
-  useEffect(() => getTimeSeriesData(), [varsStateLib.getTimeSerieUrl(varsState)])
+  // TODO: move somewhere else
+  // updates the atom content after HTTP request is responded
+  /*
+  useEffect(() => {
+
+  }, [])
+  */
+
+  // ** MAIN RENDER ****************************************************************************
 
   if (error) return <div>failed to load</div>
   if (!apiData) return <div>loading...</div>
@@ -40,33 +84,12 @@ const LoadTimeSeriesData = ({ settings }) => {
   // Aux variables to set data used for plots
   let timeSeriesPlotDataAux
   let timeSeriesPlotArrayAux
-  let timeSeriesThresholdsArrayAux
-
-  //
-  const rearrangeSeries = (series) => {
-    const objData = {}
-
-    objData.datetime = series.events.map((timeStep) => {
-      return timeStep.date + ' ' + timeStep.time
-    })
-
-    objData.value = series.events.map((timeStep) => {
-      return timeStep.value
-    })
-
-    objData.properties = series.header
-
-    objData.thresholdValueSets = series.thresholdValueSets
-
-    return objData
-  }
 
   //
   const reorder = (arr) => {
 
     // get the parameter group ids
-    const parameterGroupIds = arr
-      .map((serie) => {
+    const parameterGroupIds = arr.map((serie) => {
         const parameterId = serie.properties.parameterId;
         return consFixedLib.getParameterGroupOfParameterId(parameterId, consFixed);
       })
@@ -102,6 +125,10 @@ const LoadTimeSeriesData = ({ settings }) => {
   // 
   // return: Dict with {"parameterGroupId": [timeseries plot arguments]}
   const getPlotArrays = (plotData) => {
+
+    // only proceed with data available
+    if (!plotData) { return (null) }
+
     const parameterGroupIds = Object.keys(plotData);
 
     let obj = {};
@@ -254,7 +281,7 @@ const LoadTimeSeriesData = ({ settings }) => {
   }
 
   const getModelEvaluationMetrics = (timeSerieUrl, plotData, settings) => {
-    let variables = Object.keys(plotData);                                      // TODO: the "variables" are "ParameterGroups"
+    let parameterGroups = Object.keys(plotData);
     let metricsUrl = null;
     let metrics = {};
     let filter;
@@ -263,11 +290,11 @@ const LoadTimeSeriesData = ({ settings }) => {
     let locationId;
 
     let obj = {};
-    for (let variable of variables) {
+    for (let variable of parameterGroups) {
       obj[variable] = [];
     }
 
-    for (let variable of variables) {
+    for (let variable of parameterGroups) {
       for (let entry of plotData[variable]) {
         if (entry.properties.parameterId.split(".")[0] == variable) {           // TODO: this should come from ConsFixed
           obj[variable].push(entry.properties.moduleInstanceId);
@@ -277,11 +304,11 @@ const LoadTimeSeriesData = ({ settings }) => {
     }
 
     // get basic meta information
-    filter = varsStateLib.getContextFilterId(varsState)
-    locationId = varsStateLib.getActiveLocation(varsState).locationId
+    filter = atsVarStateLib.getContextFilterId(atomVarStateContext)
+    locationId = atomVarStateActiveLocation.locationId
 
     // get the metric values for each ParameterGroup
-    for (let variable of variables) {
+    for (let variable of parameterGroups) {
 
       simModuleInstanceIds = plotData[variable]
         .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))  // TODO: this should come from settings
@@ -331,33 +358,42 @@ const LoadTimeSeriesData = ({ settings }) => {
 
     timeSeriesPlotDataAux = reorder(timeSeriesPlotDataAux)
 
-    varsStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, varsState)
-    setPlotData(timeSeriesPlotDataAux)
+    // 
+    const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
+    atsVarStateLib.setTimeSeriesPlotData(timeSeriesPlotDataAux, atmVarStateDomTimeSeriesData)
 
-    timeSeriesPlotArrayAux = await getPlotArrays(
-      varsState.domObjects.timeSeriesData.plotData
-    )
+    // 
+    timeSeriesPlotArrayAux = getPlotArrays(timeSeriesPlotDataAux)
+    
+    if (!timeSeriesPlotArrayAux) { return(null) }
 
-    // update states and force re-rendering
-    varsStateLib.setTimeSeriesPlotArrays(timeSeriesPlotArrayAux, varsState)
-    varsStateLib.setTimeSeriesPlotUnitsVariables(
-      getUnitsVariables(timeSeriesPlotDataAux), varsState)
-    varsStateLib.setTimeSeriesPlotAvailableVariables(
-      getAvailableVariables(timeSeriesPlotDataAux), varsState)
+    // update states related to timeseries
+    atsVarStateLib.setTimeSeriesPlotArrays(
+      timeSeriesPlotArrayAux,
+      atmVarStateDomTimeSeriesData)
+    atsVarStateLib.setTimeSeriesPlotUnitsVariables(
+      getUnitsVariables(timeSeriesPlotDataAux),
+      atmVarStateDomTimeSeriesData)
+    atsVarStateLib.setTimeSeriesPlotAvailableVariables(
+      getAvailableVariables(timeSeriesPlotDataAux),
+      atmVarStateDomTimeSeriesData)
 
-    /*
-      setThresholdsArray(getPlotThresholdsArrays(timeSeriesPlotDataAux));
-      setModelEvaluationMetricsUrls(
-        getModelEvaluationMetricsUrls(timeSerieUrl, timeSeriesPlotDataAux)
-      );
-    */
-    varsStateLib.setTimeSeriesPlotThresholdsArray(
-      getPlotThresholdsArrays(timeSeriesPlotDataAux), varsState)
-    varsStateLib.setTimeSeriesPlotModelEvaluationMetrics(
-      getModelEvaluationMetrics(varsStateLib.getTimeSerieUrl(varsState), timeSeriesPlotDataAux, settings), varsState)
+    // update states relate to thresholds
+    atsVarStateLib.setTimeSeriesPlotThresholdsArray(
+      getPlotThresholdsArrays(timeSeriesPlotDataAux),
+      atmVarStateDomTimeSeriesData)
 
-    setVarState(Math.random())
+    // update states relate to evalation metrics
+    atsVarStateLib.setTimeSeriesPlotModelEvaluationMetrics(
+      getModelEvaluationMetrics(atsVarStateLib.getTimeSerieUrl(atmVarStateDomTimeSeriesData),
+                                timeSeriesPlotDataAux, settings),
+      atmVarStateDomTimeSeriesData)
+
+    setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
+
+  useEffect(getTimeSeriesData, 
+            [atsVarStateLib.getTimeSerieUrl(atomVarStateDomTimeSeriesData)])
 
   return null
 }

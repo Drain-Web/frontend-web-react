@@ -4,9 +4,6 @@ import { useRecoilState } from "recoil";
 
 import { cloneDeep } from "lodash";
 
-// import VarsState from "../contexts/VarsState";
-// import varsStateLib from "../contexts/varsStateLib";
-
 import atsVarStateLib from "../atoms/atsVarStateLib";
 import { atVarStateDomMap } from "../atoms/atsVarState";
 

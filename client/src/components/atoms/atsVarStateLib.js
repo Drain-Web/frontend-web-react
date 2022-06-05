@@ -182,9 +182,38 @@ const getTimeSerieUrl = (atVarStateDomTimeSeriesData) => {
 }
 
 //
+const getTimeSeriesUrl = getTimeSerieUrl
+
+//
 const setContextFilterId = (newFilterId, atVarStateContext, atVarStateDomTimeSeriesData) => {
   atVarStateContext.filterId = newFilterId
   _updateTimeSerieUrlByFilterId(newFilterId, atVarStateDomTimeSeriesData)
+}
+
+//
+const setTimeSeriesPlotArrays = (newPlotArrays, atVarStateDomTimeSeriesData) => {
+  atVarStateDomTimeSeriesData.plotArrays = newPlotArrays
+}
+
+// Set the data to be used for plots
+const setTimeSeriesPlotData = (newPlotData, atVarStateDomTimeSeriesData) => {
+  atVarStateDomTimeSeriesData.plotData = newPlotData
+}
+
+//
+const setTimeSeriesPlotModelEvaluationMetrics = (newEvaluationMetrics,
+                                                 atVarStateDomTimeSeriesData) => {
+  atVarStateDomTimeSeriesData.evaluationMetrics = newEvaluationMetrics
+}
+
+//
+const setTimeSeriesPlotThresholdsArray = (newThresholdsArray, atVarStateDomTimeSeriesData) => {
+  atVarStateDomTimeSeriesData.thresholdsArray = newThresholdsArray
+}
+
+//
+const setTimeSeriesPlotUnitsVariables = (newUnitsVariables, atVarStateDomTimeSeriesData) => {
+  atVarStateDomTimeSeriesData.unitsVariables = newUnitsVariables
 }
 
 // 
@@ -525,6 +554,7 @@ const atsVarStateLib = {
   getTimeSeriesPlotAvailableVariables: getTimeSeriesPlotAvailableVariables,
   getTimeSeriesPlotData: getTimeSeriesPlotData,
   getTimeSerieUrl: getTimeSerieUrl,
+  getTimeSeriesUrl: getTimeSeriesUrl,
   getVectorGridAnimationCurrentFrameIdx: getVectorGridAnimationCurrentFrameIdx,
   getVectorGridAnimationInterval: getVectorGridAnimationInterval,
   getVectorGridAnimationIsRunning: getVectorGridAnimationIsRunning, 
@@ -542,6 +572,11 @@ const atsVarStateLib = {
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMapZoomLevel: setMapZoomLevel,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
+  setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,
+  setTimeSeriesPlotData: setTimeSeriesPlotData,
+  setTimeSeriesPlotModelEvaluationMetrics: setTimeSeriesPlotModelEvaluationMetrics,
+  setTimeSeriesPlotThresholdsArray: setTimeSeriesPlotThresholdsArray,
+  setTimeSeriesPlotUnitsVariables: setTimeSeriesPlotUnitsVariables,
   setTimeSerieUrl: setTimeSerieUrl,
   setUniformIcon: setUniformIcon,
   setVectorGridAnimationCurrentFrameIdx: setVectorGridAnimationCurrentFrameIdx,

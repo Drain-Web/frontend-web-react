@@ -17,7 +17,6 @@ import MetricsTable from "./MetricsTable";
 // import contexts
 import ConsCache from '../contexts/ConsCache.js'
 import consCacheLib from '../contexts/consCacheLib'
-import ConsFixed from '../contexts/ConsFixed.js'
 
 // context and atoms
 import atsVarStateLib from "../atoms/atsVarStateLib";
@@ -99,13 +98,16 @@ const metricMatrixTab = (id, consCache) => {
 
 //
 const timeseriesTab = (parameterGroupId, timeSeriesData) => {
+
+  // define tab content
+  const tabContent = (!timeSeriesData.plotData) ?
+                     (<div>No timeseries data!</div>) :
+                     showTimeseriesPlot(parameterGroupId, timeSeriesData)
+
+  // build object
   return (
-    <Tab
-      eventKey={parameterGroupId}
-      title={parameterGroupId}
-      key={parameterGroupId}
-    >
-      {showTimeseriesPlot(parameterGroupId, timeSeriesData)}
+    <Tab eventKey={parameterGroupId} title={parameterGroupId} key={parameterGroupId}>
+      {tabContent}
     </Tab>
   );
 }
@@ -143,9 +145,7 @@ const listMetricsAndParameters = (settings) => {
     const curMetricDict = evalDict.options[curMetricId]
 
     for (const curParameterGroupId of Object.keys(curMetricDict.parameterGroups)) {
-      if (curParameterGroupId in retDict) {
-        console.log(curParameterGroupId + ' already added.')
-      } else {
+      if (!(curParameterGroupId in retDict)) {
         const curParameterIds = curMetricDict.parameterGroups[curParameterGroupId].parameters
         retDict[curParameterGroupId] = {
           parameterIdObs: curParameterIds.obs,
@@ -165,7 +165,6 @@ const getParametersAndModuleInstanceIds = (atomVarStateDomTimeSeriesData, parame
   /*
    * return {"parameterId": [moduleInstanceId, ...]}
    */
-  // const plotData = varsStateLib.getTimeSeriesPlotData(varsState)
   const plotData = atsVarStateLib.getTimeSeriesPlotData(atomVarStateDomTimeSeriesData)
 
   if (!plotData) { return null }
@@ -178,9 +177,7 @@ const getParametersAndModuleInstanceIds = (atomVarStateDomTimeSeriesData, parame
     if (!(curParameterId in returnDict)) {
       returnDict[curParameterId] = new Set()
     }
-    returnDict[curParameterId].add(
-      curTimeseriesDict.properties.moduleInstanceId
-    )
+    returnDict[curParameterId].add(curTimeseriesDict.properties.moduleInstanceId)
   }
 
   // turn the sets into arrays
@@ -212,8 +209,6 @@ const DraggableTimeseriesDiv = ({ settings }) => {
   // ** MAIN RENDER  ***************************************************************************
 
   const timeSeriesPlotAvailableVariables = atsVarStateLib.getTimeSeriesPlotAvailableVariables(atomVarStateDomTimeSeriesData)
-
-  console.log("atsVarStateLib.getTimeSerieUrl:", atsVarStateLib.getTimeSerieUrl(atomVarStateDomTimeSeriesData))
 
   return (
     <div
@@ -254,6 +249,7 @@ const DraggableTimeseriesDiv = ({ settings }) => {
       <div className='close-button'>
         <CloseButton
           onClick={() => {
+            const atmVarStateDomTimeseriesPanel = cloneDeep(atomVarStateDomTimeseriesPanel)
             atsVarStateLib.hidePanelTabs(atmVarStateDomTimeseriesPanel)
             setAtVarStateDomTimeseriesPanel(atmVarStateDomTimeseriesPanel)
           }}

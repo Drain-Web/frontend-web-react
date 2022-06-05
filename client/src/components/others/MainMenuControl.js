@@ -10,17 +10,13 @@ import { cloneDeep } from 'lodash';
 // import custom components
 import { TabFilters } from "./mainMenuControl/TabFilters";
 import { TabActiveFeatureInfo } from "./mainMenuControl/TabActiveFeatureInfo";
-// import OpenCloseButton from "./mainMenuControl/OpenCloseButton";
 
 // import atoms
 import atsVarStateLib from "../atoms/atsVarStateLib"
-import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations } from
-  "../atoms/atsVarState";
+import { atVarStateDomMainMenuControl } from "../atoms/atsVarState";
 
 // import contexts
 import ConsFixed from "../contexts/ConsFixed";
-import VarsState from "../contexts/VarsState";
-import varsStateLib from "../contexts/varsStateLib";
 
 // import CSS styles
 import ownStyles from "../../style/MainMenuControl.module.css";
@@ -35,14 +31,11 @@ const MainMenuControl = ({ settings, position }) => {
   // ** SET HOOKS ******************************************************************************
   const { consFixed } = useContext(ConsFixed);
 
-  const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] = 
+  const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] =
     useRecoilState(atVarStateDomMainMenuControl)
 
   // Get global states and set local states
-  const { varsState, setVarState } = useContext(VarsState);
-  const [showMe, setShowMe] = useState(
-    varsStateLib.getMainMenuControlShow(varsState)
-  )
+  const [isVisible, setIsVisible] = useState(true)
 
   const divRef = useRef(null);
 
@@ -50,65 +43,21 @@ const MainMenuControl = ({ settings, position }) => {
     DomEvent.disableClickPropagation(divRef.current);
   })
 
-  useEffect(() => {
-    console.log('Should update. Now in:', varsState.domObjects.mainMenuControl.activeTab)
-  }, [
-    varsState.context,
-    varsState.domObjects.mainMenuControl.activeTab
-  ])
-
   const remValue = useRemValue()
 
   const contentProps = useSpring({
-    marginLeft: showMe ? 1 : -18 * remValue
+    marginLeft: isVisible ? 1 : -16 * remValue
   })
-
-  const OpenCloseButtonOnly = () => {
-
-    const createCloseButton = () => {
-      return (
-        <CloseButton
-            onClick={() => {
-              varsStateLib.toggleMainMenuControl(varsState);
-              setShowMe(varsStateLib.getMainMenuControlShow(varsState));
-            }}
-          />
-      )
-    }
-
-    const createOpenButton = () => {
-      return (
-        <Button
-          onClick={() => {
-            varsStateLib.hidePanelTabs(varsState);
-            setVarState(Math.random());
-          }}
-        >
-          -
-        </Button>)
-    }
-
-    if (varsStateLib.getMainMenuControlShow(varsState)) {
-      return createCloseButton()
-    } else {
-      return createOpenButton()
-    }
-  }
 
   // ** FUNCTIONS ******************************************************************************
 
   const tabOnSelect = (selectedTab) => {
-    // varsStateLib.setMainMenuControlActiveTab(selectedTab, varsState)
-    console.log("Setting change...")
     const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl);
     atsVarStateLib.setMainMenuControlActiveTab(selectedTab, atmVarStateDomMainMenuControl)
     setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
-    console.log(" ...change set.")
   }
 
   // ** MAIN RENDER ****************************************************************************
-
-  // activeKey1={varsStateLib.getMainMenuControlActiveTab(varsState)}
 
   // build content of the menu
   const menuContent = (
@@ -120,7 +69,11 @@ const MainMenuControl = ({ settings, position }) => {
               <h1>{consFixed.region.systemInformation.name}</h1>
             </Col>
             <Col xs={2} md={2} lg={2} className="text-right" >
-              <OpenCloseButtonOnly />
+              {
+                (isVisible) ?
+                (<CloseButton onClick={() => { setIsVisible(false) }}/>) :
+                (<Button onClick={() => { setIsVisible(true) }}>+</Button>)
+              } 
             </Col>
           </Row>
           <Row>
@@ -132,7 +85,7 @@ const MainMenuControl = ({ settings, position }) => {
             <Tabs
               className="mb-2"
               defaultActiveKey={atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)}
-              activeKey={atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl) }
+              activeKey={atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)}
               onSelect={tabOnSelect}
             >
               <Tab
@@ -145,7 +98,7 @@ const MainMenuControl = ({ settings, position }) => {
                 </p>
                 <span className="popuptext">
                   <p>Four major stream systems compose the GTA.</p>
-                  <p><strong style={{color: "#900090"}}>Humber River:</strong></p>
+                  <p><strong style={{ color: "#900090" }}>Humber River:</strong></p>
                   <ul>
                     <li>Area: 911 km<sup>2</sup></li>
                     <li>
@@ -157,7 +110,7 @@ const MainMenuControl = ({ settings, position }) => {
                       </ul>
                     </li>
                   </ul>
-                  <p><strong style={{color: "#6060B0"}}>Don River:</strong></p>
+                  <p><strong style={{ color: "#6060B0" }}>Don River:</strong></p>
                   <ul>
                     <li>Area: 360 km<sup>2</sup></li>
                     <li>
@@ -168,7 +121,7 @@ const MainMenuControl = ({ settings, position }) => {
                       </ul>
                     </li>
                   </ul>
-                  <p><strong style={{color: "#909000"}}>Mimico and Etobicoke Creeks:</strong></p>
+                  <p><strong style={{ color: "#909000" }}>Mimico and Etobicoke Creeks:</strong></p>
                   <ul>
                     <li>Area: 244 km<sup>2</sup></li>
                     <li>
@@ -197,7 +150,6 @@ const MainMenuControl = ({ settings, position }) => {
                 <TabActiveFeatureInfo
                   settings={settings}
                 // filtersData={consFixed['filters']}
-                // overviewFilter={settings.overviewFilter}
                 />
               </Tab>
             </Tabs>
@@ -205,16 +157,6 @@ const MainMenuControl = ({ settings, position }) => {
         </Container>
       </animated.div>
 
-      {/* 
-      <div
-        className={ownStyles.buttonSlide}
-        onClick={() => {
-          varsStateLib.toggleMainMenuControl(varsState);
-          setShowMe(varsStateLib.getMainMenuControlShow(varsState));
-        }}
-      >
-        {varsStateLib.getMainMenuControlShow(varsState) ? "◀" : "▶"}
-      </div> */}
     </>
   );
 
