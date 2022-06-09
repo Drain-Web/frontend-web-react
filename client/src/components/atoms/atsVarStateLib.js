@@ -1,4 +1,5 @@
 import consCacheLib from "../contexts/consCacheLib"
+import consFixedLib from "../contexts/consFixedLib"
 
 /*
  * Functions here are used to change VarState atoms consistently.
@@ -242,6 +243,24 @@ const setMapZoomLevel = (newZoomLevel, atVarStateDomMap) => {
 // ** PUBLIC FUNCTION - DomMapLegend ***********************************************************
 
 //
+const getMapLegendIcons = (atVarStateDomMapLegend) => {
+  return {
+    icons: atVarStateDomMapLegend.iconsUrls,
+    titles: atVarStateDomMapLegend.iconsTitles
+  }
+}
+
+//
+const getMapLegendSubtitle = (atVarStateDomMapLegend) => {
+  return atVarStateDomMapLegend.subtitle
+}
+
+//
+const getMapLegendVisibility = (atVarStateDomMapLegend) => {
+  return atVarStateDomMapLegend.display
+}
+
+//
 // param icons: Dictionary with 'description' as key and 'iconUrl' as value
 // param iconsOrder: List with sequential keys of 'icons' param; or null for any order.
 const setMapLegendIcons = (icons, iconsOrder, atVarStateDomMapLegend) => {
@@ -337,8 +356,8 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
                                   atVarStateDomMapLegend, consCache, settings)
       console.log('Should have updated by Uniform')  // TODO: remove it
     } else if (contextIconType === 'evaluation') {
-      _updateLocationIconsEvaluation(atVarStateContext, atVarStateLocations,
-                                     atVarStateDomMapLegend, consCache, settings)
+      _updateLocationIconsEvaluation(atVarStateLocations, atVarStateDomMapLegend, consCache,
+                                     settings)
       console.log('Should have updated by Evaluation')  // TODO: remove it
     } else if (contextIconType === 'alerts') {
       _updateLocationIconsAlerts(atVarStateContext, atVarStateLocations, atVarStateDomMapLegend,
@@ -376,6 +395,67 @@ const _replaceUrlParam = (url, paramName, paramValue) => {
 
 const _showAllLocationIcons = (atVarStateLocations) => {
   for (const lcId in atVarStateLocations) { atVarStateLocations[lcId].display = true }
+}
+
+
+const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLegend, consCache,
+                                        settings) => {
+  // get last response
+  const lastUrlResponseData = consCacheLib.getEvaluationLastResponseData(consCache)
+  if (!lastUrlResponseData) { return }
+
+  // get basic icons info
+  const lastUrlMetric = lastUrlResponseData.metric
+  const lastUrlOptions = settings.locationIconsOptions.evaluation.options[lastUrlMetric]
+  const iconOptions = lastUrlOptions.parameterGroups['Discharge']                               // TODO: make it flexible
+
+  // iterate location by location, showing/hiding icons
+  for (const locationId in atVarStateLocations) {
+    // hide if not available in response
+    if (!lastUrlResponseData.locations[locationId]) {
+      atVarStateLocations[locationId].display = false
+      continue
+    } else {
+      atVarStateLocations[locationId].display = true
+
+      // define de evaluation icon
+      let iconUrl = null
+      let rangeTopIdx = 1
+      while (rangeTopIdx < iconOptions.ranges.length) {
+        const curTopVal = iconOptions.ranges[rangeTopIdx]
+        if ((!curTopVal) || (lastUrlResponseData.locations[locationId].value <= curTopVal)) {
+          iconUrl = iconOptions.icons[rangeTopIdx - 1]
+          break
+        }
+        rangeTopIdx += 1
+      }
+      atVarStateLocations[locationId].icon = iconUrl
+    }
+  }
+
+  // define items in legend
+  const [iconsLegend, iconsLegendSeq] = [{}, []]
+  let rangeTopIdx = 1
+  while (rangeTopIdx < iconOptions.ranges.length) {
+    const rangeLw = iconOptions.ranges[rangeTopIdx - 1]
+    const rangeUp = iconOptions.ranges[rangeTopIdx]
+    let curLabel = null
+    if (rangeLw && rangeUp) {
+      curLabel = rangeLw + ' ~ ' + rangeUp
+    } else if (rangeLw && !rangeUp) {
+      curLabel = '>' + rangeLw
+    } else if (rangeUp && !rangeLw) {
+      curLabel = '<' + rangeUp
+    }
+    iconsLegendSeq.push(curLabel)
+    iconsLegend[curLabel] = iconOptions.icons[rangeTopIdx - 1]
+    rangeTopIdx += 1
+  }
+
+  // update legend
+  setMapLegendSubtitle('Evaluation:', atVarStateDomMapLegend)
+  setMapLegendIcons({ Location: settings.generalLocationIcon }, null, atVarStateDomMapLegend)
+  setMapLegendVisibility(false, atVarStateDomMapLegend)
 }
 
 
@@ -432,7 +512,13 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
   // get all timeseries of filterId of selected ParameterGroup and ModuleInstanceId
   const filterId = getContextFilterId(atVarStateContext)
   const moduleInstanceId = getContextIconsArgs('alerts', atVarStateContext).moduleInstanceId
+
+  // get threshold group group and check it
   const thresholdGroupId = getContextIconsArgs('alerts', atVarStateContext).thresholdGroupId
+  if (!thresholdGroupId) {
+    console.warn("No thresholdGroupId gotten from", atVarStateContext)
+    return
+  }
 
   // get timeseries
   const consideredTimeseries = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
@@ -448,6 +534,8 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
   // get all info about thresh group
   const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
   const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
+
+  console.log("Got", thresholdGroupData, "from", thresholdGroupId, "and", consFixed)
 
   // get the value function of the thresh levels
   const thresholdLevelFunction = {}
@@ -548,6 +636,9 @@ const atsVarStateLib = {
   getContextIconsArgs: getContextIconsArgs,
   getContextIconsType: getContextIconsType,
   getLastActiveTab: getLastActiveTab,
+  getMapLegendIcons: getMapLegendIcons,
+  getMapLegendSubtitle: getMapLegendSubtitle,
+  getMapLegendVisibility: getMapLegendVisibility,
   getMapZoomLevel: getMapZoomLevel,
   getMainMenuControlActiveTab: getMainMenuControlActiveTab,
   getPanelTabsShow: getPanelTabsShow,

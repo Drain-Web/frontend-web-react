@@ -1,39 +1,37 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { DomEvent } from "leaflet";
+import { useRecoilValue } from "recoil";
 
-// import contexts
-import VarsState from "../contexts/VarsState";
-import varsStateLib from "../contexts/varsStateLib";
+// import atorms
+import atsVarStateLib from "../atoms/atsVarStateLib";
+import { atVarStateDomMapLegend } from "../atoms/atsVarState";
 
 // import CSS styles
 import ownStyles from "../../style/MapLegend.module.css";
 
-/* ** OBJ - Bootstrap div ******************************************************************** */
+// ** OBJ - Bootstrap div **********************************************************************
 
 const MapLegend = ({ settings, position }) => {
-  /* ** SET HOOKS **************************************************************************** */
+  // ** SET HOOKS ******************************************************************************
 
-  const { varsState, setVarState } = useContext(VarsState);
-
-  const legendContent = "Content";
+  const atomVarStateDomMapLegend = useRecoilValue(atVarStateDomMapLegend)
 
   const divRef = useRef(null);
-
   useEffect(() => {
-    if (divRef.current !== null) {
+    if (divRef.current !== null) { 
       DomEvent.disableClickPropagation(divRef.current);
     }
   });
 
-  /* ** MAIN RENDER ************************************************************************** */
+  // ** MAIN RENDER ****************************************************************************
 
   //
-  if (!varsStateLib.getMapLegendVisibility(varsState)) {
+  if (!atsVarStateLib.getMapLegendVisibility(atomVarStateDomMapLegend)) {
     return <></>;
   }
 
-  const allIconsUrl = varsStateLib.getMapLegendIcons(varsState).icons;
-  const allIconsTitle = varsStateLib.getMapLegendIcons(varsState).titles;
+  const allIconsUrl = atsVarStateLib.getMapLegendIcons(atomVarStateDomMapLegend).icons;
+  const allIconsTitle = atsVarStateLib.getMapLegendIcons(atomVarStateDomMapLegend).titles;
 
   //
   const allIcons = [];
@@ -48,12 +46,12 @@ const MapLegend = ({ settings, position }) => {
     );
   });
 
-  // containing div th
+  // containing div
   return (
     <div className={`${ownStyles.mainContainer} leaflet-control`}>
       <strong>Legend</strong>
       <br />
-      {varsStateLib.getMapLegendSubtitle(varsState)}
+      {atsVarStateLib.getMapLegendSubtitle(atomVarStateDomMapLegend)}
       <br />
       {allIcons}
     </div>

@@ -15,7 +15,7 @@ import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
 import VectorGridLegend from "./vectorTiles/VectorGridLegend";
 
 // import recoil to replace contexts
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 // import contexts
 import ConsCache from "../contexts/ConsCache";
@@ -40,8 +40,10 @@ const MapControler = ({ settings }) => {
 
   const atomVarStateContext = useRecoilValue(atVarStateContext)
   const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
-  const atomVarStateLocations = useRecoilValue(atVarStateLocations)
-  const atomVarStateDomMapLegend = useRecoilValue(atVarStateDomMapLegend)
+  const [atomVarStateLocations, setAtVarStateActiveLocation] =
+    useRecoilState(atVarStateLocations)
+  const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] =
+    useRecoilState(atVarStateDomMapLegend)
   const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
 
   const atmVarStateContext = cloneDeep(atomVarStateContext)
@@ -56,6 +58,8 @@ const MapControler = ({ settings }) => {
     atsVarStateLib.updateLocationIcons(atmVarStateDomMainMenuControl, atmVarStateLocations,
                                        atmVarStateContext, atmVarStateDomMapLegend,
                                        consCache, consFixed, settings)
+    setAtVarStateActiveLocation(atmVarStateLocations)
+    setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
 
   }, [atomVarStateContext,
       atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
@@ -107,6 +111,8 @@ const MapControler = ({ settings }) => {
         {/* add the main left menu */}
         <MainMenuControl settings={settings} position="leaflet-right" />
 
+        <MapLegend settings={settings} position="left" />
+
         {/*
         // TODO: bring back */}
         <VectorGridPlayer settings={settings} />
@@ -144,7 +150,6 @@ const MapControler = ({ settings }) => {
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
-        <MapLegend settings={settings} position="left" />
         
         { (atomVarStateVectorGridMode === 'animated') ? 
           (<VectorGridLegend settings={settings} />) : 
