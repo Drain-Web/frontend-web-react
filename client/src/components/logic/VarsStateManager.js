@@ -174,35 +174,54 @@ const VarsStateManager = ({ settings, consFixed }) => {
     useEffect(() => {
 
         if (atsVarStateLib.getContextIconsType(atomVarStateContext) === "alerts") {
-            const contextIconsArgs = atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext)
+            const contextIconsArgs = atsVarStateLib.getContextIconsArgs('alerts',
+                                                                        atomVarStateContext)
             let selectedThresholdGroup = contextIconsArgs.thresholdGroupId
-            const selectedModuleInstanceId = contextIconsArgs.moduleInstanceId
+            let selectedModuleInstanceId = contextIconsArgs.moduleInstanceId
+            let anyUpdate = false
+
+            const atmVarStateContext = cloneDeep(atomVarStateContext)
 
             // if no thresholdGroup selected, select one
             if (!selectedThresholdGroup) {
-                const atmVarStateContext = cloneDeep(atomVarStateContext)
                 selectedThresholdGroup = Object.keys(consFixed.thresholdGroup)[0]
                 console.log("Will set As...")
                 atsVarStateLib.setContextIcons('alerts',
                                                { thresholdGroupId: selectedThresholdGroup },
                                                atmVarStateContext)
-                setAtVarStateContext(atmVarStateContext)
+                anyUpdate = true
                 console.log(" ...set thresh group as:", selectedThresholdGroup)
             }
 
             // if no moduleInstanceId selected, select one
             if (!selectedModuleInstanceId) {
-                const moduleInstancesIds = consCacheLib.getModuleInstancesOfThreshouldGroup(selectedThresholdGroup, consCache)
-                const atmVarStateContext = cloneDeep(atomVarStateContext)
-                console.log("Modules from", selectedThresholdGroup, ":", moduleInstancesIds)
+                const moduleInstancesIds = consCacheLib.getModuleInstancesOfThreshouldGroup(
+                    selectedThresholdGroup, consCache)
                 const moduleInstanceInstanceId = Array.from(moduleInstancesIds)[0]
                 console.log("Will set Bs...")
-                atsVarStateLib.setContextIcons('alerts', { moduleInstanceId: moduleInstanceInstanceId }, atmVarStateContext)
-                setAtVarStateContext(atmVarStateContext)
-                console.log(" ...set Bs.")
-
-                return <></>
+                atsVarStateLib.setContextIcons('alerts',
+                                               { moduleInstanceId: moduleInstanceInstanceId },
+                                               atmVarStateContext)
+                anyUpdate = true
+                console.log(" ...set moduleInstanceId:", moduleInstanceInstanceId)
             }
+
+            // propagate any update if needed
+            if (anyUpdate) {
+                setAtVarStateContext(atmVarStateContext)
+            }
+
+            // if no threshold group is selected, select one
+            /*
+            if (!atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).thresholdGroupId ) {
+              const atmVarStateContext = cloneDeep(atomVarStateContext)
+              const thresholdGroup = Object.keys(consFixed.thresholdGroup)[0]
+              atsVarStateLib.setContextIcons('alerts', { thresholdGroupId: thresholdGroup },
+                                             atmVarStateContext)
+              setAtVarStateContext(atmVarStateContext)
+              console.log("Should have set selectedThresholdGroup as:", thresholdGroup)
+            }
+            */
 
         } else {
             console.log("Not refactored yet:", atsVarStateLib.getContextIconsType(atomVarStateContext))

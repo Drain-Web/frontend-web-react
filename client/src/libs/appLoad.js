@@ -9,7 +9,6 @@ import atsVarStateLib from "../components/atoms/atsVarStateLib.js";
 import ConsFixed from '../components/contexts/ConsFixed.js'
 
 // import libs
-import varsStateLib from "../components/contexts/varsStateLib.js"
 import { apiUrl } from "./api.js"
 
 // function 'fetcher' will do HTTP requests
@@ -210,15 +209,6 @@ const isStillLoadingConsFixed = (consFixed) => {
   return !allLoaded
 }
 
-// DEPRECATED: used to update VarsStateContext. Replace by 'setAtVarStateLocation()'
-const setVarsStateLocations = (consFixed, settings, varsState) => {
-  if (Object.keys(varsState.locations).length != 0) { return false }
-
-  const locationIds = consFixed['locations']['locations'].map(loc => loc['locationId']);
-  varsStateLib.addLocations(locationIds, settings.generalLocationIcon, true, varsState);
-  return true
-}
-
 // Uses Recoil atoms
 const setAtVarStateLocation = (consFixed, settings, atomVarStateLocations) => {
 
@@ -231,24 +221,6 @@ const setAtVarStateLocation = (consFixed, settings, atomVarStateLocations) => {
   console.log(locationIds, "->", atomVarStateLocations)
   atsVarStateLib.addLocations(locationIds, settings['generalLocationIcon'], true,
                               atomVarStateLocations);
-  return true
-}
-
-// DEPRECATED: used to update VarsStateContext. Replace by 'setAtVarStateLocation()'
-const setVarsStateContext = (consFixed, settings, varsState) => {
-  if (varsState.context.filterId) { return false }
-
-  varsStateLib.setContextFilterId(consFixed.region.defaultFilter, varsState)
-
-  if (!settings.startingTab) {
-    varsStateLib.setMainMenuControlActiveTabAsFilters(varsState)
-    console.log('~Setting active tab as filter')
-  } else {
-    varsStateLib.setMainMenuControlActiveTab(settings.startingTab, varsState)
-    console.log('~Setting active tab as:', settings.startingTab)
-  }
-
-  varsStateLib.setContextIcons('uniform', {}, varsState)
   return true
 }
 

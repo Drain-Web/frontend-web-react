@@ -364,10 +364,13 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
                                  consCache, consFixed, settings)
       console.log('Should have updated by Alerts')  // TODO: remove it
     } else if (contextIconType === 'comparison') {
-      _updateLocationIconsComparison(atVarStateDomMapLegend, consCache, consFixed, settings)
+      _updateLocationIconsComparison(atVarStateContext, atVarStateLocations,
+                                     atVarStateDomMapLegend, consCache, consFixed, settings)
       console.log('Should have updated by Comparison')  // TODO: remove it
     } else if (contextIconType === 'competition') {
-      _updateLocationIconsCompetition(atVarStateDomMapLegend, consCache, consFixed, settings)
+      _updateLocationIconsCompetition(atVarStateContext, atVarStateDomMapLegend,
+                                      atVarStateLocations, consCache, consFixed, settings)
+
       console.log('Should have updated by Competition')  // TODO: remove it
     } else {
       setMapLegendVisibility(true, atVarStateDomMapLegend)
@@ -381,6 +384,16 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
 
 // ** PRIVATE FUNCTIONS ************************************************************************
 
+//
+const _getObjectFromArrayById = (idValue, arrayData) => {
+  if (!arrayData) { return null }
+  for (const curEntry of arrayData) {
+    if (curEntry.id === idValue) { return curEntry }
+  }
+  return null
+}
+
+
 // 
 const _replaceUrlParam = (url, paramName, paramValue) => {
   const newParamValue = (paramValue === null) ? '' : paramValue
@@ -393,8 +406,72 @@ const _replaceUrlParam = (url, paramName, paramValue) => {
   return url + (url.indexOf('?') > 0 ? '&' : '?') + paramName + '=' + newParamValue
 }
 
+
 const _showAllLocationIcons = (atVarStateLocations) => {
   for (const lcId in atVarStateLocations) { atVarStateLocations[lcId].display = true }
+}
+
+
+//
+// Updates atVarStateDomMapLegend, atVarStateLocations
+const _updateLocationIconsCompetition = (atVarStateContext, atVarStateDomMapLegend,
+                                         atVarStateLocations, consCache, consFixed,
+                                         settings) => {
+  // get last response
+  const lastUrlResponseData = consCacheLib.getCompetitionLastResponseData(consCache)
+  if (!lastUrlResponseData) {
+    console.log('Did not stored urlResponseData from', consCache)
+    return
+  }
+
+  // 
+  const competitionArgs = getContextIconsArgs('competition', atVarStateContext).moduleInstanceId
+  const allIcons = settings.locationIconsOptions.comparison.icons  // TODO - change to competition
+  const selModInstIdsArray = Array.from(competitionArgs.simulationModuleInstanceIds)
+  const useIcons = allIcons.slice(0, selModInstIdsArray.length)
+
+  // check if we have enought information too display
+  if (competitionArgs.simulationModuleInstanceIds.size < 2) {
+    hideAllLocationIcons(atVarStateLocations)
+    setMapLegendVisibility(false, atVarStateDomMapLegend)
+    return
+  }
+
+  // define icons for the models
+  const iconsLegend = {}
+  for (const curModuleInstanceId of selModInstIdsArray) {
+    const curIconUrl = useIcons[selModInstIdsArray.indexOf(curModuleInstanceId)]
+    iconsLegend[curModuleInstanceId] = curIconUrl
+  }
+
+  // iterate location by location, showing/hiding icons
+  for (const curLocationId in atVarStateLocations) {
+    // hide if not available in response
+    if (!lastUrlResponseData.locations[curLocationId]) {
+      atVarStateLocations[curLocationId].display = false
+      continue
+    }
+
+    // define icon otherwise
+    let [curWinSimulation, curWinValue] = [null, null]
+    for (const [curModuleInstanceId, curModuleInstanceDict] of
+         Object.entries(lastUrlResponseData.locations[curLocationId].simulations)) {
+      const curModuleInstanceValue = curModuleInstanceDict.value
+      if (curWinValue && (curModuleInstanceValue < curWinValue)) {
+        continue
+      }
+      [curWinSimulation, curWinValue] = [curModuleInstanceId, curModuleInstanceValue]
+    }
+
+    //
+    atVarStateLocations[curLocationId].display = true
+    atVarStateLocations[curLocationId].icon = iconsLegend[curWinSimulation]
+  }
+
+  // update legend
+  setMapLegendSubtitle('Winners:', atVarStateDomMapLegend)
+  setMapLegendIcons(iconsLegend, null, atVarStateDomMapLegend)
+  setMapLegendVisibility(true, atVarStateDomMapLegend)
 }
 
 
@@ -506,6 +583,7 @@ const _updateTimeSerieUrlByFilterId = (filterId, atVarStateDomTimeSeriesData) =>
   setTimeSerieUrl(newUrl, atVarStateDomTimeSeriesData)
 }
 
+
 //
 const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations, 
                                     atVarStateDomMapLegend, consCache, consFixed, settings) => {
@@ -596,6 +674,8 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
       } else {
         selectedIcon = thresholdLevel.upWarningLevelId.iconName
       }
+      console.log("curTimeseriesData.header.location_id:", curTimeseriesData.header.location_id)
+      console.log("atVarStateLocations:", atVarStateLocations)
       locationIdsIcons[curTimeseriesData.header.location_id] = selectedIcon
       atVarStateLocations[curTimeseriesData.header.location_id].icon = selectedIcon
     }
@@ -623,6 +703,92 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
   setMapLegendIcons(iconsLegend, iconsLegendSeq, atVarStateDomMapLegend)
   setMapLegendVisibility(true, atVarStateDomMapLegend)
 }
+
+
+//
+const _updateLocationIconsComparison = (atVarStateContext, atVarStateLocations,
+                                        atVarStateDomMapLegend, consCache, consFixed,
+                                        settings) => {
+  const comparisonsArgs = getContextIconsArgs('comparison', atVarStateContext)
+  const selModInstIdsArray = Array.from(comparisonsArgs.moduleInstanceIds)
+  const allIcons = settings.locationIconsOptions.comparison.icons
+  const useIcons = allIcons.slice(0, selModInstIdsArray.length)
+  const filterId = getContextFilterId(atVarStateContext)
+  const selectedParameterGroupId = comparisonsArgs.parameterGroupId
+  const selectedMetric = comparisonsArgs.metric
+
+  // get all timeseries for this filter
+  const consideredTimeseries = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  if (!consideredTimeseries) {
+    console.warn("No timeseries found for filter '" + filterId + "' on cache.")
+    return
+  }
+
+  // collect values for each location
+  const [locationIdsIcons, iconsLegend] = [{}, {}]
+  for (const curTimeseriesId of consideredTimeseries) {
+    const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
+    const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(
+      curTimeseriesData.header.parameterId, consFixed)
+    const curLocationId = curTimeseriesData.header.location_id
+    const curModuleInstanceId = curTimeseriesData.header.moduleInstanceId
+    let curValue = null
+
+    // only considers relevant timeseries
+    if (curParameterGroupId !== selectedParameterGroupId) { continue }
+    if (!comparisonsArgs.moduleInstanceIds.has(curModuleInstanceId)) { continue }
+
+    //
+    if (!(curLocationId in locationIdsIcons)) {
+      locationIdsIcons[curLocationId] = {}
+    }
+
+    // get correct value
+    if (selectedMetric.endsWith('Max')) {
+      curValue = curTimeseriesData.maxValue
+    } else if (selectedMetric.endsWith('Min')) {
+      curValue = curTimeseriesData.minValue
+    }
+    locationIdsIcons[curLocationId][curModuleInstanceId] = curValue
+  }
+
+  // define the winner for each location
+  for (const [curLocationId, curLocationDict] of Object.entries(locationIdsIcons)) {
+    let [curWinModuleInstanceId, curWinValue] = [null, null]
+    for (const [curModuleInstanceId, curModuleInstanceValue] of Object.entries(curLocationDict)) {
+      // check if it is the winning node of the location
+      if (!curWinModuleInstanceId) {
+        curWinModuleInstanceId = curModuleInstanceId
+        curWinValue = curModuleInstanceValue
+      } else if (_isComparisonWinner(selectedMetric, curWinValue, curModuleInstanceValue)) {
+        curWinModuleInstanceId = curModuleInstanceId
+        curWinValue = curModuleInstanceValue
+      }
+    }
+    const winIconUrl = useIcons[selModInstIdsArray.indexOf(curWinModuleInstanceId)]
+    atVarStateLocations[curLocationId].icon = winIconUrl
+  }
+
+  // update legend icons
+  for (const curModuleInstanceId of comparisonsArgs.moduleInstanceIds) {
+    const curIconUrl = useIcons[selModInstIdsArray.indexOf(curModuleInstanceId)]
+    iconsLegend[curModuleInstanceId] = curIconUrl
+  }
+
+  // update visibility of icons
+  for (const locationId in atVarStateLocations) {
+    atVarStateLocations[locationId].display = locationId in locationIdsIcons
+  }
+
+  // update legend
+  setMapLegendSubtitle('Winners:', atVarStateDomMapLegend)
+  setMapLegendIcons(iconsLegend, null, atVarStateDomMapLegend)
+
+  // hide legend if no module is selected
+  const legendView = (comparisonsArgs.moduleInstanceIds.size > 0)
+  setMapLegendVisibility(true, atVarStateDomMapLegend)
+}
+
 
 // ** NAMESPACE ********************************************************************************
 

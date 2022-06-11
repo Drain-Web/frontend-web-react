@@ -15,8 +15,11 @@ const getFilterData = (filterId, consFixed) => {
 
 //
 const getLocationData = (locationId, consFixed) => {
+  const lowerLocationId = locationId.toLowerCase()
   for (const curLocation of consFixed.locations.locations) {
-    if (curLocation.locationId === locationId) { return (curLocation) }
+    if (curLocation.locationId.toLowerCase() === lowerLocationId) {
+      return (curLocation)
+    }
   }
   return (null)
 }
