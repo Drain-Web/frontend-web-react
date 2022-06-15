@@ -1,4 +1,4 @@
-import React, { useEffect, Fragment } from "react";
+import React, { Fragment } from "react";
 import { Icon } from "leaflet";
 import { Marker, Polygon, Tooltip, LayersControl, LayerGroup } from "react-leaflet";
 import { cloneDeep } from 'lodash';
@@ -106,7 +106,7 @@ const createMarker = (locationId, locationInfo, locationIcon, iconSize,
       {createMarkerPolygon(locationInfo, atomVarStateActiveLocation)}
     </Fragment>
   )
-}  // varsState.locations
+}
 
 // regular location icon
 const newIcon = (newIconUrl, iconSize) => {
@@ -129,15 +129,12 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
   const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] =
     useRecoilState(atVarStateDomMainMenuControl)
 
-  // refresh icons whenever something in the varsState['locations'] changes
-  useEffect(() => {
-    console.log('Do I need to use it?')
-  }, [atomVarStateLocations])
-
   const atmVarStateActiveLocation = cloneDeep(atomVarStateActiveLocation)
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
 
   // ** MAIN RENDER  ***************************************************************************
+  console.log("RRREFRESHING ICONS!")
+  console.log(JSON.stringify(atomVarStateLocations))
   return (
     <>
       <LayersControl.Overlay checked name={layerName}>

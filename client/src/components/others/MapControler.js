@@ -53,7 +53,8 @@ const MapControler = ({ settings }) => {
 
   atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)
 
-  // when varsState.context is changed, update location icons
+  // TODO: move to state manager
+  // when atom context or active tab is changed, update location icons
   useEffect(() => {
     atsVarStateLib.updateLocationIcons(atmVarStateDomMainMenuControl, atmVarStateLocations,
                                        atmVarStateContext, atmVarStateDomMapLegend,
@@ -65,7 +66,8 @@ const MapControler = ({ settings }) => {
       atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
   ]);
 
-  // when varsState.context is changed, update map view window
+  // TODO: move to state manager
+  // when atom context, active tab or context is changed, update map view window
   useEffect(() => {
 
     let mapExtent = null;

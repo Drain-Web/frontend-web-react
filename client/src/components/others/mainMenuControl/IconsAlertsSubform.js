@@ -113,7 +113,6 @@ const IconsAlertsSubform = ( { settings } ) => {
     atsVarStateLib.setContextIcons('alerts', { thresholdGroupId: selectedItem.target.value },
                                    atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
-    setSelectedThresholdGroup(selectedItem.target.value)
   }
 
   // 
@@ -121,16 +120,12 @@ const IconsAlertsSubform = ( { settings } ) => {
     atsVarStateLib.setContextIcons('alerts', { moduleInstanceId: selectedItem.target.value },
                                    atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
-    setSelectedModuleInstanceId(selectedItem.target.value)
   }
 
   // ** BUILD COMPONENT ************************************************************************
 
   // 
-  if (atsVarStateLib.getContextIconsType(atomVarStateContext) != "alerts") {
-    console.log("> Failed by Subform:", atsVarStateLib.getContextIconsType(atomVarStateContext))
-    return (null)
-  }
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) != "alerts") { return (null) }
 
   // build options for warnings / thresholdGroup
   const thresholdGroupOptions = []

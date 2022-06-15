@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { cloneDeep } from 'lodash';
+import { apiUrl } from "../../libs/api";
 import axios from "axios"
 import useSWR from "swr"
 
@@ -13,14 +14,24 @@ import consCacheLib from "../contexts/consCacheLib";
 // atoms
 import {
     atVarStateContext, atVarStateLocations, atVarStateDomTimeSeriesData,
-    atVarStateDomMainMenuControl,
-    atVarStateDomMap, atVarStateVectorGridAnimation,
-    atVarStateDomTimeseriesPanel, atVarStateVectorGridMode
+    atVarStateDomMainMenuControl, atVarStateDomMapLegend, atVarStateDomMap, 
+    atVarStateVectorGridAnimation, atVarStateDomTimeseriesPanel, atVarStateVectorGridMode
 } from "../atoms/atsVarState";
 import atsVarStateLib from "../atoms/atsVarStateLib";
 
 // import libs
 import appLoad from "../../libs/appLoad.js";
+
+// ** Extra functions **************************************************************************
+
+// function 'fetcher' will do HTTP requests
+const fetcher = (url) => axios.get(url).then((res) => res.data)
+
+// same as 'fetcher', but includes extra info in response
+async function fetcherWith (url, extra) {
+  const jsonData = await fetcher(url)
+  return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
+}
 
 const VarsStateManager = ({ settings, consFixed }) => {
 
@@ -38,6 +49,8 @@ const VarsStateManager = ({ settings, consFixed }) => {
         useRecoilState(atVarStateVectorGridAnimation)
     const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
     const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
+    const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] =
+        useRecoilState(atVarStateDomMapLegend)
 
     // contexts
     const { consCache } = useContext(ConsCache)
@@ -168,7 +181,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
         }
     }, [consFixed.loaded]);
 
-    // ** Icons
+    // ** Icons ********************************************************************************
 
     // 
     useEffect(() => {
@@ -231,7 +244,99 @@ const VarsStateManager = ({ settings, consFixed }) => {
 
     }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
 
+
+    // reactions related to EVALUATION icons
+    useEffect(() => {
+    
+        console.log("Pottentially calling HTTP request")
+
+        // basic check 1
+        if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== 'evaluation') {
+          console.log("NOT IN EVALUATION! IN:", atsVarStateLib.getContextIconsType(atomVarStateContext))
+          return (null) }
+    
+        // basic check 2
+        const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
+        let continueIt = true
+        if (!iconsArgs.metric) { continueIt = false }
+        if (!iconsArgs.parameterGroupId) { continueIt = false }
+        if (!iconsArgs.observationModuleInstanceId) { continueIt = false }
+        if (!iconsArgs.simulationModuleInstanceId) { continueIt = false }
+        if (!continueIt) {
+            console.log("Not sending HTTP request:", iconsArgs.metric,
+                iconsArgs.parameterGroupId, iconsArgs.observationModuleInstanceId,
+                iconsArgs.simulationModuleInstanceId)
+            return (null)
+        }
+    
+        // get obs and mod parameter IDs from parameter group
+        const [simParameterId, obsParameterId] = _getSimObsParameterIds(
+          iconsArgs.metric, iconsArgs.parameterGroupId, settings)
+    
+        // define url to be called and skip call if this was the last URL called
+        const urlTimeseriesCalcRequest = apiUrl(
+          settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
+            filter: atsVarStateLib.getContextFilterId(atomVarStateContext),
+            calc: iconsArgs.metric,
+            simParameterId: simParameterId,
+            obsParameterId: obsParameterId,
+            obsModuleInstanceId: iconsArgs.observationModuleInstanceId,
+            simModuleInstanceId: iconsArgs.simulationModuleInstanceId
+          }
+        )
+    
+        // final response function: get data from consCache and update varsState
+        const callbackFunc = (urlRequested) => {
+          const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+          const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
+          atsVarStateLib.updateLocationIcons(atomVarStateDomMainMenuControl, atmVarStateLocations,
+                                             atomVarStateContext, atmVarStateDomMapLegend,
+                                             consCache, consFixed, settings)
+          setAtVarStateLocations(atmVarStateLocations)
+          setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
+          console.log("Should have updated legend!")
+        }
+    
+        // if URL was already stored in the cache, update location icons
+        // if not, request and set loading icons
+        if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache)) {
+          callbackFunc(urlTimeseriesCalcRequest)
+        } else {
+
+          // icons to loading
+          // TODO: why it is not working?
+          const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+          atsVarStateLib.setUniformIcon(settings.loadingLocationIcon, atmVarStateLocations)
+          console.log("Should have set::", settings.loadingLocationIcon)
+          console.log("Locations:", JSON.stringify(atmVarStateLocations))
+          setAtVarStateLocations(atmVarStateLocations)
+
+          // request URL, update local states, update cache, access cache
+          const extraArgs = { url: urlTimeseriesCalcRequest }
+          fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
+            consCacheLib.addUrlRequested(extras.url, consCache)
+            consCacheLib.storeEvaluationResponseData(extras.url, jsonData.evaluation, consCache)
+            callbackFunc(extras.url)
+          })
+        }
+    
+    }, [
+        atsVarStateLib.getContextIconsType(atomVarStateContext),
+        atsVarStateLib.getContextFilterId(atomVarStateContext),
+        atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext).metric,
+        atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext).parameterGroupId,
+        atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext).simulationModuleInstanceId,
+        atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext).observationModuleInstanceId
+    ])
+
     // ** No-hook functions ********************************************************************
+
+    // TODO: move to a shared place
+    const _getSimObsParameterIds = (metricId, parameterGroupId, settings) => {
+      // return two strings: the parameter ID of the simulations and the parameter id of the observations
+      const pgroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
+      return [pgroups[parameterGroupId].parameters.sim, pgroups[parameterGroupId].parameters.obs]
+    }
 
     // TODO: temp code
     const _zoomToTimeResolution = (zoomLevel) => {

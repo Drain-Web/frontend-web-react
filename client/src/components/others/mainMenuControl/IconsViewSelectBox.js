@@ -1,16 +1,18 @@
-import React, { useContext, useState } from 'react'
+import React from 'react'
+import { useRecoilValue } from "recoil";
 import { Form } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 
 // import contexts
-import VarsState from "../../contexts/VarsState";
-import varsStateLib from "../../contexts/varsStateLib";
+import atsVarStateLib from '../../atoms/atsVarStateLib.js';
+import { atVarStateContext } from "../../atoms/atsVarState";
+
 
 const IconsViewSelectBox = ( { onChange, label } ) => {
   /* ** SET HOOKS **************************************************************************** */
 
-  // Get global states and set local states
-  const { varsState } = useContext(VarsState)
+  // get atom
+  const atomVarStateContext = useRecoilValue(atVarStateContext)  
   
   /* ** BUILD COMPONENT ********************************************************************** */
 
@@ -18,7 +20,7 @@ const IconsViewSelectBox = ( { onChange, label } ) => {
     <FloatingLabel label={label}>
       <Form.Control
         as='select'
-        defaultValue={varsStateLib.getContextIconsType(varsState)}
+        defaultValue={atsVarStateLib.getContextIconsType(atomVarStateContext)}
         onChange={onChange}
         className='rounded-1'
         label={label}

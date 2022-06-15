@@ -1,18 +1,21 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import { apiUrl } from '../../../libs/api.js'
 import axios from 'axios'
+import { useRecoilState } from "recoil"
 
 // import contexts
 import ConsFixed from '../../contexts/ConsFixed'
 import ConsCache from '../../contexts/ConsCache'
 import consCacheLib from '../../contexts/consCacheLib'
-import VarsState from '../../contexts/VarsState'
-import varsStateLib from '../../contexts/varsStateLib'
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
+
+// import atoms
+import atsVarStateLib from '../../atoms/atsVarStateLib.js';
+import { atVarStateContext } from "../../atoms/atsVarState";
+import { cloneDeep } from 'lodash'
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
@@ -28,6 +31,7 @@ const getParameterGroupsOfMetric = (metricId, settings) => {
   return Object.keys(paramGroups)
 }
 
+// TODO: move to a shared place
 const getSimObsParameterIds = (metricId, parameterGroupId, settings) => {
   // return two strings: the parameter ID of the simulations and the parameter id of the observations
   const pgroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
@@ -39,82 +43,119 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState)
-  const [selectedMetric, setSelectedMetric] =
-    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).metric)
-  const [selectedParameterGroup, setSelectedParameterGroup] =
-    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).parameterGroupId)
-  const [simModuleInstanceId, setSimModuleInstanceId] = 
-    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).simulationModuleInstanceId)
-  const [obsModuleInstanceId, setObsModuleInstanceId] = 
-    useState(varsStateLib.getContextIconsArgs('evaluation', varsState).observationModuleInstanceId)
-    
-  // react on change
-  useEffect(() => {
-    // only triggers when "evaluation" is selected and the selected metric is not null
-    if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
-    if (!selectedMetric) { return (null) }
-    if (!selectedParameterGroup) { return (null) }
 
-    // get obs and mod parameter IDs from parameter group
+  // get atoms
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+
+  // when the component is loaded, some consistency checks are made
+  useEffect(() => {
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atmVarStateContext)
+    let anyChange = false
+
+    // if no metric selected, select one
+    if (!iconsArgs.metric) {
+      const allEvaluationIds = Object.keys(settings.locationIconsOptions.evaluation.options)
+      atsVarStateLib.setContextIconsArgs('evaluation', 'metric', allEvaluationIds[0],
+                                         atmVarStateContext)
+      iconsArgs.metric = allEvaluationIds[0]
+      anyChange = true
+    }
+
+    // if no parameter group selected, select one
+    const paramGroupIds = getParameterGroupsOfMetric(iconsArgs.metric, settings)
+    if ((!iconsArgs.parameterGroupId) && (paramGroupIds.length > 0)) {
+      atsVarStateLib.setContextIconsArgs('evaluation', 'parameterGroupId', paramGroupIds[0],
+                                         atmVarStateContext)
+      iconsArgs.parameterGroupId = paramGroupIds[0]
+      anyChange = true
+    }
+
+    // 
+    const [simParameterId, obsParameterId] = getSimObsParameterIds(iconsArgs.metric,
+      iconsArgs.parameterGroupId, settings)
+
+    // get all module ids
+    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
+    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
+
+    // if no simulation module instance selected, select one
+    if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
+      atsVarStateLib.setContextIconsArgs('evaluation', 'simulationModuleInstanceId',
+                                         allSimModInstIds.values().next().value,
+                                         atmVarStateContext)
+      anyChange = true
+    }
+
+    // if no observation module instance selected, select one
+    if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
+      atsVarStateLib.setContextIconsArgs('evaluation', 'observationModuleInstanceId',
+                                         allObsModInstIds.values().next().value,
+                                         atmVarStateContext)
+      anyChange = true
+    }
+
+    // update if needed
+    if (anyChange) { setAtVarStateContext(atmVarStateContext) }
+
+  }, [])
+
+
+  // TODO: review it makes sense
+  useEffect(() => {
+
+    // get base values
+    const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
+    const selectedMetric = iconsArgs.metric
+    const selectedParameterGroup = iconsArgs.parameterGroupId
+
+    // basic check
+    if ((!selectedMetric) || (!selectedParameterGroup)) { return }
+
+    // get all module ids
     const [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
       selectedParameterGroup, settings)
+    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
+    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
 
-    // define url to be called and skip call if this was the last URL called
-    console.log("Building URL for:", obsModuleInstanceId, simModuleInstanceId)
-    const urlTimeseriesCalcRequest = apiUrl(
-      settings.apiBaseUrl, 'v1dw', 'timeseries_calculator', {
-        filter: varsStateLib.getContextFilterId(varsState),
-        calc: selectedMetric,
-        simParameterId: simParameterId,
-        obsParameterId: obsParameterId,
-        obsModuleInstanceId: obsModuleInstanceId,
-        simModuleInstanceId: simModuleInstanceId
-      }
-    )
-
-    // final response function: get data from consCache and update varsState
-    const callbackFunc = (urlRequested) => {
-      // const responseData = consCacheLib.getEvaluationResponseData(urlRequested, consCache)
-      // console.log('FROM ConsCache, GOT', urlRequested)
-      // console.log(' AS', responseData)
-      varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-      setVarState(Math.random())
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    let anyChange = false
+    
+    // if no simulation module instance selected, select one
+    if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
+      atsVarStateLib.setContextIconsArgs('evaluation', 'simulationModuleInstanceId',
+                                         allSimModInstIds.values().next().value,
+                                         atmVarStateContext)
+      anyChange = true
     }
 
-    //
-    if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache)) {
-      console.log('URL was already requested')
-      callbackFunc(urlTimeseriesCalcRequest)
-    } else {
-      // request URL, update local states, update cache, access cache
-      console.log('URL %s was not requested yet:', urlTimeseriesCalcRequest, consCache)
-      const extraArgs = {
-        url: urlTimeseriesCalcRequest
-      }
-      varsStateLib.setUniformIcon(settings.loadingLocationIcon, varsState)
-      fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
-        consCacheLib.addUrlRequested(extras.url, consCache)
-        consCacheLib.storeEvaluationResponseData(extras.url, jsonData.evaluation, consCache)
-        callbackFunc(extras.url)
-      })
+    // if no observation module instance selected, select one
+    if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
+      atsVarStateLib.setContextIconsArgs('evaluation', 'observationModuleInstanceId',
+                                         allObsModInstIds.values().next().value,
+                                         atmVarStateContext)
+      anyChange = true
     }
-    console.log("Hiding locations")
-    varsStateLib.hideAllLocationIcons(varsState)
-    setVarState(Math.random())
-  }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
-      varsStateLib.getContextIconsArgs('evaluation', varsState),
-      selectedMetric, selectedParameterGroup, simModuleInstanceId, obsModuleInstanceId])
 
-  /* ** BUILD COMPONENT ********************************************************************** */
+    // update if needed
+    if (anyChange) { setAtVarStateContext(atmVarStateContext) }
 
-  if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
+  }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
+  
+
+  // ** BUILD COMPONENT ************************************************************************
+
+  // if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== "evaluation") {
+    return (null)
+  }
 
   // build reaction function
   const changeSelectedMetric = (selectedItem) => {
-    varsStateLib.setContextIcons('evaluation', { metric: selectedItem.target.value }, varsState)
-    setSelectedMetric(selectedItem.target.value)
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons('evaluation', { metric: selectedItem.target.value }, 
+                                   atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
 
   // TODO: implement this one
@@ -123,33 +164,38 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     // setSelectedMetric(selectedItem.target.value)
   }
 
+  // 
   const changeSelectedObsModuleInstanceId = (selectedItem) => {
-    varsStateLib.setContextIcons('evaluation', { observationModuleInstanceId: selectedItem.target.value }, varsState)
-    setObsModuleInstanceId(selectedItem.target.value)
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons('evaluation',
+                                   { observationModuleInstanceId: selectedItem.target.value },
+                                   atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
   
+  // 
   const changeSelectedSimModuleInstanceId = (selectedItem) => {
-    varsStateLib.setContextIcons('evaluation', { simulationModuleInstanceId: selectedItem.target.value }, varsState)
-    setSimModuleInstanceId(selectedItem.target.value)
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons('evaluation',
+                                   { simulationModuleInstanceId: selectedItem.target.value },
+                                   atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
   }
 
   // build options for metrics
   const allMetricOptions = []
   const allEvaluationIds = Object.keys(settings.locationIconsOptions.evaluation.options)
-  allMetricOptions.push.apply(allMetricOptions, allEvaluationIds.map(
-    (evaluationId) => {
-      return (<option value={evaluationId} key={evaluationId}>{evaluationId}</option>)
-    }
-  ))
-
-  // if no metric selected, select one
-  if (!selectedMetric) {
-    setSelectedMetric(allEvaluationIds[0])
-    return <></>
-  }
+  allMetricOptions.push.apply(allMetricOptions, allEvaluationIds.map((evaluationId) => {
+    return (<option value={evaluationId} key={evaluationId}>{evaluationId}</option>)
+  }))
 
   // build options for parameter groups
   const allParameterGroupOptions = []
+  const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
+  const selectedMetric = iconsArgs.metric
+  const selectedParameterGroup = iconsArgs.parameterGroupId
+  const simModuleInstanceId = iconsArgs.simulationModuleInstanceId
+  const obsModuleInstanceId = iconsArgs.observationModuleInstanceId
   const paramGroupIds = selectedMetric ? getParameterGroupsOfMetric(selectedMetric, settings) : []
   if (selectedMetric) {
     // identify parameter groups of selected metric
@@ -159,11 +205,6 @@ const IconsModelEvaluationSubform = ({ settings }) => {
       }
     ))
 
-    // if no parameter group selected, select one
-    if ((!selectedParameterGroup) && (paramGroupIds.length > 0)) {
-      setSelectedParameterGroup(paramGroupIds[0])
-      return <></>
-    }
   } else {
     allParameterGroupOptions.push(<option value={null} key={null}>Select a metric!</option>)
   }
@@ -197,22 +238,12 @@ const IconsModelEvaluationSubform = ({ settings }) => {
         </option>
       )
     }
-
-    // if no simulation module instance selected, select one
-    if ((!simModuleInstanceId) && (allSimModInstIds.size > 0)) {
-      setSimModuleInstanceId(allSimModInstIds.values().next().value)
-      return <></>
-    }
-
-    // if no observation module instance selected, select one
-    if ((!obsModuleInstanceId) && (allObsModInstIds.size > 0)) {
-      setObsModuleInstanceId(allObsModInstIds.values().next().value)
-      return <></>
-    }
     
   } else {
-    allSimModuleInstanceOptions.push(<option value={null} key={null}>Select a metric and a parameter group!</option>)
-    allObsModuleInstanceOptions.push(<option value={null} key={null}>Select a metric and a parameter group!</option>)
+    const selectMetricMsg = "Select a metric and a parameter group!"
+    const selectMetricOption = (<option value={null} key={null}>{selectMetricMsg}</option>)
+    allSimModuleInstanceOptions.push(selectMetricOption)
+    allObsModuleInstanceOptions.push(selectMetricOption)
   }
 
   return (
@@ -224,9 +255,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
             onChange={changeSelectedMetric}
             defaultValue={selectedMetric}
             className='rounded-1'
-            label='Metric'
-          >
-            {allMetricOptions}
+            label='Metric'>
+              {allMetricOptions}
           </Form.Control>
         </FloatingLabel>
       </Col></Row>
@@ -237,9 +267,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
             onChange={changeSelectedParameterGroup}
             defaultValue={selectedParameterGroup}
             className='rounded-1'
-            label='Parameter Group'
-          >
-            {allParameterGroupOptions}
+            label='Parameter Group'>
+              {allParameterGroupOptions}
           </Form.Control>
         </FloatingLabel>
       </Col></Row>
@@ -250,10 +279,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
             onChange={changeSelectedSimModuleInstanceId}
             defaultValue={simModuleInstanceId}
             className='rounded-1'
-            label='Simulations'
-          >
-            {allSimModuleInstanceOptions}
-            {/* <option value={simModuleInstanceId} key={simModuleInstanceId}>{simModuleInstanceId}</option> */}
+            label='Simulations'>
+              {allSimModuleInstanceOptions}
           </Form.Control>
         </FloatingLabel>
       </Col></Row>
@@ -264,10 +291,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
             onChange={changeSelectedObsModuleInstanceId}
             defaultValue={obsModuleInstanceId}
             className='rounded-1'
-            label='Observations'
-          >
-            {allObsModuleInstanceOptions}
-            { /*<option value={obsModuleInstanceId} key={obsModuleInstanceId}>{obsModuleInstanceId}</option> */ }
+            label='Observations'>
+              {allObsModuleInstanceOptions}
           </Form.Control>
         </FloatingLabel>
       </Col></Row>

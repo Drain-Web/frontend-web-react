@@ -60,6 +60,12 @@ const setContextIcons = (iconsType, args, atVarStateContext) => {
   }
 }
 
+//
+const setContextIconsArgs = (iconsType, argName, value, atVarStateContext) => {
+  const iconArgsKey = CONTEXT_ICONS_ARGS_KEYS[iconsType]
+  atVarStateContext.icons[iconArgsKey][argName] = value
+}
+
 // ** PUBLIC FUNCTIONS - Locations *************************************************************
 
 // Include a new location entry
@@ -84,7 +90,13 @@ const hideAllLocationIcons = (atVarStateLocations) => {
 
 //
 const setUniformIcon = (iconUrl, atVarStateLocations) => {
+  console.log("Setting uniform:", iconUrl)
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].icon = iconUrl }
+}
+
+//
+const showAllLocationIcons = (atVarStateLocations) => {
+  for (const lcId in atVarStateLocations) { atVarStateLocations[lcId].display = true }
 }
 
 // ** PUBLIC FUNCTIONS - ActiveLocations *******************************************************
@@ -346,7 +358,7 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
   // TODO: implement
   if (inMainMenuControlActiveTabOverview(atVarStateDomMainMenuControl)) {
     // if in overview shows all locations
-    _showAllLocationIcons(atVarStateLocations)
+    showAllLocationIcons(atVarStateLocations)
     setUniformIcon(settings.generalLocationIcon, atVarStateLocations)
   } else if (inMainMenuControlActiveTabFilters(atVarStateDomMainMenuControl)) {
     // if in a specific filter, decide location by location
@@ -404,11 +416,6 @@ const _replaceUrlParam = (url, paramName, paramValue) => {
   }
   url = url.replace(/[?#]$/, '')
   return url + (url.indexOf('?') > 0 ? '&' : '?') + paramName + '=' + newParamValue
-}
-
-
-const _showAllLocationIcons = (atVarStateLocations) => {
-  for (const lcId in atVarStateLocations) { atVarStateLocations[lcId].display = true }
 }
 
 
@@ -479,12 +486,25 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
                                         settings) => {
   // get last response
   const lastUrlResponseData = consCacheLib.getEvaluationLastResponseData(consCache)
-  if (!lastUrlResponseData) { return }
+  if (!lastUrlResponseData) { 
+    console.log("NOT EVEN GOT A RESPONSE!")
+    return
+  }
 
   // get basic icons info
   const lastUrlMetric = lastUrlResponseData.metric
   const lastUrlOptions = settings.locationIconsOptions.evaluation.options[lastUrlMetric]
   const iconOptions = lastUrlOptions.parameterGroups['Discharge']                               // TODO: make it flexible
+
+  // basic check: must have at least one location
+  if (!Object.keys(lastUrlResponseData.locations).length) {
+    setMapLegendSubtitle('Evaluation:', atVarStateDomMapLegend)
+    setMapLegendIcons({ 'NO DATA': null }, null, atVarStateDomMapLegend)
+    setMapLegendVisibility(true, atVarStateDomMapLegend)
+    return
+  } else {
+    console.log("HAS:", lastUrlResponseData.locations)
+  }
 
   // iterate location by location, showing/hiding icons
   for (const locationId in atVarStateLocations) {
@@ -531,8 +551,8 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
 
   // update legend
   setMapLegendSubtitle('Evaluation:', atVarStateDomMapLegend)
-  setMapLegendIcons({ Location: settings.generalLocationIcon }, null, atVarStateDomMapLegend)
-  setMapLegendVisibility(false, atVarStateDomMapLegend)
+  setMapLegendIcons(iconsLegend, null, atVarStateDomMapLegend)
+  setMapLegendVisibility(true, atVarStateDomMapLegend)
 }
 
 
@@ -619,8 +639,13 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
   const thresholdLevelFunction = {}
   for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
     const curThreshLevelId = curThreshLevelObj.id
-    thresholdLevelFunction[curThreshLevelId] =
-      consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed).valueFunction
+    const curThreshLevelData = consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed)
+    if (curThreshLevelData) {
+      thresholdLevelFunction[curThreshLevelId] = curThreshLevelData.valueFunction
+      console.log("Yeah data for thresh level:", curThreshLevelId)
+    } else {
+      console.log("No data for thresh level:", curThreshLevelId)
+    }
   }
 
   // TODO: double check if it needs to be moved somewhere
@@ -638,7 +663,11 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
         // get the value of the attribute in the location info
         const curAttrId = curThreshLevelFunction.substring(1, curThreshLevelFunction.length - 1)
         const curAttrObj = _getObjectFromArrayById(curAttrId, locationData.attributes)
-        if (!curAttrObj) { return null }
+        console.log("~~Looking for:", curThreshLevelFunction)
+        if (!curAttrObj) { 
+          console.log("~~~Got", curAttrObj, "from", curAttrId, locationData.attributes)
+          return null
+        }
         const curAttrValue = parseFloat(curAttrObj.number)
 
         // if time series exceeds this value, continue checking a higher. If not, return it
@@ -662,6 +691,7 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
       // define the threshold level
       const curLocationId = curTimeseriesData.header.location_id
       const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
+      console.log("Location data of", curLocationId, ":", curLocationData)
       const thresholdLevel = getThresholdLevel(curTimeseriesData, curLocationData,
         thresholdGroupData, thresholdLevelFunction)
 
@@ -669,13 +699,14 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
       let selectedIcon = null
       if (!thresholdLevel) {
         selectedIcon = thresholdGroupBase.unknownIcon
+        console.log("No thresh level at", curLocationId, "for thresh group", thresholdGroupData)
       } else if (typeof thresholdLevel === 'boolean') {
         selectedIcon = thresholdGroupBase.noWarningIcon
+        console.log("No issue at", curLocationId, "for thresh group", thresholdGroupData)
       } else {
         selectedIcon = thresholdLevel.upWarningLevelId.iconName
+        console.log("Something at", curLocationId, "for thresh group", thresholdGroupData)
       }
-      console.log("curTimeseriesData.header.location_id:", curTimeseriesData.header.location_id)
-      console.log("atVarStateLocations:", atVarStateLocations)
       locationIdsIcons[curTimeseriesData.header.location_id] = selectedIcon
       atVarStateLocations[curTimeseriesData.header.location_id].icon = selectedIcon
     }
@@ -824,6 +855,7 @@ const atsVarStateLib = {
   pushIntoActiveTabHistory: pushIntoActiveTabHistory,
   setContextFilterId: setContextFilterId,
   setContextIcons: setContextIcons,
+  setContextIconsArgs: setContextIconsArgs,
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
   setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
@@ -839,6 +871,7 @@ const atsVarStateLib = {
   setVectorGridAnimationCurrentFrameIdx: setVectorGridAnimationCurrentFrameIdx,
   setVectorGridAnimationInterval: setVectorGridAnimationInterval,
   setVectorGridAnimationTimeResolution: setVectorGridAnimationTimeResolution,
+  showAllLocationIcons: showAllLocationIcons,
   showPanelTabs: showPanelTabs,
   toggleVectorGridAnimationIsRunning: toggleVectorGridAnimationIsRunning,
   updateLocationIcons: updateLocationIcons,

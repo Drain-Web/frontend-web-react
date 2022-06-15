@@ -9,8 +9,6 @@ import axios from 'axios'
 import ConsCache from '../../contexts/ConsCache.js'
 import consCacheLib from '../../contexts/consCacheLib'
 import ConsFixed from '../../contexts/ConsFixed.js'
-import VarsState from '../../contexts/VarsState'
-import varsStateLib from '../../contexts/varsStateLib'
 
 // import atoms
 import atsVarStateLib from '../../atoms/atsVarStateLib.js';
@@ -75,8 +73,6 @@ const IconsUniformSubform = ({ settings }) => {
         // TODO: add parameterGroups
         // TODO: add modelInstances
       }
-      
-      // varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
 
       const atmVarStateLocations = cloneDeep(atomVarStateLocations)
       const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
