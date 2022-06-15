@@ -120,7 +120,6 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
     // Triggered when the icon type select box is changed
     const atmVarStateContext = cloneDeep(atomVarStateContext)
     const newIconView = event.target.value
-    console.log('Updated icon type to:', event.target.value)
     atsVarStateLib.setContextIcons(newIconView, {}, atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
   }

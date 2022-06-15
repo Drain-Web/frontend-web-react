@@ -77,13 +77,13 @@ const metricMatrixTab = (id, consCache) => {
   )
 
   // check anything was requested
-  const lastUrlRequested = consCacheLib.getEvaluationsLastRequestUrl(consCache)
+  const lastUrlRequested = consCacheLib.getEvaluationLastRequestUrl(consCache)
   if (!lastUrlRequested) {
     return wrapTab((<div>No URL requested.</div>))
   }
 
   // check we have content
-  const urlRequestedContent = consCacheLib.getEvaluationsResponseData(lastUrlRequested, consCache)
+  const urlRequestedContent = consCacheLib.getEvaluationResponseData(lastUrlRequested, consCache)
   if (!urlRequestedContent) {
     return wrapTab(showLoading())
   }
@@ -331,7 +331,7 @@ const PanelTabs = ({ position, settings }) => {
       const extraArgs = { url: urlTimeseriesCalcRequest }
       fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
         consCacheLib.addUrlRequested(extras.url, consCache)
-        consCacheLib.storeEvaluationsResponseData(extras.url, jsonData.evaluations, consCache)
+        consCacheLib.storeEvaluationResponseData(extras.url, jsonData.evaluations, consCache)
         callbackFunc(extras.url)
       })
     }

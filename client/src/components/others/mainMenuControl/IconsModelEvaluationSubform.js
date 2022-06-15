@@ -145,7 +145,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // ** BUILD COMPONENT ************************************************************************
 
-  // if (varsStateLib.getContextIconsType(varsState) !== 'evaluation') { return (null) }
+  // only builds if in 'evaluation' tab
   if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== "evaluation") {
     return (null)
   }

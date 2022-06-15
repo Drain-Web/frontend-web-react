@@ -90,7 +90,6 @@ const hideAllLocationIcons = (atVarStateLocations) => {
 
 //
 const setUniformIcon = (iconUrl, atVarStateLocations) => {
-  console.log("Setting uniform:", iconUrl)
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].icon = iconUrl }
 }
 
@@ -426,10 +425,7 @@ const _updateLocationIconsCompetition = (atVarStateContext, atVarStateDomMapLege
                                          settings) => {
   // get last response
   const lastUrlResponseData = consCacheLib.getCompetitionLastResponseData(consCache)
-  if (!lastUrlResponseData) {
-    console.log('Did not stored urlResponseData from', consCache)
-    return
-  }
+  if (!lastUrlResponseData) { return }
 
   // 
   const competitionArgs = getContextIconsArgs('competition', atVarStateContext).moduleInstanceId
@@ -486,10 +482,7 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
                                         settings) => {
   // get last response
   const lastUrlResponseData = consCacheLib.getEvaluationLastResponseData(consCache)
-  if (!lastUrlResponseData) { 
-    console.log("NOT EVEN GOT A RESPONSE!")
-    return
-  }
+  if (!lastUrlResponseData) { return }
 
   // get basic icons info
   const lastUrlMetric = lastUrlResponseData.metric
@@ -502,8 +495,6 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
     setMapLegendIcons({ 'NO DATA': null }, null, atVarStateDomMapLegend)
     setMapLegendVisibility(true, atVarStateDomMapLegend)
     return
-  } else {
-    console.log("HAS:", lastUrlResponseData.locations)
   }
 
   // iterate location by location, showing/hiding icons

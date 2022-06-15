@@ -133,8 +133,6 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
 
   // ** MAIN RENDER  ***************************************************************************
-  console.log("RRREFRESHING ICONS!")
-  console.log(JSON.stringify(atomVarStateLocations))
   return (
     <>
       <LayersControl.Overlay checked name={layerName}>

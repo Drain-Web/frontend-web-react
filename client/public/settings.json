@@ -48,7 +48,7 @@
           "noValueIcon": null,
           "parameterGroups": {
             "Discharge": {
-			  "parameters": {
+			        "parameters": {
                 "obs": "Qo",
                 "sim": "Qs"
               },
@@ -60,17 +60,6 @@
                         "./img/location_icons/evaluation_paultols_5lvls/04_bad.svg",
                         "./img/location_icons/evaluation_paultols_5lvls/05_worst.svg"]
             }
-          }
-        },
-        "_metric_": {
-          "_parameterGroupId_": {
-            "parameters": {
-              "obs": "_parameterId_",
-              "sim": "_parameterId_"
-            },
-            "ranges": [],
-            "colors": [],
-            "icons": []
           }
         }
       }

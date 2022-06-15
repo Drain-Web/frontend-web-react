@@ -236,24 +236,18 @@ const VarsStateManager = ({ settings, consFixed }) => {
             }
             */
 
-        } else {
-            console.log("Not refactored yet:", atsVarStateLib.getContextIconsType(atomVarStateContext))
         }
-
-        console.log("Should do second updates here!")
 
     }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
 
 
     // reactions related to EVALUATION icons
     useEffect(() => {
-    
-        console.log("Pottentially calling HTTP request")
 
         // basic check 1
         if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== 'evaluation') {
-          console.log("NOT IN EVALUATION! IN:", atsVarStateLib.getContextIconsType(atomVarStateContext))
-          return (null) }
+          return (null)
+        }
     
         // basic check 2
         const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
@@ -262,12 +256,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
         if (!iconsArgs.parameterGroupId) { continueIt = false }
         if (!iconsArgs.observationModuleInstanceId) { continueIt = false }
         if (!iconsArgs.simulationModuleInstanceId) { continueIt = false }
-        if (!continueIt) {
-            console.log("Not sending HTTP request:", iconsArgs.metric,
-                iconsArgs.parameterGroupId, iconsArgs.observationModuleInstanceId,
-                iconsArgs.simulationModuleInstanceId)
-            return (null)
-        }
+        if (!continueIt) { return (null) }
     
         // get obs and mod parameter IDs from parameter group
         const [simParameterId, obsParameterId] = _getSimObsParameterIds(
@@ -286,7 +275,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
         )
     
         // final response function: get data from consCache and update varsState
-        const callbackFunc = (urlRequested) => {
+        const callbackFunc = () => {
           const atmVarStateLocations = cloneDeep(atomVarStateLocations)
           const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
           atsVarStateLib.updateLocationIcons(atomVarStateDomMainMenuControl, atmVarStateLocations,
@@ -294,29 +283,26 @@ const VarsStateManager = ({ settings, consFixed }) => {
                                              consCache, consFixed, settings)
           setAtVarStateLocations(atmVarStateLocations)
           setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
-          console.log("Should have updated legend!")
         }
     
         // if URL was already stored in the cache, update location icons
         // if not, request and set loading icons
         if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache)) {
-          callbackFunc(urlTimeseriesCalcRequest)
+          consCacheLib.setEvaluationLastRequestUrl(urlTimeseriesCalcRequest, consCache)
+          callbackFunc()
         } else {
 
           // icons to loading
-          // TODO: why it is not working?
-          const atmVarStateLocations = cloneDeep(atomVarStateLocations)
-          atsVarStateLib.setUniformIcon(settings.loadingLocationIcon, atmVarStateLocations)
-          console.log("Should have set::", settings.loadingLocationIcon)
-          console.log("Locations:", JSON.stringify(atmVarStateLocations))
-          setAtVarStateLocations(atmVarStateLocations)
+          new Promise((resolve, _) => { resolve(null) }).then((value) => {
+            _setLocationIconsLoading()
+          })
 
           // request URL, update local states, update cache, access cache
           const extraArgs = { url: urlTimeseriesCalcRequest }
           fetcherWith(urlTimeseriesCalcRequest, extraArgs).then(([jsonData, extras]) => {
             consCacheLib.addUrlRequested(extras.url, consCache)
             consCacheLib.storeEvaluationResponseData(extras.url, jsonData.evaluation, consCache)
-            callbackFunc(extras.url)
+            callbackFunc()
           })
         }
     
@@ -336,6 +322,13 @@ const VarsStateManager = ({ settings, consFixed }) => {
       // return two strings: the parameter ID of the simulations and the parameter id of the observations
       const pgroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
       return [pgroups[parameterGroupId].parameters.sim, pgroups[parameterGroupId].parameters.obs]
+    }
+
+    // 
+    const _setLocationIconsLoading = () => {
+      const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+      atsVarStateLib.setUniformIcon(settings.loadingLocationIcon, atmVarStateLocations)
+      setAtVarStateLocations(atmVarStateLocations)
     }
 
     // TODO: temp code
