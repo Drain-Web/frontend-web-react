@@ -1,16 +1,23 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
+import { useRecoilState, useRecoilValue } from "recoil"
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache'
 import ConsFixed from '../../contexts/ConsFixed'
 import consCacheLib from '../../contexts/consCacheLib'
-import VarsState from "../../contexts/VarsState";
-import varsStateLib from "../../contexts/varsStateLib";
+
+// import atoms
+import atsVarStateLib from '../../atoms/atsVarStateLib.js';
+import { atVarStateContext, atVarStateLocations, atVarStateDomMapLegend,
+  atVarStateDomMainMenuControl } from "../../atoms/atsVarState";
+import { cloneDeep } from 'lodash'
 
 // import CSS styles
 import ownStyles from '../../../style/MainMenuControl.module.css'
+
+const ICON_TYPE = "comparison"
 
 
 // TODO
@@ -43,33 +50,82 @@ const IconsModelsComparisonSubform = ({ settings }) => {
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
   const { consFixed } = useContext(ConsFixed)
-  const { varsState, setVarState } = useContext(VarsState)
-  const [selectedParameter, setSelectedParameter] =
-    useState(varsStateLib.getContextIconsArgs('comparison', varsState).parameterGroupId)
-  const [selectedMetric, setSelectedMetric] =
-    useState(varsStateLib.getContextIconsArgs('comparison', varsState).metric)
-  const [selectedParameterMetric, setSelectedParameterMetric] =
-    useState(getParameterMetric(selectedParameter, selectedMetric))
-  const [selectedModuleInstanceIds, setSelectedModuleInstanceIds] =
-    useState(varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
   const [guideMessage, setGuideMessage] = useState(null)
+
+  const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
+  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
+  const [atomVarStateLocations, setAtVarStateLocations] = useRecoilState(atVarStateLocations)
+  const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] = useRecoilState(atVarStateDomMapLegend)
   
+  // when the component is loaded, some consistency checks are made
+  useEffect(() => {
+    // only triggers when "comparison" is selected and the selected metric is not null
+    if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
+
+    // build parameter metrics options
+    let firstParameterMetricOptionId = null
+    const allParameterMetricOptions = []
+    const allAvailableParameterGroupIds = settings.locationIconsOptions[ICON_TYPE].options.availableParameterGroupIds
+    const availableMetrics = getAvailableMetrics()
+    allAvailableParameterGroupIds.forEach((curParameterGroupId, curParameterGroupI) => {
+      Object.keys(availableMetrics).forEach(function(curMetricId) {
+        const parameterMetricId = getParameterMetric(curParameterGroupId, curMetricId)
+        const parameterMetricValue = curParameterGroupId + ': ' + availableMetrics[curMetricId]
+        allParameterMetricOptions.push(
+          <option value={parameterMetricId} key={parameterMetricId}>{parameterMetricValue}</option>)
+        if (!firstParameterMetricOptionId) {
+          firstParameterMetricOptionId = parameterMetricId
+        }
+      })
+    })
+    
+    // if no parameterMetric selected, select first
+    if ((!atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId) ||
+        (!atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric)) {
+      changeParameterMetric(firstParameterMetricOptionId)
+      console.log("__Changing parameter metric to:", firstParameterMetricOptionId)
+      return <></>
+    }
+
+  }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
+
+
   // react on change
   useEffect(() => {
-    // only triggers when "evaluation" is selected and the selected metric is not null
-    if (varsStateLib.getContextIconsType(varsState) !== 'comparison') { return (null) }
+    // only triggers when "comparison" is selected and the selected metric is not null
+    if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
 
     // if not enough modules select, shows uniform
-    varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
-    setVarState(Math.random())
+    // varsStateLib.updateLocationIcons(varsState, consCache, consFixed, settings)
+    // setVarState(Math.random())
 
-  }, [varsStateLib.getContextIconsType(varsState), varsStateLib.getContextFilterId(varsState),
-    varsStateLib.getContextIconsArgs('comparison', varsState),
-    selectedParameter, selectedMetric, selectedParameterMetric, selectedModuleInstanceIds])
+    const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+    const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
+    atsVarStateLib.updateLocationIcons(atomVarStateDomMainMenuControl, atmVarStateLocations,
+      atomVarStateContext, atmVarStateDomMapLegend, consCache, consFixed, settings)
+    setAtVarStateLocations(atmVarStateLocations)
+    setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
+  }, [
+    atsVarStateLib.getContextIconsType(atomVarStateContext),
+    atsVarStateLib.getContextFilterId(atomVarStateContext),
+    atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId,
+    atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric,
+    getParameterMetric(
+      atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId,
+      atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric),
+    atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).moduleInstanceIds
+  ])
 
   /* ** BUILD COMPONENT ********************************************************************** */
 
-  if (varsStateLib.getContextIconsType(varsState) != "comparison") { return (null) }
+  // only builds if in 'competition' tab
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { 
+    console.log("__Not in '", ICON_TYPE, "' but in",
+      atsVarStateLib.getContextIconsType(atomVarStateContext))
+    return (null)
+  } else {
+    console.log("__Yes, in", ICON_TYPE)
+  }
 
   // build reaction function
   const changeParameterMetric = (selectedParameterMetric) => {
@@ -80,24 +136,30 @@ const IconsModelsComparisonSubform = ({ settings }) => {
       selParamMetric = selectedParameterMetric
     }
     const [parameterGroupId, metricId] = getParameterAndMetric(selParamMetric)
-    varsStateLib.setContextIcons("comparison", { 
+
+    // setSelectedParameterMetric(selParamMetric)
+    // updateSelectedModuleInstanceIds(new Set(), varsState)  
+
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons(ICON_TYPE, {
       parameterGroupId: parameterGroupId,
-      metric: metricId
-    }, varsState)
-    setSelectedParameter(parameterGroupId)
-    setSelectedMetric(metricId)
-    setSelectedParameterMetric(selParamMetric)
-    updateSelectedModuleInstanceIds(new Set(), varsState)  // TODO: keep selected modules active
+      metric: metricId,
+      moduleInstanceIds: new Set()  // TODO: keep selected modules active
+    },  atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
+    setGuideMessage(getGuideMessage(0))
   }
 
+  /*
   // updates varsState and hooks
   const updateSelectedModuleInstanceIds = (activeModuleInstanceIds, varsState) => {
-    varsStateLib.setContextIcons("comparison", { 
+    varsStateLib.setContextIcons(ICON_TYPE, { 
       moduleInstanceIds: activeModuleInstanceIds
     }, varsState)
     setSelectedModuleInstanceIds(activeModuleInstanceIds)
     setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
   }
+  */
 
   // 
   const changeSelectedModuleInstances = (args) => {
@@ -106,19 +168,25 @@ const IconsModelsComparisonSubform = ({ settings }) => {
 
     // get and update elements
     const activeModuleInstanceIds = new Set(
-      varsStateLib.getContextIconsArgs('comparison', varsState).moduleInstanceIds)
+      atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).moduleInstanceIds)
     if (targetIsChecked) { 
       activeModuleInstanceIds.add(targetValue)
     } else {
       activeModuleInstanceIds.delete(targetValue)
     }
-    updateSelectedModuleInstanceIds(activeModuleInstanceIds, varsState)
+    
+    // 
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons(ICON_TYPE, {
+      moduleInstanceIds: activeModuleInstanceIds
+    },  atmVarStateContext)
+    setAtVarStateContext(atmVarStateContext)
+    setGuideMessage(getGuideMessage(activeModuleInstanceIds.size))
   }
   
   // build parameter metrics options
-  let firstParameterMetricOptionId = null
   const allParameterMetricOptions = []
-  const allAvailableParameterGroupIds = settings.locationIconsOptions.comparison.options.availableParameterGroupIds
+  const allAvailableParameterGroupIds = settings.locationIconsOptions[ICON_TYPE].options.availableParameterGroupIds
   const availableMetrics = getAvailableMetrics()
   allAvailableParameterGroupIds.forEach((curParameterGroupId, curParameterGroupI) => {
     Object.keys(availableMetrics).forEach(function(curMetricId) {
@@ -126,20 +194,22 @@ const IconsModelsComparisonSubform = ({ settings }) => {
       const parameterMetricValue = curParameterGroupId + ': ' + availableMetrics[curMetricId]
       allParameterMetricOptions.push(
         <option value={parameterMetricId} key={parameterMetricId}>{parameterMetricValue}</option>)
-      if (!firstParameterMetricOptionId) {
-        firstParameterMetricOptionId = parameterMetricId
-      }
     })
   })
   
+  /*
   // if no parameterMetric selected, select first
-  if ((!selectedParameter) || (!selectedMetric)) {
+  if ((!atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId) ||
+      (!atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric)) {
     changeParameterMetric(firstParameterMetricOptionId)
+    console.log("__Changing parameter metric to:", firstParameterMetricOptionId)
     return <></>
   }
+  */
 
   // build module instance options
-  const allModuleInstanceOptionIds = consCacheLib.getModuleInstancesWithParameterGroup(selectedParameter, consCache)
+  const allModuleInstanceOptionIds = consCacheLib.getModuleInstancesWithParameterGroup(
+    atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId, consCache)
   const allModuleInstanceOptions = []
   if (allModuleInstanceOptionIds) {
     allModuleInstanceOptionIds.forEach((curModuleInstanceId) => {
@@ -151,12 +221,13 @@ const IconsModelsComparisonSubform = ({ settings }) => {
           label={curModuleInstanceId}
           key={curModuleInstanceId}
           onChange={changeSelectedModuleInstances}
-          checked={selectedModuleInstanceIds.has(curModuleInstanceId)}
+          checked={atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).moduleInstanceIds.has(curModuleInstanceId)}
         />
       )
     })
   }
 
+  console.log("__Building rows.")
   return (
     <>
       <Row className={ownStyles['row-padding-top']}>
@@ -165,7 +236,9 @@ const IconsModelsComparisonSubform = ({ settings }) => {
             <Form.Control
               as='select'
               onChange={changeParameterMetric}
-              defaultValue={selectedParameterMetric}
+              defaultValue={getParameterMetric(
+                atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).parameterGroupId,
+                atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric)}
               className='rounded-1'
               label='Metric'
             >

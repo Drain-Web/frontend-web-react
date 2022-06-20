@@ -108,6 +108,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
 
     // ** VarStateVectorGridMode ***************************************************************
 
+    // when the mode of representing the VectorGrid (static/animated) changes...
     useEffect(() => {
         
         if (atomVarStateVectorGridMode === 'static') {
@@ -183,10 +184,22 @@ const VarsStateManager = ({ settings, consFixed }) => {
 
     // ** Icons ********************************************************************************
 
-    // 
+    // when the type of the icons ('alerts', 'comparison', ...) change...
+    // TODO 1: only has the case for 'alerts'. Need to include the others from their components
+    // TODO 2: make it smaller and move each case to its own private function
     useEffect(() => {
 
-        if (atsVarStateLib.getContextIconsType(atomVarStateContext) === "alerts") {
+        // if in overview, ignore me
+        if (atsVarStateLib.inMainMenuControlActiveTabOverview(atVarStateDomMainMenuControl)) {
+            console.log("Do nothing!")
+            return
+        } else {
+            console.log("DO IT! We are in:", atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl))
+        }
+
+        // consider case a case
+        const curIconsType = atsVarStateLib.getContextIconsType(atomVarStateContext)
+        if (curIconsType === "alerts") {
             const contextIconsArgs = atsVarStateLib.getContextIconsArgs('alerts',
                                                                         atomVarStateContext)
             let selectedThresholdGroup = contextIconsArgs.thresholdGroupId
@@ -236,12 +249,18 @@ const VarsStateManager = ({ settings, consFixed }) => {
             }
             */
 
+        } else if (curIconsType === "uniform") {
+            console.log("Go _onContextIconsTypeUniform() !")
+            _onContextIconsTypeUniform()
         }
 
-    }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
+    }, [atsVarStateLib.getContextFilterId(atomVarStateContext),
+        atsVarStateLib.getContextIconsType(atomVarStateContext)])
 
 
     // reactions related to EVALUATION icons
+    // TODO 1: this should be moved to a function
+    // TODO 2: the new function should also be invoked in the previous useEffect
     useEffect(() => {
 
         // basic check 1
@@ -315,13 +334,83 @@ const VarsStateManager = ({ settings, consFixed }) => {
         atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext).observationModuleInstanceId
     ])
 
-    // ** No-hook functions ********************************************************************
+    // ** No-hook private functions ************************************************************
 
     // TODO: move to a shared place
     const _getSimObsParameterIds = (metricId, parameterGroupId, settings) => {
       // return two strings: the parameter ID of the simulations and the parameter id of the observations
       const pgroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
       return [pgroups[parameterGroupId].parameters.sim, pgroups[parameterGroupId].parameters.obs]
+    }
+
+    // 
+    const _onContextIconsTypeUniform = () => {
+        console.log('From VarsStateManager!')
+
+        // define url to be called and skip call if this was the last URL called
+        const urlTimeseriesRequest = apiUrl(
+            settings.apiBaseUrl, 'v1', 'timeseries', {
+            filter: atsVarStateLib.getContextFilterId(atomVarStateContext),
+            showStatistics: true,
+            onlyHeaders: true
+            }
+        )
+        // if (filterOptions && (filterOptions.lastUrl === urlTimeseriesRequest)) { return (null) }
+
+        // final response function: get data from consCache and update varsState
+        const callbackFunc = (lastUrlRequest) => {
+            const filterOptions = {
+                lastUrl: lastUrlRequest,
+                parameters: new Set(),
+                parameterGroups: new Set(),
+                modelInstances: new Set()
+            }
+
+            const filterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
+            const timeseriesIds = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+            const filteredTimeseries = Array.from(timeseriesIds).map((id) => {
+                return consCacheLib.getTimeseriesData(id, consCache)
+            })
+            for (const curFilteredTimeseries of filteredTimeseries) {
+                filterOptions.parameters.add(curFilteredTimeseries.header.parameterId)
+                // TODO: add parameterGroups
+                // TODO: add modelInstances
+            }
+
+            const atmVarStateLocations = cloneDeep(atomVarStateLocations)
+            const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
+            
+            console.log("updateLocationIcons from callback!")
+            atsVarStateLib.updateLocationIcons(atomVarStateDomMainMenuControl, atmVarStateLocations,
+                atomVarStateContext, atmVarStateDomMapLegend, consCache, consFixed, settings)
+            
+            // apply setters
+            setAtVarStateLocations(atmVarStateLocations)
+            setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
+            console.log("Updated locationsIcons to:", JSON.stringify(atmVarStateLocations))
+        }
+
+        // call function after URL request, if needed
+        if (!consCacheLib.wasUrlRequested(urlTimeseriesRequest, consCache)) {
+            // request URL, update local states, update cache, access cache
+            const extraArgs = {
+                filterId: atsVarStateLib.getContextFilterId(atomVarStateContext),
+                url: urlTimeseriesRequest
+            }
+            fetcherWith(urlTimeseriesRequest, extraArgs).then(([jsonData, extras]) => {
+                consCacheLib.addUrlRequested(extras.url, consCache)
+                jsonData.map((curTimeseries) => {
+                    consCacheLib.associateTimeseriesIdAndFilterId(curTimeseries.id, extras.filterId, consCache)
+                    consCacheLib.storeTimeseriesData(curTimeseries, consCache, consFixed)
+                    return null
+                })
+                callbackFunc(extras.url)
+            })
+
+            // set all icons as in loading
+        } else {
+            callbackFunc(urlTimeseriesRequest)
+        }
     }
 
     // 

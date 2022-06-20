@@ -26,18 +26,19 @@ async function fetcherWith (url, extra) {
 }
 
 const IconsUniformSubform = ({ settings }) => {
-  /* ** SET HOOKS **************************************************************************** */
+  // ** SET HOOKS ******************************************************************************
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
-  const [filterOptions, setFilterOptions] = useState(null)
+  // const { consFixed } = useContext(ConsFixed)
+  // const [filterOptions, setFilterOptions] = useState(null)
 
   const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
   const [atomVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl] = useRecoilState(atVarStateDomMainMenuControl)
   const [atomVarStateLocations, setAtVarStateLocations] = useRecoilState(atVarStateLocations)
   const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] = useRecoilState(atVarStateDomMapLegend)
 
+  /*
   // react on change
   useEffect(() => {
     // only triggers when "uniform" is selected
@@ -90,7 +91,6 @@ const IconsUniformSubform = ({ settings }) => {
     // call function after URL request, if needed
 
     if (!consCacheLib.wasUrlRequested(urlTimeseriesRequest, consCache)) {
-      console.log('URL %s was not requested yet:', urlTimeseriesRequest, consCache)
       // request URL, update local states, update cache, access cache
       const extraArgs = {
         filterId: atsVarStateLib.getContextFilterId(atomVarStateContext),
@@ -105,17 +105,48 @@ const IconsUniformSubform = ({ settings }) => {
         })
         callbackFunc(extras.url)
       })
+
+      // set all icons as in loading
     } else {
       callbackFunc(urlTimeseriesRequest)
     }
   }, [atsVarStateLib.getContextIconsType(atomVarStateContext), 
       atsVarStateLib.getContextFilterId(atomVarStateContext)])
+  */
 
-  /* ** BUILD COMPONENT ********************************************************************** */
+  // ** BASIC CHECK ****************************************************************************
 
   if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== 'uniform') { return (null) }
 
-  if (!filterOptions) { return (<p>Loading...</p>) }
+  // 
+  const filterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
+  const timeseriesIds = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
+  
+  if (!timeseriesIds) { return (<p>Loading...</p>) }  // TODO: remove this hard-coded
+
+  // ** SOME LOGIC *****************************************************************************
+
+  // identify possible filters - create accumulater variable
+  // lastUrl: lastUrlRequest,
+  const filterOptions = {
+    parameters: new Set(),
+    parameterGroups: new Set(),
+    modelInstances: new Set()
+  }
+
+  // identify possible filters - go through timeseries in the current filter
+  const filteredTimeseries = Array.from(timeseriesIds).map((id) => {
+    return consCacheLib.getTimeseriesData(id, consCache)
+  })
+  for (const curFilteredTimeseries of filteredTimeseries) {
+    filterOptions.parameters.add(curFilteredTimeseries.header.parameterId)
+    // TODO: add parameterGroups
+    // TODO: add modelInstances
+  }
+
+  // ** BUILD COMPONENT ************************************************************************
+
+  // if (!filterOptions) { return (<p>Loading...</p>) }
 
   // build options
   const allOptions = [(<option value={null} key='null'>No filter</option>)]

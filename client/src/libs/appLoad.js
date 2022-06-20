@@ -215,10 +215,8 @@ const setAtVarStateLocation = (consFixed, settings, atomVarStateLocations) => {
   if (Object.keys(atomVarStateLocations).length != 0) { return false }
   if (Object.keys(consFixed.locations).length == 0) { return false }
 
-  console.log("consFixed.locations:", consFixed.locations)
   const locationIds = consFixed.locations.locations.map(loc => loc['locationId']);
 
-  console.log(locationIds, "->", atomVarStateLocations)
   atsVarStateLib.addLocations(locationIds, settings['generalLocationIcon'], true,
                               atomVarStateLocations);
   return true
@@ -237,11 +235,9 @@ const setAtsStartingValues = (consFixed, settings, atomVarStateContext,
 
   if (!settings.startingTab) {
     atsVarStateLib.setMainMenuControlActiveTabAsFilters(atomVarStateDomMainMenuControl)
-    console.log('-Setting active tab as filter')
   } else {
     atsVarStateLib.setMainMenuControlActiveTab(settings.startingTab,
                                                atomVarStateDomMainMenuControl)
-    console.log('-Setting active tab as:', settings.startingTab)
   }
 
   atsVarStateLib.setContextIcons('uniform', {}, atomVarStateContext)

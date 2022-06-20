@@ -30,17 +30,13 @@ const AppOnLoad = ({ settings }) => {
         const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData);
         const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl);
 
-        console.log("consFixed changed to region:", JSON.stringify(consFixed.region))
         if (appLoad.setAtsStartingValues(consFixed, settings, atmVarStateContext,
                                          atmVarStateDomTimeSeriesData,
                                          atmVarStateDomMainMenuControl))
         {
-            console.log(" atomVarStateContext changed to", atmVarStateContext)
             setAtVarStateContext(atmVarStateContext)
             setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
             setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
-        } else {
-            console.log(" atomVarStateContext not rechanged")
         }
     }, [])
 

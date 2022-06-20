@@ -20,6 +20,8 @@ import { cloneDeep } from 'lodash'
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
+const ICON_TYPE = "evaluation"
+
 // same as 'fetcher', but includes extra info in response
 async function fetcherWith (url, extra) {
   const jsonData = await fetcher(url)
@@ -49,14 +51,18 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // when the component is loaded, some consistency checks are made
   useEffect(() => {
+
+    // basic check 1
+    if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
+
     const atmVarStateContext = cloneDeep(atomVarStateContext)
-    const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atmVarStateContext)
+    const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atmVarStateContext)
     let anyChange = false
 
     // if no metric selected, select one
     if (!iconsArgs.metric) {
       const allEvaluationIds = Object.keys(settings.locationIconsOptions.evaluation.options)
-      atsVarStateLib.setContextIconsArgs('evaluation', 'metric', allEvaluationIds[0],
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'metric', allEvaluationIds[0],
                                          atmVarStateContext)
       iconsArgs.metric = allEvaluationIds[0]
       anyChange = true
@@ -65,7 +71,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     // if no parameter group selected, select one
     const paramGroupIds = getParameterGroupsOfMetric(iconsArgs.metric, settings)
     if ((!iconsArgs.parameterGroupId) && (paramGroupIds.length > 0)) {
-      atsVarStateLib.setContextIconsArgs('evaluation', 'parameterGroupId', paramGroupIds[0],
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'parameterGroupId', paramGroupIds[0],
                                          atmVarStateContext)
       iconsArgs.parameterGroupId = paramGroupIds[0]
       anyChange = true
@@ -81,7 +87,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
     // if no simulation module instance selected, select one
     if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs('evaluation', 'simulationModuleInstanceId',
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'simulationModuleInstanceId',
                                          allSimModInstIds.values().next().value,
                                          atmVarStateContext)
       anyChange = true
@@ -89,23 +95,26 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
     // if no observation module instance selected, select one
     if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs('evaluation', 'observationModuleInstanceId',
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'observationModuleInstanceId',
                                          allObsModInstIds.values().next().value,
                                          atmVarStateContext)
       anyChange = true
     }
 
     // update if needed
-    if (anyChange) { setAtVarStateContext(atmVarStateContext) }
+    if (anyChange) { 
+      console.log("Updated context from evaluation subform.")
+      setAtVarStateContext(atmVarStateContext)
+    }
 
-  }, [])
+  }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
 
 
   // TODO: review it makes sense
   useEffect(() => {
 
     // get base values
-    const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
+    const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext)
     const selectedMetric = iconsArgs.metric
     const selectedParameterGroup = iconsArgs.parameterGroupId
 
@@ -123,7 +132,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     
     // if no simulation module instance selected, select one
     if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs('evaluation', 'simulationModuleInstanceId',
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'simulationModuleInstanceId',
                                          allSimModInstIds.values().next().value,
                                          atmVarStateContext)
       anyChange = true
@@ -131,7 +140,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
     // if no observation module instance selected, select one
     if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs('evaluation', 'observationModuleInstanceId',
+      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'observationModuleInstanceId',
                                          allObsModInstIds.values().next().value,
                                          atmVarStateContext)
       anyChange = true
@@ -146,14 +155,14 @@ const IconsModelEvaluationSubform = ({ settings }) => {
   // ** BUILD COMPONENT ************************************************************************
 
   // only builds if in 'evaluation' tab
-  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== "evaluation") {
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) {
     return (null)
   }
 
   // build reaction function
   const changeSelectedMetric = (selectedItem) => {
     const atmVarStateContext = cloneDeep(atomVarStateContext)
-    atsVarStateLib.setContextIcons('evaluation', { metric: selectedItem.target.value }, 
+    atsVarStateLib.setContextIcons(ICON_TYPE, { metric: selectedItem.target.value }, 
                                    atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
   }
@@ -167,7 +176,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
   // 
   const changeSelectedObsModuleInstanceId = (selectedItem) => {
     const atmVarStateContext = cloneDeep(atomVarStateContext)
-    atsVarStateLib.setContextIcons('evaluation',
+    atsVarStateLib.setContextIcons(ICON_TYPE,
                                    { observationModuleInstanceId: selectedItem.target.value },
                                    atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
@@ -176,7 +185,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
   // 
   const changeSelectedSimModuleInstanceId = (selectedItem) => {
     const atmVarStateContext = cloneDeep(atomVarStateContext)
-    atsVarStateLib.setContextIcons('evaluation',
+    atsVarStateLib.setContextIcons(ICON_TYPE,
                                    { simulationModuleInstanceId: selectedItem.target.value },
                                    atmVarStateContext)
     setAtVarStateContext(atmVarStateContext)
@@ -191,7 +200,7 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // build options for parameter groups
   const allParameterGroupOptions = []
-  const iconsArgs = atsVarStateLib.getContextIconsArgs('evaluation', atomVarStateContext)
+  const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext)
   const selectedMetric = iconsArgs.metric
   const selectedParameterGroup = iconsArgs.parameterGroupId
   const simModuleInstanceId = iconsArgs.simulationModuleInstanceId

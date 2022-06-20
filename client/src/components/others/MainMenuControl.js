@@ -61,7 +61,6 @@ const MainMenuControl = ({ settings, position }) => {
 
   // build content of the menu
   const menuContent = (
-    <>
       <animated.div className={ownStyles.content} style={contentProps}>
         <Container className="h-100" ref={divRef}>
           <Row>
@@ -139,33 +138,23 @@ const MainMenuControl = ({ settings, position }) => {
               <Tab eventKey="tabFilters" title="Filters">
                 <TabFilters
                   filtersData={consFixed.filters}
-                  locationsData={consFixed.locations}
-                  thresholdValueSets={consFixed.thresholdValueSets}
-                  thresholdGroups={consFixed.thresholdGroup}
-                  settings={settings}
+                  settings={settings} 
                 />
               </Tab>
 
               <Tab eventKey="tabActiveFeatureInfo" title="Info">
-                <TabActiveFeatureInfo
-                  settings={settings}
-                // filtersData={consFixed['filters']}
-                />
+                <TabActiveFeatureInfo settings={settings} />
               </Tab>
             </Tabs>
           </Row>
         </Container>
       </animated.div>
-
-    </>
   );
 
   // containing div th
   return (
-    <div
-      className={`${ownStyles.mainContainer} leaflet-control leaflet-bar ${position}`}
-    >
-      {menuContent}
+    <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar ${position}`} >
+        {menuContent}
     </div>
   );
 };

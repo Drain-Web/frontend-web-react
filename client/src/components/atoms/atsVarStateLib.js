@@ -85,6 +85,7 @@ const addLocations = (locationIds, iconDefault, displayDefault, atVarStateLocati
 
 //
 const hideAllLocationIcons = (atVarStateLocations) => {
+  console.log("HIDE ALL LOCATIONS!")
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].display = false }
 }
 
@@ -136,6 +137,10 @@ const inMainMenuControlActiveTabFilters = (atVarStateDomMainMenuControl) => {
 
 //
 const inMainMenuControlActiveTabOverview = (atVarStateDomMainMenuControl) => {
+
+  // TODO: the following line is a personal shame
+  if (!atVarStateDomMainMenuControl.activeTab) { return true }
+
   return (atVarStateDomMainMenuControl.activeTab === 'tabOverview')
 }
 
@@ -157,6 +162,11 @@ const setMainMenuControlActiveTabAsActiveFeatureInfo = (atVarStateDomMainMenuCon
 //
 const setMainMenuControlActiveTabAsFilters = (atVarStateDomMainMenuControl) => {
   atVarStateDomMainMenuControl.activeTab = 'tabFilters'
+}
+
+//
+const setMainMenuControlActiveTabAsOverview = (atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.activeTab = 'tabOverview'
 }
 
 // ** PUBLIC FUNCTIONS - DomTimeseriesPanel ****************************************************
@@ -354,9 +364,11 @@ const vectorGridAnimationStop = (atVarStateVectorGridAnimation) => {
 const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
                              atVarStateContext, atVarStateDomMapLegend, consCache,
                              consFixed, settings) => {
-  // TODO: implement
+  
+  console.log("In updateLocationIcons()!")
   if (inMainMenuControlActiveTabOverview(atVarStateDomMainMenuControl)) {
     // if in overview shows all locations
+    console.log("Calling showAllLocationIcons()!")
     showAllLocationIcons(atVarStateLocations)
     setUniformIcon(settings.generalLocationIcon, atVarStateLocations)
   } else if (inMainMenuControlActiveTabFilters(atVarStateDomMainMenuControl)) {
@@ -406,6 +418,18 @@ const _getObjectFromArrayById = (idValue, arrayData) => {
 
 
 // 
+const _isComparisonWinner = (selectedMetric, curWinningValue, curEvaluatedValue) => {
+  if (selectedMetric === 'higherMax') {
+    return (curEvaluatedValue.maxValue > curWinningValue)
+  } else if (selectedMetric === 'lowerMax') {
+    return (curEvaluatedValue.maxValue < curWinningValue)
+  } else {
+    return false
+  }
+}
+
+
+// 
 const _replaceUrlParam = (url, paramName, paramValue) => {
   const newParamValue = (paramValue === null) ? '' : paramValue
   const pattern = new RegExp('\\b(' + paramName + '=).*?(&|#|$)')
@@ -429,6 +453,8 @@ const _updateLocationIconsCompetition = (atVarStateContext, atVarStateDomMapLege
 
   // 
   const competitionArgs = getContextIconsArgs('competition', atVarStateContext).moduleInstanceId
+  if (!competitionArgs) { return }
+
   const allIcons = settings.locationIconsOptions.comparison.icons  // TODO - change to competition
   const selModInstIdsArray = Array.from(competitionArgs.simulationModuleInstanceIds)
   const useIcons = allIcons.slice(0, selModInstIdsArray.length)
@@ -848,8 +874,9 @@ const atsVarStateLib = {
   setContextIcons: setContextIcons,
   setContextIconsArgs: setContextIconsArgs,
   setMainMenuControlActiveTab: setMainMenuControlActiveTab,
-  setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
+  setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
+  setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
   setMapZoomLevel: setMapZoomLevel,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,

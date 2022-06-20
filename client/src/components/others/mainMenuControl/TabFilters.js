@@ -24,94 +24,84 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 
 // ** AUX FUNCS ********************************************************************************
 
-const identifyGeoEvents = (filtersData) => {
-  // Function that identifies unique geo units and events
-  // Returns two dictionaries (geo list, evt list) with {id: label} each
+// Function that identifies unique geo units and events
+// Returns two dictionaries (geo list, evt list) with {id: label} each
+const identifyGeoEvents = (filtersData, curFilterGeoId, curFilterEvtId) => {
 
-  // first identify unique events and geo filters into dictionaries
+  // first identify unique events and geo filters into dictionaries {id: name}
+  // only considers the ones in which the current event OR the current geo is part of it
   const [evtDict, geoDict] = [{}, {}]
   for (const curFilter of filtersData) {
     const curFilterIdSplit = curFilter.id.split('.')
     const curFilterNameSplit = curFilter.description.split('@')
     if ((curFilterIdSplit.length !== 2) || (curFilterNameSplit.length !== 2)) {
-      console.log('Cannot parse filter "' + curFilter.id + '":' + curFilter.description + '.')
+      console.warn('Cannot parse filter "' + curFilter.id + '":' + curFilter.description + '.')
       continue
     }
     const [curEvtId, curGeoId] = curFilterIdSplit
     const [curEvtName, curGeoName] = curFilterNameSplit
+
+    // check if at least one of the selected filters is contemplated
+    if ((curFilterEvtId !== curEvtId) && (curFilterGeoId !== curGeoId)) { continue }
+
+    // add to the dictionaries
     evtDict[curEvtId] = curEvtName
     geoDict[curGeoId] = curGeoName
   }
 
   // then convert the dictionaries into lists of [id, name] elements
   const [evtList, geoList] = [[], []]
-  for (const [k, v] of Object.entries(geoDict)) {
-    geoList.push([k, v])
-  }
-  for (const [k, v] of Object.entries(evtDict)) {
-    evtList.push([k, v])
-  }
+  for (const [k, v] of Object.entries(geoDict)) { geoList.push([k, v]) }
+  for (const [k, v] of Object.entries(evtDict)) { evtList.push([k, v]) }
 
   return { geo: geoList, events: evtList }
 }
 
-const isLocationAttribute = (valueFunction) => {
-  const firstLetter = valueFunction.charAt(0)
-  const lastLetter = valueFunction.charAt(valueFunction.length - 1)
-  return ((firstLetter === '@') && (lastLetter == '@'))
-}
 
-const getByIdFromList = (list, id) => {
-  for (const idx in list) {
-    if (list[idx].id === id) { return (list[idx]) }
-  }
-  return (null)
-}
-
-const getByFilterIdFromDict = (dict, filterId) => {
-  for (const idx of Object.keys(dict)) {
-    if (dict[idx].filterId === filterId) { return (dict[idx]) }
-  }
-  return (null)
-}
-
-
-export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thresholdGroups,
-  settings}) => {
+export const TabFilters = ({ filtersData, settings }) => {
   // ** SET HOOKS ******************************************************************************
 
   // Get global states and set local states
   const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
-  const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] = useRecoilState(atVarStateDomTimeSeriesData)
+  const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] =
+    useRecoilState(atVarStateDomTimeSeriesData)
 
   // ** DEFS ***********************************************************************************
 
+  // Triggered when the subregion selectbox is changed
   const changeGeoSubFilter = (event) => {
-    // Triggered when the subregion selectbox is changed
+    // get atoms
     const atmVarStateContext = cloneDeep(atomVarStateContext)
     const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
     const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
-    console.log('Changed geo subfilter to:', event.target.value)
+
+    // merge new event with current geo
     const newGeoFilterId = event.target.value
     const curEvtFilterId = curFilterId.split('.')[0]
     const newFilterId = curEvtFilterId.concat('.').concat(newGeoFilterId)
-    console.log(' Setting:', newFilterId)
-    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext, atmVarStateDomTimeSeriesData)
+
+    // save state
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext,
+      atmVarStateDomTimeSeriesData)
     setAtVarStateContext(atmVarStateContext)
     setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
 
+  // Triggered when the event selectbox is changed
   const changeEventSubFilter = (event) => {
-    // Triggered when the event selectbox is changed
+    // get atoms
     const atmVarStateContext = cloneDeep(atomVarStateContext)
     const atmVarStateDomTimeSeriesData = cloneDeep(atomVarStateDomTimeSeriesData)
+    
+    // merge new event with current geo
     const curFilterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
-    console.log('Changed event subfilter to:', event.target.value)
     const curGeoFilterId = curFilterId.split('.')[1]
     const newEvtFilterId = event.target.value
     const newFilterId = newEvtFilterId.concat('.').concat(curGeoFilterId)
-    console.log(' Setting:', newFilterId, 'to', JSON.stringify(atmVarStateContext))
-    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext, atmVarStateDomTimeSeriesData)
+    
+    // save state
+    atsVarStateLib.setContextFilterId(newFilterId, atmVarStateContext,
+      atmVarStateDomTimeSeriesData)
     setAtVarStateContext(atmVarStateContext)
     setAtVarStateDomTimeSeriesData(atmVarStateDomTimeSeriesData)
   }
@@ -126,24 +116,27 @@ export const TabFilters = ({ filtersData, locationsData, thresholdValueSets, thr
 
   // ** MAIN RENDER ****************************************************************************
 
-  const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData)
+  // gather info
+  const curFilterGeoId = atsVarStateLib.getContextFilterGeoId(atomVarStateContext)
+  const curFilterEvtId = atsVarStateLib.getContextFilterEvtId(atomVarStateContext)
+  const { geo: retGeo, events: retEvt } = identifyGeoEvents(filtersData, curFilterGeoId,
+    curFilterEvtId)
+
   return (
     <Form>
       <Container className='p-0'>
-        <Row>
-          <Col>
-            <SubFilterSelectBox
-              idTitleList={retGeo}
-              selectedId={atsVarStateLib.getContextFilterGeoId(atomVarStateContext)}
-              onChangeFunction={changeGeoSubFilter}
-              label='Sub-Area'
-            />
-          </Col>
-        </Row>
+        <Row><Col>
+          <SubFilterSelectBox
+            idTitleList={retGeo}
+            selectedId={curFilterGeoId}
+            onChangeFunction={changeGeoSubFilter}
+            label='Sub-Area'
+          />
+        </Col></Row>
         <Row className={ownStyles['row-padding-top']}><Col>
           <SubFilterSelectBox
             idTitleList={retEvt}
-            selectedId={atsVarStateLib.getContextFilterEvtId(atomVarStateContext)}
+            selectedId={curFilterEvtId}
             onChangeFunction={changeEventSubFilter}
             label='Event'
           />
