@@ -85,7 +85,6 @@ const addLocations = (locationIds, iconDefault, displayDefault, atVarStateLocati
 
 //
 const hideAllLocationIcons = (atVarStateLocations) => {
-  console.log("HIDE ALL LOCATIONS!")
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].display = false }
 }
 
@@ -365,12 +364,11 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
                              atVarStateContext, atVarStateDomMapLegend, consCache,
                              consFixed, settings) => {
   
-  console.log("In updateLocationIcons()!")
   if (inMainMenuControlActiveTabOverview(atVarStateDomMainMenuControl)) {
     // if in overview shows all locations
-    console.log("Calling showAllLocationIcons()!")
     showAllLocationIcons(atVarStateLocations)
     setUniformIcon(settings.generalLocationIcon, atVarStateLocations)
+
   } else if (inMainMenuControlActiveTabFilters(atVarStateDomMainMenuControl)) {
     // if in a specific filter, decide location by location
     const contextIconType = getContextIconsType(atVarStateContext)
@@ -396,7 +394,7 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
 
       console.log('Should have updated by Competition')  // TODO: remove it
     } else {
-      setMapLegendVisibility(true, atVarStateDomMapLegend)
+      setMapLegendVisibility(false, atVarStateDomMapLegend)
       hideAllLocationIcons(atVarStateLocations)
       console.log('Hide icons because update icon was not implemented yet.')  // TODO: remove it
     }
@@ -705,12 +703,24 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
     const curTimeseriesData = consCacheLib.getTimeseriesData(curTimeseriesId, consCache)
     if (allParameterIds.has(curTimeseriesData.header.parameterId) &&
         (curTimeseriesData.header.moduleInstanceId === moduleInstanceId)) {
-      // define the threshold level
+
+      // basic check
+      if (!atVarStateLocations[curTimeseriesData.header.location_id]) {
+        console.log("Not found", curTimeseriesData.header.location_id, "in", atVarStateLocations)
+        continue
+      }
+      
+      // get location id and data
       const curLocationId = curTimeseriesData.header.location_id
       const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
       console.log("Location data of", curLocationId, ":", curLocationData)
-      const thresholdLevel = getThresholdLevel(curTimeseriesData, curLocationData,
-        thresholdGroupData, thresholdLevelFunction)
+
+      // define the threshold level
+      let thresholdLevel = null
+      if (curLocationData) {
+        thresholdLevel = getThresholdLevel(curTimeseriesData, curLocationData,
+          thresholdGroupData, thresholdLevelFunction)
+      }
 
       // set the icon properly
       let selectedIcon = null
@@ -877,6 +887,9 @@ const atsVarStateLib = {
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
+  setMapLegendSubtitle: setMapLegendSubtitle,
+  setMapLegendIcons: setMapLegendIcons,
+  setMapLegendVisibility: setMapLegendVisibility,
   setMapZoomLevel: setMapZoomLevel,
   setTimeSeriesPlotAvailableVariables: setTimeSeriesPlotAvailableVariables,
   setTimeSeriesPlotArrays: setTimeSeriesPlotArrays,

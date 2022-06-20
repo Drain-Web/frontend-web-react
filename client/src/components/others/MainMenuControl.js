@@ -54,6 +54,7 @@ const MainMenuControl = ({ settings, position }) => {
   const tabOnSelect = (selectedTab) => {
     const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl);
     atsVarStateLib.setMainMenuControlActiveTab(selectedTab, atmVarStateDomMainMenuControl)
+    console.log("Setting new tab as:", selectedTab)
     setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
   }
 

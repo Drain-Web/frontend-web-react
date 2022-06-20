@@ -56,7 +56,6 @@ const MapControler = ({ settings }) => {
   // TODO: move to state manager
   // when atom context or active tab is changed, update location icons
   useEffect(() => {
-    console.log('updateLocationIcons from MapControler')
     atsVarStateLib.updateLocationIcons(atmVarStateDomMainMenuControl, atmVarStateLocations,
                                        atmVarStateContext, atmVarStateDomMapLegend,
                                        consCache, consFixed, settings)

@@ -1,11 +1,9 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import axios from 'axios'
 import { useRecoilState } from "recoil"
 
 // import contexts
-import ConsFixed from '../../contexts/ConsFixed'
 import ConsCache from '../../contexts/ConsCache'
 import consCacheLib from '../../contexts/consCacheLib'
 
@@ -17,17 +15,9 @@ import atsVarStateLib from '../../atoms/atsVarStateLib.js';
 import { atVarStateContext } from "../../atoms/atsVarState";
 import { cloneDeep } from 'lodash'
 
-// function 'fetcher' will do HTTP requests
-const fetcher = (url) => axios.get(url).then((res) => res.data)
-
 const ICON_TYPE = "evaluation"
 
-// same as 'fetcher', but includes extra info in response
-async function fetcherWith (url, extra) {
-  const jsonData = await fetcher(url)
-  return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
-}
-
+// TODO: move to a shared place
 const getParameterGroupsOfMetric = (metricId, settings) => {
   const paramGroups = settings.locationIconsOptions.evaluation.options[metricId].parameterGroups
   return Object.keys(paramGroups)
@@ -48,116 +38,8 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // get atoms
   const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
-
-  // when the component is loaded, some consistency checks are made
-  useEffect(() => {
-
-    // basic check 1
-    if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
-
-    const atmVarStateContext = cloneDeep(atomVarStateContext)
-    const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atmVarStateContext)
-    let anyChange = false
-
-    // if no metric selected, select one
-    if (!iconsArgs.metric) {
-      const allEvaluationIds = Object.keys(settings.locationIconsOptions.evaluation.options)
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'metric', allEvaluationIds[0],
-                                         atmVarStateContext)
-      iconsArgs.metric = allEvaluationIds[0]
-      anyChange = true
-    }
-
-    // if no parameter group selected, select one
-    const paramGroupIds = getParameterGroupsOfMetric(iconsArgs.metric, settings)
-    if ((!iconsArgs.parameterGroupId) && (paramGroupIds.length > 0)) {
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'parameterGroupId', paramGroupIds[0],
-                                         atmVarStateContext)
-      iconsArgs.parameterGroupId = paramGroupIds[0]
-      anyChange = true
-    }
-
-    // 
-    const [simParameterId, obsParameterId] = getSimObsParameterIds(iconsArgs.metric,
-      iconsArgs.parameterGroupId, settings)
-
-    // get all module ids
-    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
-    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
-
-    // if no simulation module instance selected, select one
-    if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'simulationModuleInstanceId',
-                                         allSimModInstIds.values().next().value,
-                                         atmVarStateContext)
-      anyChange = true
-    }
-
-    // if no observation module instance selected, select one
-    if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'observationModuleInstanceId',
-                                         allObsModInstIds.values().next().value,
-                                         atmVarStateContext)
-      anyChange = true
-    }
-
-    // update if needed
-    if (anyChange) { 
-      console.log("Updated context from evaluation subform.")
-      setAtVarStateContext(atmVarStateContext)
-    }
-
-  }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
-
-
-  // TODO: review it makes sense
-  useEffect(() => {
-
-    // get base values
-    const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext)
-    const selectedMetric = iconsArgs.metric
-    const selectedParameterGroup = iconsArgs.parameterGroupId
-
-    // basic check
-    if ((!selectedMetric) || (!selectedParameterGroup)) { return }
-
-    // get all module ids
-    const [simParameterId, obsParameterId] = getSimObsParameterIds(selectedMetric,
-      selectedParameterGroup, settings)
-    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
-    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
-
-    const atmVarStateContext = cloneDeep(atomVarStateContext)
-    let anyChange = false
-    
-    // if no simulation module instance selected, select one
-    if ((!iconsArgs.simulationModuleInstanceId) && (allSimModInstIds) && (allSimModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'simulationModuleInstanceId',
-                                         allSimModInstIds.values().next().value,
-                                         atmVarStateContext)
-      anyChange = true
-    }
-
-    // if no observation module instance selected, select one
-    if ((!iconsArgs.observationModuleInstanceId) && (allObsModInstIds) && (allObsModInstIds.size > 0)) {
-      atsVarStateLib.setContextIconsArgs(ICON_TYPE, 'observationModuleInstanceId',
-                                         allObsModInstIds.values().next().value,
-                                         atmVarStateContext)
-      anyChange = true
-    }
-
-    // update if needed
-    if (anyChange) { setAtVarStateContext(atmVarStateContext) }
-
-  }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
   
-
-  // ** BUILD COMPONENT ************************************************************************
-
-  // only builds if in 'evaluation' tab
-  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) {
-    return (null)
-  }
+  // ** ON-CLICK FUNCTIONS *********************************************************************
 
   // build reaction function
   const changeSelectedMetric = (selectedItem) => {
@@ -191,6 +73,28 @@ const IconsModelEvaluationSubform = ({ settings }) => {
     setAtVarStateContext(atmVarStateContext)
   }
 
+  // ** BUILD COMPONENT ************************************************************************
+
+  // only builds if in 'evaluation' tab and if everything is set
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
+
+  // basic check
+  const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext)
+  let continueIt = true
+  if (!iconsArgs.metric) { continueIt = false }
+  if (!iconsArgs.parameterGroupId) { continueIt = false }
+  if (!iconsArgs.observationModuleInstanceId) { continueIt = false }
+  if (!iconsArgs.simulationModuleInstanceId) { continueIt = false }
+  if (!continueIt) {
+
+    // if the only information missing is the simulation, inform the user
+    if (iconsArgs.metric && iconsArgs.parameterGroupId && iconsArgs.observationModuleInstanceId) {
+      return (<p>No simulation data to evaluate.</p>)
+    } else {
+      return (null)
+    }
+  }
+
   // build options for metrics
   const allMetricOptions = []
   const allEvaluationIds = Object.keys(settings.locationIconsOptions.evaluation.options)
@@ -200,7 +104,6 @@ const IconsModelEvaluationSubform = ({ settings }) => {
 
   // build options for parameter groups
   const allParameterGroupOptions = []
-  const iconsArgs = atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext)
   const selectedMetric = iconsArgs.metric
   const selectedParameterGroup = iconsArgs.parameterGroupId
   const simModuleInstanceId = iconsArgs.simulationModuleInstanceId
@@ -227,8 +130,10 @@ const IconsModelEvaluationSubform = ({ settings }) => {
       selectedParameterGroup, settings)
     
     // get all module ids
-    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId, consCache)
-    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId, consCache)
+    const allSimModInstIds = consCacheLib.getModuleInstancesWithParameter(simParameterId,
+      consCache)
+    const allObsModInstIds = consCacheLib.getModuleInstancesWithParameter(obsParameterId,
+      consCache)
   
     // build simulation options
     for (const curSimulationModuleInstanceId of allSimModInstIds) {

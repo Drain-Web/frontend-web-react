@@ -43,6 +43,7 @@ const IconsAlertsSubform = ( { settings } ) => {
 
   const atmVarStateContext = cloneDeep(atomVarStateContext)
 
+  /*
   // TODO: move to VarsStateManager
   // react on change
   useEffect(() => {
@@ -105,6 +106,7 @@ const IconsAlertsSubform = ( { settings } ) => {
       atsVarStateLib.getContextIconsType(atomVarStateContext),
       atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).thresholdGroupId,
       atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext).moduleInstanceId])
+  */
 
   // ** ON CLICK FUNCTIONS *********************************************************************
 
@@ -135,7 +137,6 @@ const IconsAlertsSubform = ( { settings } ) => {
 
   // if no thresholdGroup or moduleInstanceId selected, break it
   const contextIconsArgs = atsVarStateLib.getContextIconsArgs('alerts', atomVarStateContext)
-  console.log("HAS:", JSON.stringify(contextIconsArgs))
   if (!contextIconsArgs.thresholdGroupId ) {
     console.log("Hide by no selectedThresholdGroup even now.")
     return(<></>)
@@ -157,8 +158,7 @@ const IconsAlertsSubform = ( { settings } ) => {
   
   return (
     <>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
+      <Row className={ownStyles['row-padding-top']}><Col>
           <FloatingLabel label='Warning'>
             <Form.Control
               as='select'
@@ -170,10 +170,8 @@ const IconsAlertsSubform = ( { settings } ) => {
               {thresholdGroupOptions}
             </Form.Control>
           </FloatingLabel>
-        </Col>
-      </Row>
-      <Row className={ownStyles['row-padding-top']}>
-        <Col>
+      </Col> </Row>
+      <Row className={ownStyles['row-padding-top']}> <Col>
           <FloatingLabel label='Module Instance Id'>
             <Form.Control
               as='select'
@@ -185,8 +183,7 @@ const IconsAlertsSubform = ( { settings } ) => {
               {moduleInstanceOptions}
             </Form.Control>
           </FloatingLabel>
-        </Col>
-      </Row>
+      </Col> </Row>
     </>
   )
 }

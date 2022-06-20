@@ -1,17 +1,15 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilState } from "recoil"
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache'
-import ConsFixed from '../../contexts/ConsFixed'
 import consCacheLib from '../../contexts/consCacheLib'
 
 // import atoms
 import atsVarStateLib from '../../atoms/atsVarStateLib.js';
-import { atVarStateContext, atVarStateLocations, atVarStateDomMapLegend,
-  atVarStateDomMainMenuControl } from "../../atoms/atsVarState";
+import { atVarStateContext } from "../../atoms/atsVarState";
 import { cloneDeep } from 'lodash'
 
 // import CSS styles
@@ -20,7 +18,8 @@ import ownStyles from '../../../style/MainMenuControl.module.css'
 const ICON_TYPE = "comparison"
 
 
-// TODO
+// TODO: temp code
+// TODO: move to a shared place
 const getAvailableMetrics = () => {
   return {
     'higherMax': 'Higher Max',
@@ -35,10 +34,14 @@ const getGuideMessage = (numberSelectedModuleInstanceIds) => {
   return null
 }
 
+// TODO: temp code
+// TODO: move to a shared place
 const getParameterAndMetric = (parameterMetric) => {
   return parameterMetric.split('|');
 }
 
+// TODO: temp code
+// TODO: move to a shared place
 const getParameterMetric = (param, metric) => {
   return param + '|' + metric
 }
@@ -49,14 +52,11 @@ const IconsModelsComparisonSubform = ({ settings }) => {
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
-  const { consFixed } = useContext(ConsFixed)
   const [guideMessage, setGuideMessage] = useState(null)
 
   const [atomVarStateContext, setAtVarStateContext] = useRecoilState(atVarStateContext)
-  const atomVarStateDomMainMenuControl = useRecoilValue(atVarStateDomMainMenuControl)
-  const [atomVarStateLocations, setAtVarStateLocations] = useRecoilState(atVarStateLocations)
-  const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] = useRecoilState(atVarStateDomMapLegend)
   
+  /*
   // when the component is loaded, some consistency checks are made
   useEffect(() => {
     // only triggers when "comparison" is selected and the selected metric is not null
@@ -88,8 +88,9 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     }
 
   }, [atsVarStateLib.getContextIconsType(atomVarStateContext)])
+  */
 
-
+  /*
   // react on change
   useEffect(() => {
     // only triggers when "comparison" is selected and the selected metric is not null
@@ -115,18 +116,14 @@ const IconsModelsComparisonSubform = ({ settings }) => {
       atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).metric),
     atsVarStateLib.getContextIconsArgs(ICON_TYPE, atomVarStateContext).moduleInstanceIds
   ])
+  */
 
-  /* ** BUILD COMPONENT ********************************************************************** */
+  // ** BUILD COMPONENT ************************************************************************
 
   // only builds if in 'competition' tab
-  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { 
-    console.log("__Not in '", ICON_TYPE, "' but in",
-      atsVarStateLib.getContextIconsType(atomVarStateContext))
-    return (null)
-  } else {
-    console.log("__Yes, in", ICON_TYPE)
-  }
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
 
+  // TODO: temp code
   // build reaction function
   const changeParameterMetric = (selectedParameterMetric) => {
     let selParamMetric = null
@@ -227,7 +224,6 @@ const IconsModelsComparisonSubform = ({ settings }) => {
     })
   }
 
-  console.log("__Building rows.")
   return (
     <>
       <Row className={ownStyles['row-padding-top']}>
