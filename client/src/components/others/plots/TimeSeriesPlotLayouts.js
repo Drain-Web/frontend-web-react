@@ -1,6 +1,8 @@
 import React from "react";
 import Plot from "react-plotly.js";
 
+import { cloneDeep } from 'lodash'
+
 
 // ** AUX FUNCTIONS ****************************************************************************
 
@@ -20,7 +22,7 @@ const getPlotLayoutDict1var = (availableVariables, unitsVariables, baseDict) => 
   baseDict['yaxis'] = {
     title: availableVariables[0] + " [" + unitsVariables[0] + "]",
   }
-  baseDict['autosize'] = true
+  baseDict['autosize'] = false
 }
 
 
@@ -47,9 +49,10 @@ const TimeSeriesPlotLayouts = ({
   thresholdsArray
 }) => {
   const updatemenus = [{
-      visible: true,
-      anchor: "top",
-      buttons: [{
+    visible: true,
+    anchor: "top",
+    buttons: [
+      {
         method: "restyle",
         args: [{ "line.color": "red" }],
         label: "red",
@@ -58,8 +61,8 @@ const TimeSeriesPlotLayouts = ({
         args: [{ "line.color": "blue" }],
         label: "blue",
       }
-    ]}
-  ];
+    ]
+  }];
 
   // build layout attributes dictionary
   const layouts = createBasicPlotLayoutDict(plotData);
@@ -68,13 +71,15 @@ const TimeSeriesPlotLayouts = ({
   } else if (availableVariables.length == 2) {
     getPlotLayoutDict2vars(availableVariables, unitsVariables, layouts);
   } else {
-    return(<div>INVALID ARGUMENTS: length {availableVariables.length}</div>)
+    return (<div>INVALID ARGUMENTS: length {availableVariables.length}</div>)
   }
-  
+
   // add threshold lines (if needed)
   const retData = (thresholdsArray != null) ? plotArray.concat(thresholdsArray) : plotArray
-
-  return (<Plot data={retData} layout={layouts} />)
+  
+  // builds the plot effectively
+  // for some reason, it only works if the data is deep cloned 
+  return (<Plot data={cloneDeep(retData)} layout={cloneDeep(layouts)} />)
 };
 
-export default TimeSeriesPlotLayouts;
+export default TimeSeriesPlotLayouts

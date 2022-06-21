@@ -20,10 +20,8 @@ import consCacheLib from '../contexts/consCacheLib'
 
 // context and atoms
 import atsVarStateLib from "../atoms/atsVarStateLib";
-import { atVarStateActiveLocation,
-         atVarStateContext,
-         atVarStateDomTimeSeriesData,
-         atVarStateDomTimeseriesPanel }
+import { atVarStateActiveLocation, atVarStateContext,
+         atVarStateDomTimeSeriesData, atVarStateDomTimeseriesPanel }
   from "../atoms/atsVarState";
 
 // import styles
@@ -208,7 +206,8 @@ const DraggableTimeseriesDiv = ({ settings }) => {
 
   // ** MAIN RENDER  ***************************************************************************
 
-  const timeSeriesPlotAvailableVariables = atsVarStateLib.getTimeSeriesPlotAvailableVariables(atomVarStateDomTimeSeriesData)
+  const timeSeriesPlotAvailableVariables =
+    atsVarStateLib.getTimeSeriesPlotAvailableVariables(atomVarStateDomTimeSeriesData)
 
   return (
     <div
@@ -226,16 +225,15 @@ const DraggableTimeseriesDiv = ({ settings }) => {
               <LoadTimeSeriesData settings={settings} />
               {timeSeriesPlotAvailableVariables && (
                 <Tabs
-                  defaultActiveKey={
-                    timeSeriesPlotAvailableVariables[0]
-                  }
+                  defaultActiveKey={ timeSeriesPlotAvailableVariables[0] }
                   id="uncontrolled-tab-example"
                   className="mb-3"
                 >
                   {
                     /* Add one tab per time series */
                     Object.keys(timeSeriesPlotAvailableVariables).map(
-                      (parameterGroupId) => timeseriesTab(parameterGroupId, atomVarStateDomTimeSeriesData)
+                      (parameterGroupId) => timeseriesTab(parameterGroupId,
+                                                          atomVarStateDomTimeSeriesData)
                     )
                   }
                   {metricMatrixTab('', consCache)}
@@ -282,7 +280,7 @@ const PanelTabs = ({ position, settings }) => {
     // and only if there is at least one evaluation metric available
     const evaluationMetrics = listMetrics(settings)
     if ((!evaluationMetrics) || (evaluationMetrics.length === 0)) {
-      consCacheLib.setEvaluationsLastRequestUrl(null, consCache)
+      consCacheLib.setEvaluationLastRequestUrl(null, consCache)
       setVarState(Math.random())
       return
     }
@@ -297,14 +295,14 @@ const PanelTabs = ({ position, settings }) => {
     // get parameters available
     const parametersAndModules = getParametersAndModuleInstanceIds(atomVarStateDomTimeSeriesData, parameterGroupId)
     if ((!parametersAndModules) || (!parametersAndModules[simParameterId]) || (!parametersAndModules[obsParameterId])) {
-      consCacheLib.setEvaluationsLastRequestUrl(null, consCache)
+      consCacheLib.setEvaluationLastRequestUrl(null, consCache)
       setVarState(Math.random())
       return
     }
 
     // final response function: get data from consCache and update varsState
     const callbackFunc = (urlRequested) => {
-      consCacheLib.setEvaluationsLastRequestUrl(urlRequested, consCache)
+      consCacheLib.setEvaluationLastRequestUrl(urlRequested, consCache)
       setVarState(Math.random())
     }
 
@@ -322,7 +320,7 @@ const PanelTabs = ({ position, settings }) => {
     )
 
     //
-    consCacheLib.setEvaluationsLastRequestUrl(urlTimeseriesCalcRequest, consCache)
+    consCacheLib.setEvaluationLastRequestUrl(urlTimeseriesCalcRequest, consCache)
     if (consCacheLib.wasUrlRequested(urlTimeseriesCalcRequest, consCache) ||
         !urlTimeseriesCalcRequest) {
       callbackFunc(urlTimeseriesCalcRequest)
