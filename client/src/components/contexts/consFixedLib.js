@@ -35,6 +35,11 @@ const getParameterIdsFromParameterGroup = (parameterGroup, consFixed) => {
 }
 
 //
+const getParameterData = (parameterId, consFixed) => {
+  return consFixed.parameters[parameterId]
+}
+
+//
 const getParameterGroupOfParameterId = (parameterId, consFixed) => {
   return consFixed.parameters[parameterId].parameterGroup
 }
@@ -126,6 +131,7 @@ const getThresholdLevelFromValueFunction = (valueFunction, consFixed) => {
 const consFixedLib = {
   getFilterData: getFilterData,
   getLocationData: getLocationData,
+  getParameterData: getParameterData,
   getParameterGroupOfParameterId: getParameterGroupOfParameterId,
   getRegionData: getRegionData,
   getThresholdGroupBaseIcons: getThresholdGroupBaseIcons,

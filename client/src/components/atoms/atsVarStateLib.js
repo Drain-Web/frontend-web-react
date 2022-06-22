@@ -574,6 +574,8 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
 // changes all locations' icons and display flags according to the selescted filter Id
 const _updateLocationIconsUniform = (atVarStateContext, atVarStateLocations,
                                      atVarStateDomMapLegend, consCache, settings) => {
+  const iconsArgs = atsVarStateLib.getContextIconsArgs('uniform', atVarStateContext)
+
   // get all timeseries of filterId
   const filterId = getContextFilterId(atVarStateContext)
   const timeseriesIdsByFilter = consCacheLib.getTimeseriesIdsInFilterId(filterId, consCache)
@@ -583,14 +585,30 @@ const _updateLocationIconsUniform = (atVarStateContext, atVarStateLocations,
     return
   }
 
-  // get locations of the selected timeseries
-  const locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
-    return (consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
-  }))
+  let locationIdsByFilter = null
+
+  if (iconsArgs.filterBy && iconsArgs.filterValues.size) {
+    // if needed, remove locations with a specific criteria certain parameter
+    locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
+      const curTimeseriesData = consCacheLib.getTimeseriesData(timeseriesId, consCache)
+      const curParameterIdInSet = "parameter."+curTimeseriesData.header.parameterId
+      return (iconsArgs.filterValues.has(curParameterIdInSet) ?
+                consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache) : null)
+    }))
+    locationIdsByFilter.delete(null)
+
+  } else {
+    // get locations of the selected timeseries
+    locationIdsByFilter = new Set(Array.from(timeseriesIdsByFilter).map((timeseriesId) => {
+      return (consCacheLib.getLocationIdOfTimeseriesId(timeseriesId, consCache))
+    }))
+
+  }
 
   // update varsState location by location
   setUniformIcon(settings.generalLocationIcon, atVarStateLocations)
   for (const locationId in atVarStateLocations) {
+
     atVarStateLocations[locationId].display = locationIdsByFilter.has(locationId)
   }
   setMapLegendSubtitle('Uniform:', atVarStateDomMapLegend)

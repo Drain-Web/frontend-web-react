@@ -1,15 +1,20 @@
 import React, { useContext } from 'react'
 import { Col, Form, Row } from 'react-bootstrap'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
+import { cloneDeep } from 'lodash';
 
 // import contexts
 import ConsCache from '../../contexts/ConsCache.js'
+import ConsFixed from '../../contexts/ConsFixed.js'
 import consCacheLib from '../../contexts/consCacheLib'
 
 // import atoms
 import atsVarStateLib from '../../atoms/atsVarStateLib.js';
 import { atVarStateContext } from '../../atoms/atsVarState.js'
-import { useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
+import consFixedLib from '../../contexts/consFixedLib.js';
+
+const ICON_TYPE = "uniform"
 
 
 const IconsUniformSubform = ({ settings }) => {
@@ -17,12 +22,13 @@ const IconsUniformSubform = ({ settings }) => {
 
   // Get global states and set local states
   const { consCache } = useContext(ConsCache)
+  const { consFixed } = useContext(ConsFixed)
 
-  const atomVarStateContext = useRecoilValue(atVarStateContext)
+  const [ atomVarStateContext, setAtVarStateContext ] = useRecoilState(atVarStateContext)
 
   // ** BASIC CHECK ****************************************************************************
 
-  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== 'uniform') { return (null) }
+  if (atsVarStateLib.getContextIconsType(atomVarStateContext) !== ICON_TYPE) { return (null) }
 
   // 
   const filterId = atsVarStateLib.getContextFilterId(atomVarStateContext)
@@ -30,7 +36,28 @@ const IconsUniformSubform = ({ settings }) => {
   
   if (!timeseriesIds) { return (<p>Loading...</p>) }  // TODO: remove this hard-coded
 
-  // ** SOME LOGIC *****************************************************************************
+  // ** ON-CLICK FUNCTIONS *********************************************************************
+
+  const changeFilterBy = (selectedItem) => {
+    // check if selected item is a parameter or a parameter group
+    // TODO
+
+    const selValue = selectedItem.target.value
+    const filterValues = (selValue === 'null') ? new Set([]) : new Set([selValue])
+
+    // update the atom
+    const atmVarStateContext = cloneDeep(atomVarStateContext)
+    atsVarStateLib.setContextIcons(ICON_TYPE, 
+      {
+        filterBy: 'parameter',
+        filterValues: filterValues
+      },
+      atmVarStateContext)
+    console.log("Set filter:", selValue)
+    setAtVarStateContext(atmVarStateContext)
+  } 
+
+  // ** PREPARE COMPONENTS *********************************************************************
 
   // identify possible filters - create accumulater variable
   // lastUrl: lastUrlRequest,
@@ -55,22 +82,26 @@ const IconsUniformSubform = ({ settings }) => {
   // if (!filterOptions) { return (<p>Loading...</p>) }
 
   // build options
-  const allOptions = [(<option value={null} key='null'>No filter</option>)]
+  const allOptions = [(<option value={'null'} key='null'>No filter</option>)]
   allOptions.push.apply(allOptions, Array.from(filterOptions.parameters).map(
     (parameterId) => {
       const optValue = 'parameter.'.concat(parameterId)
-      return (<option value={optValue} key={optValue}>{parameterId}</option>)
+      return (<option value={optValue} key={optValue}>
+        { consFixedLib.getParameterData(parameterId, consFixed).shortName }
+      </option>)
     }
   ))
 
   return (
     <Row><Col>
-      <FloatingLabel label='Filter by'>
+      <FloatingLabel label='Filter bye'>
         <Form.Control
-          as='select'
-          className='rounded-1'
-          label='Filter by'>
-            {allOptions}
+            as='select'
+            className='rounded-1'
+            label='Filter bye'
+            onChange={changeFilterBy}
+            defaultValue={'null'}>
+          {allOptions}
         </Form.Control>
       </FloatingLabel>
     </Col></Row>
