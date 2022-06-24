@@ -56,7 +56,12 @@ const atVarStateDomMainMenuControl = atom({
     default: {
         show: true,
         activeTab: null,                        // <tabOverview|tabFilters|tabActiveFeatureInfo>
-        activeTabsHistory: []
+        activeTabsHistory: [],
+        tabParameters: {
+          tabFilters: {
+            vectorGridMode: 'static'
+          }
+        }
     }
 })
 

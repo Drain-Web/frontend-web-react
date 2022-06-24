@@ -125,6 +125,17 @@ const getMainMenuControlActiveTab = (atVarStateDomMainMenuControl) => {
 }
 
 //
+const getMainMenuControlTabParametersFilter = (atVarStateDomMainMenuControl) => {
+  return atVarStateDomMainMenuControl.tabParameters.tabFilters
+}
+
+//
+const setMainMenuControlTabParametersFilter = (tabFilterParameters,
+    atVarStateDomMainMenuControl) => {
+  atVarStateDomMainMenuControl.tabParameters.tabFilters = tabFilterParameters
+}
+
+//
 const inMainMenuControlActiveTabActiveFeatureInfo = (atVarStateDomMainMenuControl) => {
   return (atVarStateDomMainMenuControl.activeTab === 'tabActiveFeatureInfo')
 }
@@ -878,6 +889,7 @@ const atsVarStateLib = {
   getContextIconsArgs: getContextIconsArgs,
   getContextIconsType: getContextIconsType,
   getLastActiveTab: getLastActiveTab,
+  getMainMenuControlTabParametersFilter: getMainMenuControlTabParametersFilter,
   getMapLegendIcons: getMapLegendIcons,
   getMapLegendSubtitle: getMapLegendSubtitle,
   getMapLegendVisibility: getMapLegendVisibility,
@@ -905,6 +917,7 @@ const atsVarStateLib = {
   setMainMenuControlActiveTabAsActiveFeatureInfo: setMainMenuControlActiveTabAsActiveFeatureInfo,
   setMainMenuControlActiveTabAsFilters: setMainMenuControlActiveTabAsFilters,
   setMainMenuControlActiveTabAsOverview: setMainMenuControlActiveTabAsOverview,
+  setMainMenuControlTabParametersFilter: setMainMenuControlTabParametersFilter,
   setMapLegendSubtitle: setMapLegendSubtitle,
   setMapLegendIcons: setMapLegendIcons,
   setMapLegendVisibility: setMapLegendVisibility,

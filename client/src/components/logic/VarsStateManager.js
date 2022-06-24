@@ -44,11 +44,12 @@ const VarsStateManager = ({ settings, consFixed }) => {
         useRecoilState(atVarStateDomMainMenuControl)
     const [atomVarStateDomTimeSeriesData, setAtVarStateDomTimeSeriesData] =
         useRecoilState(atVarStateDomTimeSeriesData)
-    const [atomVarStateDomMap, setAtVarStateDomMap] = useRecoilState(atVarStateDomMap)
+    const atomVarStateDomMap = useRecoilValue(atVarStateDomMap)
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
         useRecoilState(atVarStateVectorGridAnimation)
     const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
-    const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
+    const [atomVarStateVectorGridMode, setAtVarStateVectorGridMode] = 
+        useRecoilState(atVarStateVectorGridMode)
     const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] =
         useRecoilState(atVarStateDomMapLegend)
 
@@ -111,6 +112,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
     // when the mode of representing the VectorGrid (static/animated) changes...
     useEffect(() => {
         
+        // update playing/stopped
         if (atomVarStateVectorGridMode === 'static') {
             if (atsVarStateLib.getVectorGridAnimationIsRunning(atomVarStateVectorGridAnimation)) {
                 const atmVarStateVectorGridAnimation = cloneDeep(atomVarStateVectorGridAnimation)
@@ -124,7 +126,31 @@ const VarsStateManager = ({ settings, consFixed }) => {
             setAtVarStateVectorGridAnimation(atmVarStateVectorGridAnimation)
         }
 
+        // update in filter parameters if needed
+        if (atsVarStateLib.inMainMenuControlActiveTabFilters(atomVarStateDomMainMenuControl)) {
+            const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
+            const params = atsVarStateLib.getMainMenuControlTabParametersFilter(atmVarStateDomMainMenuControl)
+            params.vectorGridMode = atomVarStateVectorGridMode
+            atsVarStateLib.setMainMenuControlTabParametersFilter(params, atmVarStateDomMainMenuControl)
+            setAtVarStateDomMainMenuControl(atmVarStateDomMainMenuControl)
+        }
+
     }, [atomVarStateVectorGridMode])
+
+    // when tab changes it may update the animation
+    useEffect(() => {
+
+        if (atsVarStateLib.inMainMenuControlActiveTabOverview(atomVarStateDomMainMenuControl)) {
+            // if in overview, force static
+            setAtVarStateVectorGridMode('static')
+        } else if (atsVarStateLib.inMainMenuControlActiveTabFilters(atomVarStateDomMainMenuControl)) {
+            // if in filter, force what is stored in filter option
+            const filterTabParams = atsVarStateLib.getMainMenuControlTabParametersFilter(atomVarStateDomMainMenuControl)
+            setAtVarStateVectorGridMode(filterTabParams.vectorGridMode)
+        }
+        // if somewhere else, does nothing
+
+    }, [atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)])
 
     // ** VarStateVectorGridAnimation **********************************************************
 
@@ -212,6 +238,7 @@ const VarsStateManager = ({ settings, consFixed }) => {
     }, [atsVarStateLib.getContextFilterId(atomVarStateContext),
         atsVarStateLib.getContextIconsType(atomVarStateContext),
         atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)])
+
 
     // reactions related to inner changes in ALERT icons
     useEffect(() => {

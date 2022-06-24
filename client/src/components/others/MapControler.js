@@ -51,8 +51,6 @@ const MapControler = ({ settings }) => {
   const atmVarStateLocations = cloneDeep(atomVarStateLocations)
   const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
 
-  atsVarStateLib.getMainMenuControlActiveTab(atVarStateDomMainMenuControl)
-
   // TODO: move to state manager
   // when atom context or active tab is changed, update location icons
   useEffect(() => {
