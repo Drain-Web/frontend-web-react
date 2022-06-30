@@ -8,20 +8,42 @@ import { cloneDeep } from 'lodash'
 
 // 
 const createBasicPlotLayoutDict = (plotData) => {
+
+  // define minimum and maximum values for Y axis limits
+  let [minValue, maxValue] = [null, null]
+  for (const curPlotData of plotData) {
+    const curMissValue = curPlotData.properties.missVal
+    for (const curValue of curPlotData.value) {
+      if (curValue === curMissValue) { continue }
+      if ((minValue === null) || (minValue > curValue)) { minValue = curValue }
+      if ((maxValue === null) || (maxValue < curValue)) { maxValue = curValue }
+    }
+  }
+
+  // if everything is zero, set artificial limits from 0 to 1.5
+  if ((minValue === 0) && (maxValue === 0)) {
+    [minValue, maxValue] = [0, 1.5]
+  }
+
+  // build legend layout
   return {
     title: plotData[0].properties.location_id.replace("_", " ").toUpperCase(),
     font: { family: "Arial", size: 16 },
     legend: { x: 1.05, y: 1.00, font: { size: 12 } },
-    showlegend: true
+    showlegend: true,
+    yaxis: {
+      range: [minValue, maxValue]
+    }
   }
 }
 
 
 // 
 const getPlotLayoutDict1var = (availableVariables, unitsVariables, baseDict) => {
-  baseDict['yaxis'] = {
-    title: availableVariables[0] + " [" + unitsVariables[0] + "]",
+  if (!baseDict['yaxis']) {
+    baseDict['yaxis'] = {}
   }
+  baseDict['yaxis'].title = availableVariables[0] + " [" + unitsVariables[0] + "]"
   baseDict['autosize'] = false
 }
 

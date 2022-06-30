@@ -139,10 +139,24 @@ const LoadTimeSeriesData = ({ settings }) => {
     // plot each line in the timeseries plot
     for (let parameterGroupId of parameterGroupIds) {
       for (let entry of plotData[parameterGroupId]) {
+
+        // get parameter and parameter group
         const curParameterId = entry.properties.parameterId
         const curParameterGroupId = consFixedLib.getParameterGroupOfParameterId(curParameterId, consFixed)
 
+        // basic check
         if (curParameterGroupId != parameterGroupId) { continue }
+
+        // remove miss values
+        const missValue = entry.properties.missVal
+        const [x_values, y_values] = [cloneDeep(entry.datetime), cloneDeep(entry.value)]
+        for (let i = 0; i < y_values.length; i++) {
+          if (y_values[i] === missValue) {
+            y_values.splice(i, 1)
+            x_values.splice(i, 1)
+            i--
+          }
+        }
 
         // TODO: double check if this hard coding is needed
         let [opacity, dash, width] = [null, null, null]
@@ -154,8 +168,8 @@ const LoadTimeSeriesData = ({ settings }) => {
 
         // build plot object
         obj[parameterGroupId].push({
-          x: entry.datetime,
-          y: entry.value,
+          x: x_values,
+          y: y_values,
           type: "scattergl",
           mode: "lines",
           line: { dash: dash, width: width },
@@ -312,16 +326,12 @@ const LoadTimeSeriesData = ({ settings }) => {
 
       simModuleInstanceIds = plotData[variable]
         .filter((o) => o.properties.parameterId.toLowerCase().includes("sim"))  // TODO: this should come from settings
-        .map((entry) => {
-          return entry.properties.moduleInstanceId;
-        })
+        .map((entry) => { return entry.properties.moduleInstanceId; })
         .join(",");
 
       obsModuleInstanceId = plotData[variable]
         .filter((o) => o.properties.parameterId.toLowerCase().includes("obs"))  // TODO: this should come from settings
-        .map((entry) => {
-          return entry.properties.moduleInstanceId;
-        })
+        .map((entry) => { return entry.properties.moduleInstanceId; })
         .join(",");
 
       // build URL
