@@ -88,9 +88,35 @@ const hideAllLocationIcons = (atVarStateLocations) => {
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].display = false }
 }
 
+
 //
 const setUniformIcon = (iconUrl, atVarStateLocations) => {
   for (const locId in atVarStateLocations) { atVarStateLocations[locId].icon = iconUrl }
+}
+
+
+//
+const setLocationSetIcon = (locationSets, atVarStateLocations, settings) => {
+  const defaultIconUrl = settings.generalLocationIcon
+
+  // convert location sets data into format { 'locationId': 'locationSetId' }
+  const locToLocSet = {}
+  if (locationSets && locationSets.length) {
+    for (const curLocSet of locationSets) {
+      const curLocSetId = curLocSet.locationSetId
+      for (const curLocId of curLocSet.locations) {
+        locToLocSet[curLocId] = curLocSetId
+  } } }
+  
+  //
+  const locationSetIcons = (settings.locationSetIcons ? settings.locationSetIcons : {})
+
+  // go updating the location icons
+  for (const curLocId in atVarStateLocations) {
+    const curLocSetId = locToLocSet[curLocId]
+    const curLocSetIconUrl = (curLocSetId ? locationSetIcons[curLocSetId] : defaultIconUrl)
+    atVarStateLocations[curLocId].icon = (curLocSetIconUrl ? curLocSetIconUrl : defaultIconUrl)
+  }
 }
 
 //
@@ -377,8 +403,9 @@ const updateLocationIcons = (atVarStateDomMainMenuControl, atVarStateLocations,
   
   if (inMainMenuControlActiveTabOverview(atVarStateDomMainMenuControl)) {
     // if in overview shows all locations
-    showAllLocationIcons(atVarStateLocations)
-    setUniformIcon(settings.generalLocationIcon, atVarStateLocations)
+    _updateLocationIconsByLocationSet(consFixed.locationSets, atVarStateLocations,
+                                      atVarStateDomMapLegend, settings)
+    console.log('Should have updated by Location Set.')
 
   } else if (inMainMenuControlActiveTabFilters(atVarStateDomMainMenuControl)) {
     // if in a specific filter, decide location by location
@@ -578,6 +605,32 @@ const _updateLocationIconsEvaluation = (atVarStateLocations, atVarStateDomMapLeg
   // update legend
   setMapLegendSubtitle('Evaluation:', atVarStateDomMapLegend)
   setMapLegendIcons(iconsLegend, null, atVarStateDomMapLegend)
+  setMapLegendVisibility(true, atVarStateDomMapLegend)
+}
+
+
+//
+const _updateLocationIconsByLocationSet = (locationSets, atVarStateLocations,
+                                           atVarStateDomMapLegend, settings) => {
+  // update icons
+  showAllLocationIcons(atVarStateLocations)
+  setLocationSetIcon(locationSets, atVarStateLocations, settings)
+
+  // build location icons
+  const locationIconsInLegend = {
+    Unclassified: settings.generalLocationIcon
+  }
+  for (const i in locationSets) {
+    const curLocSetId = locationSets[i].locationSetId
+    const curLocSetDesc = locationSets[i].description
+    if (settings.locationSetIcons[curLocSetId]) {
+      locationIconsInLegend[curLocSetDesc] = settings.locationSetIcons[curLocSetId]
+    }
+  }
+
+  // update legend
+  setMapLegendSubtitle('Location type:', atVarStateDomMapLegend)
+  setMapLegendIcons(locationIconsInLegend, null, atVarStateDomMapLegend)
   setMapLegendVisibility(true, atVarStateDomMapLegend)
 }
 

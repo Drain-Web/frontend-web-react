@@ -77,18 +77,29 @@ const TimeSeriesPlot = ({ timeSeriesUrl }) => {
         };
       });
 
+    // remove null values
+    for (const i = 0; i < plotArrayAux.length; i++) {
+      if (plotArrayAux[i].y === -999) {
+        plotArrayAux.splice(i, 1)
+        i--
+      }
+    }
+
+    // set state for timeseries values
     setAvailableVariables(
       plotArrayAux
         .map((serie) => serie.name.slice(0, 1))
         .filter((v, i, a) => a.indexOf(v) === i)
     );
 
+    // set state for unit
     setUnitsVariables(
       plotArrayAux
         .map((serie) => serie.units)
         .filter((v, i, a) => a.indexOf(v) === i)
     );
 
+    // set more states
     setPlotData(plotDataAux);
     setPlotArray(plotArrayAux);
   };

@@ -6,6 +6,11 @@
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop_white.svg",
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
+  "locationSetIcons": {
+    "locset_gauge_precip": "./img/location_icons/location_sets/gauge_rain.svg",
+    "locset_gauge_stream": "./img/location_icons/location_sets/gauge_stream.svg",
+    "locset_gauge_multi":  "./img/location_icons/location_sets/gauge_both.svg"
+  },
   "stream_network": {
     "type": "multi_tiles",
     "url": "https://wb-trca-api.herokuapp.com/protobuf_server/trca_tiles_full/{z}/{x}/{y}",

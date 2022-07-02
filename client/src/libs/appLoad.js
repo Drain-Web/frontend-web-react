@@ -58,13 +58,13 @@ const interpolateAllArraysInDict = (arrayObj, newLength) => {
 /* ** TODO: temp code OFF ********************************************************************** */
 
 
-const loadConsFixed = ( settings ) => {
+const loadConsFixed = (settings) => {
   /* ** CONS *********************************************************************************** */
   // TODO: temp code
   const NETWORK_TIMESERIES_MATRIX_URL = "https://wb-trca-api.herokuapp.com/netflow_server/waves1_24hrs"
 
   /* ** SET HOOKS ****************************************************************************** */
-  
+
   const { consFixed } = useContext(ConsFixed)
 
   // Fetched states
@@ -72,6 +72,7 @@ const loadConsFixed = ( settings ) => {
   const boundariesData = consFixed['boundaries']
   const filtersData = consFixed['filters']
   const locationsData = consFixed['locations']
+  const locationSetsData = consFixed['locationSets']
   const parametersData = consFixed['parameters']
   const parameterGroupsData = consFixed['parameterGroups']
   const threshValSetsData = consFixed['thresholdValueSets']
@@ -118,6 +119,20 @@ const loadConsFixed = ( settings ) => {
   if (dataLocations && !errorLocations && !Object.keys(locationsData).length) {
     for (const i in dataLocations) {
       locationsData[i] = dataLocations[i];
+    }
+  }
+
+  // request location set data
+  const { data: dataLocationSets, error: errorLocationSets } = useSWR(
+    apiUrl(settings.apiBaseUrl, "v1dw", "location_sets", {
+      showPolygon: true,
+      showAttributes: true,
+    }),
+    fetcher
+  );
+  if (dataLocationSets && !errorLocationSets && !locationSetsData.length) {
+    for (const i in dataLocationSets.locationSets) {
+      locationSetsData.push(dataLocationSets.locationSets[i])
     }
   }
 
@@ -171,7 +186,7 @@ const loadConsFixed = ( settings ) => {
     NETWORK_TIMESERIES_MATRIX_URL, fetcher
   )
   if (dataNetworkTimeseriesMatrix && !errorNetworkTimeseriesMatrix) {
-    
+
     // get all the timeseries in hourly resolution
     consFixed.networkTimeseriesMatrix['01h'] = dataNetworkTimeseriesMatrix
     consFixed.networkTimeseriesMatrix['30m'] = interpolateAllArraysInDict(dataNetworkTimeseriesMatrix, 48)
@@ -218,26 +233,26 @@ const setAtVarStateLocation = (consFixed, settings, atomVarStateLocations) => {
   const locationIds = consFixed.locations.locations.map(loc => loc['locationId']);
 
   atsVarStateLib.addLocations(locationIds, settings['generalLocationIcon'], true,
-                              atomVarStateLocations);
+    atomVarStateLocations);
   return true
 }
 
 // Updates the values of the atoms to match content of consFixed.
 // Should not be called frequently.
 const setAtsStartingValues = (consFixed, settings, atomVarStateContext,
-                              atomVarStateDomTimeSeriesData,
-                              atomVarStateDomMainMenuControl) => {
+  atomVarStateDomTimeSeriesData,
+  atomVarStateDomMainMenuControl) => {
   if (atomVarStateContext.filterId) { return false }
   // if (!consFixed.region.defaultFilter) { return false }
 
   atsVarStateLib.setContextFilterId(consFixed.region.defaultFilter, atomVarStateContext,
-                                    atomVarStateDomTimeSeriesData)
+    atomVarStateDomTimeSeriesData)
 
   if (!settings.startingTab) {
     atsVarStateLib.setMainMenuControlActiveTabAsFilters(atomVarStateDomMainMenuControl)
   } else {
     atsVarStateLib.setMainMenuControlActiveTab(settings.startingTab,
-                                               atomVarStateDomMainMenuControl)
+      atomVarStateDomMainMenuControl)
   }
 
   atsVarStateLib.setContextIcons('uniform', {}, atomVarStateContext)

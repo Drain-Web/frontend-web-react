@@ -10,6 +10,7 @@ const ConsFixed = createContext({
     boundaries: [],
     filters: [],
     locations: {},
+    locationSets: [],
     parameters: {},
     parameterGroups: {},
     thresholdValueSets: {},

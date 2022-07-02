@@ -26,6 +26,7 @@ const AppLoading = () => {
       {wasLoaded('boundaries', consFixed['boundaries'])}
       {wasLoaded('filters', consFixed['filters'])}
       {wasLoaded('locations', consFixed['locations'])}
+      {wasLoaded('location sets', consFixed['locationSets'])}
       {wasLoaded('threshold groups', consFixed['thresholdGroups'])}
       {wasLoaded('threshold value sets', consFixed['thresholdValueSets'])}
       {wasLoaded('parameters', consFixed['parameters'])}
