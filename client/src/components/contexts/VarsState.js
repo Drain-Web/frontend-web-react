@@ -50,7 +50,7 @@ const VarsState = createContext({
     domObjects: {
       mainMenuControl: {
         show: true,
-        activeTab: null, // <tabOverview|tabFilters|tabActiveFeatureInfo>
+        activeTab: "tabOverview", // <tabOverview|tabFilters|tabActiveFeatureInfo>
         activeTabsHistory: [],
       },
       timeSeriesData: {

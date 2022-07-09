@@ -1,12 +1,12 @@
 {
-  "apiBaseUrl": "https://hydro-web.herokuapp.com/",
+  "apiBaseUrl": "https://wb-churchillnelson.herokuapp.com/",
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop.svg",
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
   "stream_network": {
     "type": "multi_tiles",
-    "url": "http://192.168.100.123:8082/river_network_rounded_20210111150000/{z}/{x}/{y}.pbf",
+    "url": "https://storage.googleapis.com/tile-server-storage/resultados_simulacion/20220328000000/{z}/{x}/{y}.pbf",
     "layer_names": ["flow"],
     "default_color": "#5599FF",
     "vector_attributes": {

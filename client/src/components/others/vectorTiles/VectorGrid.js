@@ -18,15 +18,15 @@ const VectorGrid = ({ settings, url }) => {
   function getColor(value) {
     if (value <= 0.5) {
       return "#0000FF";
-    } else if (value <= 1) {
+    } else if (value <= 0.8) {
       return "#00FF00";
-    } else if (value <= 1.5) {
+    } else if (value <= 1.1) {
       return "#FFFF00";
-    } else if (value <= 2) {
+    } else if (value <= 1.4) {
       return "#FFA500";
-    } else if (value <= 2.5) {
+    } else if (value <= 1.7) {
       return "#FF0000";
-    } else if (value <= 3) {
+    } else if (value <= 2) {
       return "#6a0dad";
     } else {
       return "#964B00";
@@ -87,7 +87,6 @@ const VectorGrid = ({ settings, url }) => {
     vectorTileLayerStyles: vectorStyleFunctions,
     interactive: true,
     getFeatureId: function (f) {
-      console.log(f);
       const returnId = f.properties["OBJECTID"];
       return returnId;
     },
@@ -96,14 +95,19 @@ const VectorGrid = ({ settings, url }) => {
   const vectorGrid = L.vectorGrid
     .protobuf(url, options)
     .on("click", function (e) {
-      console.log(e.layer);
+      // console.log(e.layer);
       L.DomEvent.stop(e);
     });
   const container = layerContainer || map;
 
+  function timeout(delay) {
+    return new Promise((res) => setTimeout(res, delay));
+  }
+
   useEffect(() => {
     container.addLayer(vectorGrid);
-    return () => {
+    return async () => {
+      await timeout(700);
       container.removeLayer(vectorGrid);
     };
   }, [url]);

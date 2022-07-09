@@ -69,3 +69,30 @@ h1 {
   border-color: #000;
   border-style: solid;
 }
+
+.customMarker {
+  background-image: url(/public/circulo_azul.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.customMarker span {
+  display: block;
+  /* margin-left: 38%; */
+  text-align: center;
+  margin-top: 15%;
+  color: #fff;
+  font-size: x-large;
+}
+
+.reset-button {
+  position: absolute;
+  z-index: 2000;
+  left: 2%;
+  bottom: 4%;
+}
+
+.reload {
+  font-family: Lucida Sans Unicode;
+}
