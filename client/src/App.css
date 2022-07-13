@@ -4,6 +4,33 @@
   box-sizing: border-box;
 }
 
+.customMarker {
+  background-image: url(/public/img/markerCluster.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.customMarker span {
+  display: block;
+  /* margin-left: 38%; */
+  text-align: center;
+  margin-top: 15%;
+  color: #fff;
+  font-size: x-large;
+}
+
+.reset-button {
+  position: absolute;
+  z-index: 2000;
+  left: 2%;
+  bottom: 4%;
+}
+
+.reload {
+  font-family: Lucida Sans Unicode;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100vh;

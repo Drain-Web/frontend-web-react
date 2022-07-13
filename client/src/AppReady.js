@@ -24,9 +24,6 @@ const AppReady = ({ settings }) => {
       <VarsStateManager settings={settings} consFixed={consFixed} />
       <MapContainer zoomControl={false}>
 
-        {/*
-        // TODO: bring back
-        */}
         <GetZoomLevel />
         
         <MapControler settings={settings} />

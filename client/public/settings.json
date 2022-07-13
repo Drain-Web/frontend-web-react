@@ -5,6 +5,7 @@
   "overviewFilter": true,
   "typeOfFilters": "event.subarea",
   "generalLocationIcon": "./img/drop_white.svg",
+  "mapMarkersClustering": false,
   "loadingLocationIcon": "./img/location_icons/loading/loadingBlueSpinner5b.gif",
   "locationSetIcons": {
     "locset_gauge_precip": "./img/location_icons/location_sets/gauge_rain.svg",

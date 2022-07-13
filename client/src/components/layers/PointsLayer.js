@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 import { Icon } from "leaflet";
 import { Marker, Polygon, Tooltip, LayersControl, LayerGroup } from "react-leaflet";
 import { cloneDeep } from 'lodash';
+import MarkerClusterGroup from "react-leaflet-markercluster";
 
 import { useRecoilState, useRecoilValue } from "recoil";
 
@@ -108,6 +109,16 @@ const createMarker = (locationId, locationInfo, locationIcon, iconSize,
   )
 }
 
+// TODO: make it not hard-coded
+// 'customMarker' is the class name in the styles.css file
+const createClusterCustomIcon = function (cluster) {
+  return L.divIcon({
+    html: `<span key=${Math.random()}>${cluster.getChildCount()}</span>`,
+    className: "customMarker",
+    iconSize: L.point(48, 48, true),
+  });
+};
+
 // regular location icon
 const newIcon = (newIconUrl, iconSize) => {
   return new Icon({
@@ -119,7 +130,7 @@ const newIcon = (newIconUrl, iconSize) => {
 
 // ** COMPONENT ********************************************************************************
 
-const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
+const PointsLayer = ({ layerName, iconSize = 22, consFixed, settings }) => {
   // ** SET HOOKS ******************************************************************************
 
   // load contexts
@@ -132,26 +143,36 @@ const PointsLayer = ({ layerName, iconSize = 22, consFixed }) => {
   const atmVarStateActiveLocation = cloneDeep(atomVarStateActiveLocation)
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
 
+  // creates a list of markers
+  let allMarkers = Object.keys(atomVarStateLocations).map((curLocationId, idx) => {
+    const curLocationIcon = atomVarStateLocations[curLocationId]
+    const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
+
+    if (!curLocationIcon.display) { return (null) }
+
+    return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
+      atmVarStateActiveLocation, setAtVarStateActiveLocation,
+      atmVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl))
+  })
+
+  // created component with powers to cluster (or not) markers
+  if (settings.mapMarkersClustering) {
+    allMarkers = (
+      <MarkerClusterGroup
+        showCoverageOnHover={false}
+        iconCreateFunction={createClusterCustomIcon}>
+          {allMarkers}
+      </MarkerClusterGroup>
+    )
+  }
+
   // ** MAIN RENDER  ***************************************************************************
   return (
-    <>
-      <LayersControl.Overlay checked name={layerName}>
-        <LayerGroup name={layerName}>
-          {
-            Object.keys(atomVarStateLocations).map((curLocationId, idx) => {
-              const curLocationIcon = atomVarStateLocations[curLocationId]
-              const curLocationInfo = consFixedLib.getLocationData(curLocationId, consFixed)
-
-              if (!curLocationIcon.display) { return (null) }
-
-              return (createMarker(curLocationId, curLocationInfo, curLocationIcon, iconSize,
-                atmVarStateActiveLocation, setAtVarStateActiveLocation,
-                atmVarStateDomMainMenuControl, setAtVarStateDomMainMenuControl))
-            })
-          }
-        </LayerGroup>
-      </LayersControl.Overlay>
-    </>
+    <LayersControl.Overlay checked name={layerName}>
+      <LayerGroup name={layerName}>
+        { allMarkers }
+      </LayerGroup>
+    </LayersControl.Overlay>
   )
 }
 

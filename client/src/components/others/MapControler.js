@@ -126,7 +126,7 @@ const MapControler = ({ settings }) => {
           <BaseLayers baseLayerData={baseLayersData} />
 
           {/* adds layer of points as a react component */}
-          <PointsLayer layerName="Locations" consFixed={consFixed} />
+          <PointsLayer layerName="Locations" consFixed={consFixed} settings={settings} />
 
           {/* adds a polygon layer to the control and to the map as a component - boundaries */}
           <PolygonLayer
