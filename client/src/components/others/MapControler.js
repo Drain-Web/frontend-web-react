@@ -1,4 +1,5 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
+// import React, { useEffect, useContext, useState } from "react";  // for Seba's code
 import React, { useEffect, useContext } from "react";
 import { cloneDeep } from 'lodash';
 
@@ -10,7 +11,7 @@ import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
-import VectorGrid from "./vectorTiles/VectorGrid";
+import VectorGrid from       "./vectorTiles/VectorGrid";
 import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
 import VectorGridLegend from "./vectorTiles/VectorGridLegend";
 
@@ -24,7 +25,7 @@ import consFixedLib from "../contexts/consFixedLib";
 
 import atsVarStateLib from "../atoms/atsVarStateLib";
 import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
-         atVarStateDomMapLegend, atVarStateVectorGridMode } from "../atoms/atsVarState";
+         atVarStateDomMap, atVarStateDomMapLegend, atVarStateVectorGridMode } from "../atoms/atsVarState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -45,11 +46,21 @@ const MapControler = ({ settings }) => {
   const [atomVarStateDomMapLegend, setAtVarStateDomMapLegend] =
     useRecoilState(atVarStateDomMapLegend)
   const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
-
+  // const atomVarStateDomMap = useRecoilValue(atVarStateDomMap)  // for Seba's code
+  
   const atmVarStateContext = cloneDeep(atomVarStateContext)
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
   const atmVarStateLocations = cloneDeep(atomVarStateLocations)
   const atmVarStateDomMapLegend = cloneDeep(atomVarStateDomMapLegend)
+
+  // TODO: Sebas' code
+  // const [index, setIndex] = useState(0);
+  // const [step, setStep] = useState(1);
+  // const [url, setUrl] = useState(settings.stream_network.url)
+  
+  // TODO: get the following variable out of here:
+  // const baseUrl =
+  //   "https://storage.googleapis.com/tile-server-storage/resultados_simulacion/20220328000000/{z}/{x}/{y}.pbf";
 
   // TODO: move to state manager
   // when atom context or active tab is changed, update location icons
@@ -101,6 +112,21 @@ const MapControler = ({ settings }) => {
     atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
   ]);
 
+  // Sebas' code
+  /*
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep(Math.max(1, 10 - atsVarStateLib.getMapZoomLevel(atomVarStateDomMap)));
+      setIndex((index + step) % urls.length);
+      setUrl(baseUrl.replace("date", urls[index]));
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [url, index]);
+  */
+
   // ** MAIN RENDER  ***************************************************************************
 
   return (
@@ -146,6 +172,9 @@ const MapControler = ({ settings }) => {
             layerName="Flow animation"
             settings={settings}
           />
+
+          {/* Use Seba's others/vectorTiles/VectorGrid.js instead */}
+          {/*<ContourPolygon />*/}
 
         </LayersControl>
         <SearchField />

@@ -22,6 +22,16 @@
       "stream_order": "HORTON"
     }
   },
+  "stream_network-seba's": {
+    "type": "multi_tiles",
+    "url": "https://storage.googleapis.com/tile-server-storage/resultados_simulacion/20220328000000/{z}/{x}/{y}.pbf",
+    "layer_names": ["flow"],
+    "default_color": "#5599FF",
+    "vector_attributes": {
+      "id": "OBJECTID",
+      "stream_order": "ORD_CLAS"
+    }
+  },
   "locationIconsOptions": {
     "default": {
       "available": true

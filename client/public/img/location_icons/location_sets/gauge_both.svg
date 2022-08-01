@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -42,12 +42,12 @@
      id="namedview6"
      showgrid="false"
      inkscape:zoom="32"
-     inkscape:cx="4.5464418"
+     inkscape:cx="8.4133832"
      inkscape:cy="12.05509"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer11" />
+     inkscape:current-layer="layer12" />
   <g
      inkscape:groupmode="layer"
      id="layer1"
@@ -68,6 +68,19 @@
        d="M 9.8711402,11.889783 C 8.9983029,11.536144 8.8138602,10.620803 9.3516049,9.3114655 9.6516091,8.5809947 10.139538,7.7827232 11.237787,6.2255953 l 0.731953,-1.0377829 0.120034,0.1928502 c 0.27236,0.4375813 0.630242,1.3767399 0.750683,1.9699496 0.133141,0.6557659 0.126037,1.6975892 -0.0153,2.2437077 -0.282752,1.0925381 -0.922357,1.8854661 -1.798146,2.2291861 -0.35758,0.140339 -0.896768,0.171256 -1.1558718,0.06628 z"
        id="path862"
        inkscape:connector-curvature="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer12"
+     inkscape:label="bg_white"
+     style="display:inline">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect867"
+       width="7.1413059"
+       height="22.72187"
+       x="12.177591"
+       y="0.66547662" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -324,7 +337,9 @@
   <g
      inkscape:groupmode="layer"
      id="layer11"
-     inkscape:label="GaugePrecipSplit">
+     inkscape:label="GaugePrecipSplit"
+     style="display:inline"
+     sodipodi:insensitive="true">
     <path
        style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 12.177591,0.66547663 V 23.374942"
