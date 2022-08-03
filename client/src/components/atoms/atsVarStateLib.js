@@ -730,8 +730,6 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
   const thresholdGroupData = consFixedLib.getThresholdGroupData(thresholdGroupId, consFixed)
   const thresholdGroupBase = consFixedLib.getThresholdGroupBaseIcons(thresholdGroupId, settings)
 
-  console.log("Got", thresholdGroupData, "from", thresholdGroupId, "and", consFixed)
-
   // get the value function of the thresh levels
   const thresholdLevelFunction = {}
   for (const curThreshLevelObj of thresholdGroupData.threshold_levels) {
@@ -739,9 +737,6 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
     const curThreshLevelData = consFixedLib.getThresholdLevelData(curThreshLevelId, consFixed)
     if (curThreshLevelData) {
       thresholdLevelFunction[curThreshLevelId] = curThreshLevelData.valueFunction
-      console.log("Yeah data for thresh level:", curThreshLevelId)
-    } else {
-      console.log("No data for thresh level:", curThreshLevelId)
     }
   }
 
@@ -760,9 +755,9 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
         // get the value of the attribute in the location info
         const curAttrId = curThreshLevelFunction.substring(1, curThreshLevelFunction.length - 1)
         const curAttrObj = _getObjectFromArrayById(curAttrId, locationData.attributes)
-        console.log("~~Looking for:", curThreshLevelFunction)
+        // console.log("~~Looking for:", curThreshLevelFunction)
         if (!curAttrObj) { 
-          console.log("~~~Got", curAttrObj, "from", curAttrId, locationData.attributes)
+          // console.log("~~~Got", curAttrObj, "from", curAttrId, locationData.attributes)
           return null
         }
         const curAttrValue = parseFloat(curAttrObj.number)
@@ -795,7 +790,6 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
       // get location id and data
       const curLocationId = curTimeseriesData.header.location_id
       const curLocationData = consFixedLib.getLocationData(curLocationId, consFixed)
-      console.log("Location data of", curLocationId, ":", curLocationData)
 
       // define the threshold level
       let thresholdLevel = null
@@ -820,6 +814,7 @@ const _updateLocationIconsAlerts = (atVarStateContext, atVarStateLocations,
       atVarStateLocations[curTimeseriesData.header.location_id].icon = selectedIcon
     }
   }
+  
 
   // update varsState location by location
   for (const locationId in atVarStateLocations) {

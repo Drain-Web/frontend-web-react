@@ -28,6 +28,14 @@ import appLoad from "../../libs/appLoad.js";
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 // same as 'fetcher', but includes extra info in response
+// url is an attribute of the argument
+async function fetcherMultiargs (args) {
+  const jsonData = await fetcher(args.url)
+  return new Promise((resolve, reject) => { resolve([jsonData, args]) })
+}
+
+// same as 'fetcher', but includes extra info in response
+// url is provided side and the first argument
 async function fetcherWith (url, extra) {
   const jsonData = await fetcher(url)
   return new Promise((resolve, reject) => { resolve([jsonData, extra]) })
