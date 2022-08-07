@@ -1,0 +1,11 @@
+.controlButton {
+  font-weight: bold;
+  width: 25px;
+  display: inline-block;
+  cursor: pointer;
+  color: #000;
+  border-width: 2px;
+  border-color: rgb(224, 224, 224);
+  border-style: solid;
+  text-align: center;
+}

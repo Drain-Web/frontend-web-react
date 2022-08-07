@@ -73,11 +73,6 @@ const VectorGrid = ({ settings }) => {
   const { layerContainer, map } = useLeafletContext();
   const { consFixed } = useContext(ConsFixed)
   const [ trueVGrid, setTrueVGrid ] = useState()
-  /*
-  const [ timeResolution, setTimeResolution ] = useState(
-    zoomToTimeResolution(varsStateLib.getMapZoomLevel(varsState))
-  )
-  */
 
   const atomVarStateVectorGridAnimation = useRecoilValue(atVarStateVectorGridAnimation)
   const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
@@ -192,17 +187,6 @@ const VectorGrid = ({ settings }) => {
   }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation),
       atsVarStateLib.getVectorGridAnimationTimeResolution(atomVarStateVectorGridAnimation),
       atomVarStateVectorGridMode]);
-
-  // TODO: temp code
-  // update the temporal resolution on zoom change
-  /*
-  useEffect(() => {
-    const newZoomLevel = varsStateLib.getMapZoomLevel(varsState)
-    const newTimeResolution = zoomToTimeResolution(newZoomLevel)
-    varsStateLib.setVectorGridAnimationTimeResolution(newTimeResolution, varsState)
-    setVarState(Math.random())
-  }, [varsStateLib.getMapZoomLevel(varsState)])
-  */
 
   return null
 

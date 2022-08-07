@@ -276,14 +276,14 @@ const VectorGridPlayer = ({ settings }) => {
     // TODO: create an way to 'reopen' it
     // check if it is shown
     if (!isVisible) {
-        return (<div className={`leaflet-control leaflet-bar`} ref={divRef}>
+        return (<div className={`leaflet-control leaflet-bar overflow-hidden`} ref={divRef}>
             <Button onClick={() => { setIsVisible(true) }} > + </Button>
         </div>)
     }
 
     return (
-        <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar`} ref={divRef}>
-            <Container className={`${ownStyles.content}`} >
+        <div className={`${ownStyles.mainContainer} leaflet-control leaflet-bar overflow-hidden`} ref={divRef}>
+            <Container className={`${ownStyles.content} overflow-hidden`} >
                 <Row>
                     <Col xs={2} md={2} lg={2}>
                         <span>
