@@ -3,16 +3,12 @@ import GeoJsonVtLayer from "./GeoJsonVtLayer";
 import axios from "axios";
 import useSWR from "swr";
 import { LayersControl } from "react-leaflet";
-import MapContext from "../contexts/MapContext";
-import VarsState from "../../contexts/VarsState";
-import { useContext } from "react";
 
 // function 'fetcher' will do HTTP requests
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 function GeoJsonLayer({ layerSettings }) {
   const [geoJSON, setGeoJSON] = React.useState(null);
-  const { varsState, setVarState } = useContext(VarsState);
 
   const { data: geojsonData, error: geojsonError } = useSWR(
     layerSettings.url,
@@ -67,32 +63,30 @@ function GeoJsonLayer({ layerSettings }) {
     // 7 -> 6
 
     return (
-      <>
-        <LayersControl.Overlay
-          checked={checkHorton}
-          name={layerSettings.layerName + " Horton order " + horton}
-        >
-          <GeoJsonVtLayer
-            geoJSON={{ ...geoJSON, features: auxFeatures }}
-            options={{
-              maxZoom: 18,
-              tolerance: 5,
-              extent: 4096,
-              buffer: 64,
-              debug: 0,
-              indexMaxZoom: 0,
-              indexMaxPoints: 100000,
-              style: {
-                color: layerSettings.lineColor,
-                weight:
-                  layerSettings.lineWeight * 1.4 ** horton +
-                  (0 * varState.domObjects.map.zoomLevel) / 12,
-              },
-            }}
-          />
-          ;
-        </LayersControl.Overlay>
-      </>
+      <LayersControl.Overlay
+        checked={checkHorton}
+        name={layerSettings.layerName + " Horton order " + horton}
+      >
+        <GeoJsonVtLayer
+          geoJSON={{ ...geoJSON, features: auxFeatures }}
+          options={{
+            maxZoom: 18,
+            tolerance: 5,
+            extent: 4096,
+            buffer: 64,
+            debug: 0,
+            indexMaxZoom: 0,
+            indexMaxPoints: 100000,
+            style: {
+              color: layerSettings.lineColor,
+              weight:
+                layerSettings.lineWeight * 1.4 ** horton +
+                (0 * varState.domObjects.map.zoomLevel) / 12,
+            },
+          }}
+        />
+        ;
+      </LayersControl.Overlay>
     );
   });
 }

@@ -15,7 +15,8 @@ import consCacheLib from "../contexts/consCacheLib";
 import {
     atVarStateContext, atVarStateLocations, atVarStateDomTimeSeriesData,
     atVarStateDomMainMenuControl, atVarStateDomMapLegend, atVarStateDomMap, 
-    atVarStateVectorGridAnimation, atVarStateDomTimeseriesPanel, atVarStateVectorGridMode
+    atVarStateVectorGridAnimation, atVarStateDomTimeseriesPanel, atVarStateVectorGridMode,
+    atVarStateRasterGridAnimation
 } from "../atoms/atsVarState";
 import atsVarStateLib from "../atoms/atsVarStateLib";
 
@@ -55,6 +56,8 @@ const VarsStateManager = ({ settings, consFixed }) => {
     const atomVarStateDomMap = useRecoilValue(atVarStateDomMap)
     const [atomVarStateVectorGridAnimation, setAtVarStateVectorGridAnimation] = 
         useRecoilState(atVarStateVectorGridAnimation)
+    const [atomVarStateRasterGridAnimation, setAtVarStateRasterGridAnimation] =
+        useRecoilState(atVarStateRasterGridAnimation)
     const atomVarStateDomTimeseriesPanel = useRecoilValue(atVarStateDomTimeseriesPanel)
     const [atomVarStateVectorGridMode, setAtVarStateVectorGridMode] = 
         useRecoilState(atVarStateVectorGridMode)
@@ -159,6 +162,26 @@ const VarsStateManager = ({ settings, consFixed }) => {
         // if somewhere else, does nothing
 
     }, [atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)])
+
+    // ** VarStateRasterGridAnimation **********************************************************
+
+    useEffect(() => {
+
+        const curNetworkTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)
+
+        // updates the zIndex of only one raster tile layer
+        const atmVarStateRasterGridAnimation = cloneDeep(atomVarStateRasterGridAnimation)
+        if ((curNetworkTimeIdx % 2) == 1) {
+            atmVarStateRasterGridAnimation.currentFrame1stZindex = 
+                atmVarStateRasterGridAnimation.currentFrame2ndZindex + 1
+        } else {
+            atmVarStateRasterGridAnimation.currentFrame2ndZindex =
+                atmVarStateRasterGridAnimation.currentFrame1stZindex + 1
+        }
+
+        setAtVarStateRasterGridAnimation(atmVarStateRasterGridAnimation)
+
+    }, [atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(atomVarStateVectorGridAnimation)])
 
     // ** VarStateVectorGridAnimation **********************************************************
 

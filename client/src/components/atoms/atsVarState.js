@@ -101,6 +101,18 @@ const atVarStateDomMapLegend = atom({
   }
 })
 
+// ** RASTER GRID ANIMATION ********************************************************************
+
+const atVarStateRasterGridAnimation = atom({
+  key: 'atVarStateRasterGridAnimation',
+  default: {
+    currentFrame1stIdx: 0,
+    currentFrame2ndIdx: 0,
+    currentFrame1stZindex: 10,
+    currentFrame2ndZindex:  9
+  }
+})
+
 // ** VECTOR GRID ANIMATION ********************************************************************
 
 const atVarStateVectorGridMode = atom({
@@ -124,4 +136,5 @@ const atVarStateVectorGridAnimation = atom({
 export { atVarStateContext, atVarStateLocations, atVarStateActiveLocation,
          atVarStateDomMainMenuControl, atVarStateDomTimeSeriesData, 
          atVarStateDomTimeseriesPanel, atVarStateDomMap, atVarStateDomMapLegend,
+         atVarStateRasterGridAnimation,
          atVarStateVectorGridAnimation, atVarStateVectorGridMode }

@@ -1,7 +1,7 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
 // import React, { useEffect, useContext, useState } from "react";  // for Seba's code
 import React, { useEffect, useContext } from "react";
-import { cloneDeep } from 'lodash';
+import { cloneDeep, random } from 'lodash';
 
 // import components
 import MainMenuControl from "./MainMenuControl";
@@ -9,9 +9,10 @@ import PolygonLayer from "../layers/PolygonLayer";
 import PointsLayer from "../layers/PointsLayer";
 import BaseLayers from "../layers/BaseLayers";
 import PanelTabs from "./PanelTabs";
+import RasterGrid from "../layers/RasterGrid";
 import MapLegend from "./MapLegend";
 import SearchField from "./GeoSearchBox";
-import VectorGrid from       "./vectorTiles/VectorGrid";
+import VectorGrid from "./vectorTiles/VectorGrid";
 import VectorGridPlayer from "./vectorTiles/VectorGridPlayer";
 import VectorGridLegend from "./vectorTiles/VectorGridLegend";
 
@@ -24,8 +25,11 @@ import ConsFixed from "../contexts/ConsFixed";
 import consFixedLib from "../contexts/consFixedLib";
 
 import atsVarStateLib from "../atoms/atsVarStateLib";
-import { atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
-         atVarStateDomMap, atVarStateDomMapLegend, atVarStateVectorGridMode } from "../atoms/atsVarState";
+import {
+  atVarStateContext, atVarStateDomMainMenuControl, atVarStateLocations,
+  atVarStateDomMap, atVarStateDomMapLegend, atVarStateVectorGridMode,
+  atVarStateVectorGridAnimation, atVarStateRasterGridAnimation
+} from "../atoms/atsVarState";
 
 // import assets
 import { baseLayersData } from "../../assets/MapBaseLayers";
@@ -47,7 +51,7 @@ const MapControler = ({ settings }) => {
     useRecoilState(atVarStateDomMapLegend)
   const atomVarStateVectorGridMode = useRecoilValue(atVarStateVectorGridMode)
   // const atomVarStateDomMap = useRecoilValue(atVarStateDomMap)  // for Seba's code
-  
+
   const atmVarStateContext = cloneDeep(atomVarStateContext)
   const atmVarStateDomMainMenuControl = cloneDeep(atomVarStateDomMainMenuControl)
   const atmVarStateLocations = cloneDeep(atomVarStateLocations)
@@ -57,7 +61,7 @@ const MapControler = ({ settings }) => {
   // const [index, setIndex] = useState(0);
   // const [step, setStep] = useState(1);
   // const [url, setUrl] = useState(settings.stream_network.url)
-  
+
   // TODO: get the following variable out of here:
   // const baseUrl =
   //   "https://storage.googleapis.com/tile-server-storage/resultados_simulacion/20220328000000/{z}/{x}/{y}.pbf";
@@ -66,13 +70,13 @@ const MapControler = ({ settings }) => {
   // when atom context or active tab is changed, update location icons
   useEffect(() => {
     atsVarStateLib.updateLocationIcons(atmVarStateDomMainMenuControl, atmVarStateLocations,
-                                       atmVarStateContext, atmVarStateDomMapLegend,
-                                       consCache, consFixed, settings)
+      atmVarStateContext, atmVarStateDomMapLegend,
+      consCache, consFixed, settings)
     setAtVarStateActiveLocation(atmVarStateLocations)
     setAtVarStateDomMapLegend(atmVarStateDomMapLegend)
 
   }, [atomVarStateContext,
-      atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
+    atsVarStateLib.getMainMenuControlActiveTab(atomVarStateDomMainMenuControl)
   ]);
 
   // TODO: move to state manager
@@ -127,7 +131,35 @@ const MapControler = ({ settings }) => {
   }, [url, index]);
   */
 
-  // ** MAIN RENDER  ***************************************************************************
+  const atomVarStateVectorGridAnimation = useRecoilValue(atVarStateVectorGridAnimation)
+  const atomVarStateRasterGridAnimation = useRecoilValue(atVarStateRasterGridAnimation)
+
+  // ** CONSTANTS *********************************************************************************
+
+  // TODO: replace the constants 'AVAILABLE_DATETIMES', 'BASE_URL_1', 'BASE_URL_2' by dynamic values
+  const AVAILABLE_DATETIMES = ["evt041_20130708_2030_ldtime-04",
+                               "evt041_20130708_2115_ldtime-08",
+                               "evt041_20130708_2200_ldtime-12",
+                               "evt041_20130708_2315_ldtime-16"];
+  const BASE_URL_1 = "https://wb-trca-api.herokuapp.com/v1dw/multitiles_server/"
+  const BASE_URL_2 = "/{z}/{x}/{y}"
+
+  /* ** LOGIC ********************************************************************************** */
+
+  const imageTimeIdx = atsVarStateLib.getVectorGridAnimationCurrentFrameIdx(
+    atomVarStateVectorGridAnimation) % AVAILABLE_DATETIMES.length
+  const curTilesUrl = BASE_URL_1 + AVAILABLE_DATETIMES[imageTimeIdx] + BASE_URL_2
+
+  console.log("--->", curTilesUrl)
+
+  const zIdxRaster1st = atomVarStateRasterGridAnimation.currentFrame1stZindex
+  const zIdxRaster2nd = atomVarStateRasterGridAnimation.currentFrame2ndZindex
+  const keyRaster1st = `tileLayer1st${zIdxRaster1st}`
+  const keyRaster2nd = `tileLayer1st${zIdxRaster2nd}`
+  console.log('1.', zIdxRaster1st, keyRaster1st)
+  console.log('2.', zIdxRaster2nd, keyRaster2nd)
+
+  // ** MAIN RENDER ****************************************************************************
 
   return (
     <>
@@ -142,7 +174,7 @@ const MapControler = ({ settings }) => {
         {/*
         // TODO: bring back */}
         <VectorGridPlayer settings={settings} />
-        
+
         {/* <SideNavBarMap /> */}
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
@@ -168,7 +200,7 @@ const MapControler = ({ settings }) => {
             <></>
           )} */}
 
-          <VectorGrid 
+          <VectorGrid
             layerName="Flow animation"
             settings={settings}
           />
@@ -176,14 +208,23 @@ const MapControler = ({ settings }) => {
           {/* Use Seba's others/vectorTiles/VectorGrid.js instead */}
           {/*<ContourPolygon />*/}
 
+          {/* animated raster for the flood inundation map */}
+          {/* tilesUrl="https://wb-trca-api.herokuapp.com/v1dw/multitiles_server/evt041_20130708_2030_ldtime-04/{z}/{x}/{y}" */}
+          <RasterGrid
+            layerName="Raster Grid"
+            tilesUrl={curTilesUrl}
+            key1st={keyRaster1st} zIdx1st={zIdxRaster1st}
+            key2nd={keyRaster2nd} zIdx2nd={zIdxRaster2nd}
+          />
+
         </LayersControl>
         <SearchField />
         <ZoomControl position="bottomright" />
-        
-        { (atomVarStateVectorGridMode === 'animated') ? 
-          (<VectorGridLegend settings={settings} />) : 
-          (<></>) }
-        
+
+        {(atomVarStateVectorGridMode === 'animated') ?
+          (<VectorGridLegend settings={settings} />) :
+          (<></>)}
+
       </div>
       {/* </FlexContainer> */}
     </>
