@@ -1,5 +1,5 @@
 import { LayersControl, ZoomControl, useMap } from "react-leaflet";
-// import React, { useEffect, useContext, useState } from "react";  // for Seba's code
+
 import React, { useEffect, useContext } from "react";
 import { cloneDeep, random } from 'lodash';
 
@@ -179,8 +179,8 @@ const MapControler = ({ settings }) => {
         {/* timeseries panel */}
         <PanelTabs position="leaflet-right" settings={settings} />
         <LayersControl>
-
           {/* adds base layer */}
+
           <BaseLayers baseLayerData={baseLayersData} />
 
           {/* adds layer of points as a react component */}

@@ -1,5 +1,5 @@
-import React, { Fragment, useContext } from 'react'
-import { LayersControl, LayerGroup, Polygon } from 'react-leaflet'
+import React, { Fragment, useContext } from "react";
+import { LayersControl, LayerGroup, Polygon } from "react-leaflet";
 
 // import recoil to replace contexts
 import { useRecoilValue } from "recoil";
@@ -18,26 +18,27 @@ const displayPolygon = (polygonId, atomVarStateContext, atomVarStateDomMainMenuC
     return ((atsVarStateLib.getContextFilterGeoId(atomVarStateContext) === polygonId) ||
              atsVarStateLib.inMainMenuControlActiveTabOverview(atomVarStateDomMainMenuControl))
   }
-}
+};
 
-const isMultiPolygon = (polygon) => Array.isArray(polygon[0][0])
+const isMultiPolygon = (polygon) => Array.isArray(polygon[0][0]);
 
-const revertPoint = (pointCoords) => [pointCoords[1], pointCoords[0]]
+const revertPoint = (pointCoords) => [pointCoords[1], pointCoords[0]];
 
 const revertPolygon = (polygon) => {
   if (!isMultiPolygon(polygon)) {
-    return polygon.map(revertPoint)
+    return polygon.map(revertPoint);
   } else {
-    return polygon.map((monoPolygon) => monoPolygon.map(revertPoint))
+    return polygon.map((monoPolygon) => monoPolygon.map(revertPoint));
   }
-}
+};
 
 const PolygonLayer = ({
   layerData,
   layerName,
   reversePolygon = false,
-  color = '#069292',
-  lineWidth = 2
+  color = "#069292",
+  lineWidth = 2,
+  fillOpacity = 0.1,
 }) => {
   /* ** SET HOOKS ****************************************************************************** */
 
@@ -49,10 +50,11 @@ const PolygonLayer = ({
   return (
     <LayersControl.Overlay checked name={layerName}>
       <LayerGroup name={layerName}>
-        {
-          layerData.map((poly) => {
-            /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
-            const polygon = (reversePolygon) ? revertPolygon(poly.polygon) : poly.polygon
+        {layerData.map((poly) => {
+          /* points in geojson are in [lat, lon] (or [y, x]) - need to be inverted */
+          const polygon = reversePolygon
+            ? revertPolygon(poly.polygon)
+            : poly.polygon;
 
             /* build polygons */
             return (
@@ -72,7 +74,7 @@ const PolygonLayer = ({
         }
       </LayerGroup>
     </LayersControl.Overlay>
-  )
-}
+  );
+};
 
-export default PolygonLayer
+export default PolygonLayer;
