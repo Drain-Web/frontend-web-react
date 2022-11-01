@@ -12,8 +12,7 @@ import atsVarStateLib from '../../atoms/atsVarStateLib';
 import { atVarStateVectorGridAnimation, atVarStateVectorGridMode } from '../../atoms/atsVarState';
 
 // TODO: check if it is really needed
-const ATTRIBUTION =
-  '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">MapBox</a>';
+const ATTRIBUTION = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">MapBox</a>'
 
 // TODO: temp code
 const getColorFromValueOld = (flowValue) => {
@@ -83,7 +82,7 @@ const VectorGrid = ({ settings }) => {
   /* ** FUNCTIONS **************************************************************************** */
 
   function styleFunction(properties) {
-    // The lower the zoom, the lower the resolution (min: 0, max: 18).
+    // The lower the zoom, the lower the resolution (min: 0, max: 18). 
     // 1 -> 12
     // 2 -> 11
     // 3 -> 10
@@ -95,19 +94,16 @@ const VectorGrid = ({ settings }) => {
     const horton = properties[settings.stream_network.vector_attributes.stream_order];
     const linkId = properties.OBJECTID                        // TODO: temp code
     const linkTs = consFixed.networkTimeseriesMatrix[linkId]  // TODO: temp code
-
     let color = null;
     let weight = 0;
-    let opacity = 0;
 
     if (linkTs && (horton >= 1)) {
       weight = horton
       // color = settings.stream_network.default_color
       color = getColorFromValue(linkTs[networkTimeIdx])
     } else {
-      weight = 0;
+      weight = 1;
       color = "r";
-      opacity = 0;
     }
 
     return {
@@ -134,13 +130,13 @@ const VectorGrid = ({ settings }) => {
     attribution: ATTRIBUTION,
     interactive: true,
     getFeatureId: function (f) {
-      console.log(f);
-      const returnId = f.properties["OBJECTID"];
+      const returnId = f.properties[settings.stream_network.vector_attributes.id];
       return returnId;
-    },
+    }
   };
   
   const vectorGrid = L.vectorGrid.protobuf(settings.stream_network.url, options);
+
   const container = layerContainer || map;
 
   // create layer at the beginning of the execution
@@ -151,9 +147,7 @@ const VectorGrid = ({ settings }) => {
     return () => {
       container.removeLayer(vectorGrid);
     };
-  }, [url]);
-
-  const layerName = "Stream network";
+  }, []);
 
   // TODO: temp code
   // set style updater
@@ -196,22 +190,25 @@ const VectorGrid = ({ settings }) => {
 
   return null
 
+  /*
   // in a React-friendly universe, this would be the solution:
-  // return (
-  //   <LayersControl.Overlay checked name={layerName}>
-  //     <LayerGroup name={layerName}>
-  //       <VectorGrid
-  //         url={"http://localhost:8082/river_network/{z}/{x}/{y}.pbf"}
-  //         vectorTileLayerStyles={{
-  //           network: (properties) => {
-  //             return styleFunction(properties);
-  //           },
-  //         }}
-  //       />
-  //       ;
-  //     </LayerGroup>
-  //   </LayersControl.Overlay>
-  // );
-};
+  return (
+    <LayersControl.Overlay checked name={layerName}>
+      <LayerGroup name={layerName}>
+        <VectorGrid
+          url={TILES_URL}
+          vectorTileLayerStyles={{
+            order01plus: (properties) => { return styleFunction(properties, 18) },
+            order02plus: (properties) => { return styleFunction(properties, 16) },
+            order03plus: (properties) => { return styleFunction(properties, 14) },
+            order04plus: (properties) => { return styleFunction(properties, 12) },
+            order05plus: (properties) => { return styleFunction(properties, 10) }
+          }}
+        />;
+      </LayerGroup>
+    </LayersControl.Overlay>
+  )
+  */
+}
 
-export default VectorGrid;
+export default VectorGrid
